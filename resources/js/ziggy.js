@@ -33,6 +33,20 @@ const Ziggy = {
         'tasks.move': { uri: 'tasks\/{task}\/move', methods: ['POST'], parameters: ['task'], bindings: { task: 'id' } },
         'tasks.toggle': { uri: 'tasks\/{task}\/toggle', methods: ['POST'], parameters: ['task'], bindings: { task: 'id' } },
         'comments.store': { uri: 'tasks\/{task}\/comments', methods: ['POST'], parameters: ['task'], bindings: { task: 'id' } },
+        'attachments.store': { uri: 'tasks\/{task}\/attachments', methods: ['POST'], parameters: ['task'], bindings: { task: 'id' } },
+        'attachments.show': {
+            uri: 'attachments\/{attachment}',
+            methods: ['GET', 'HEAD'],
+            parameters: ['attachment'],
+            bindings: { attachment: 'id' },
+        },
+        'attachments.download': {
+            uri: 'attachments\/{attachment}\/download',
+            methods: ['GET', 'HEAD'],
+            parameters: ['attachment'],
+            bindings: { attachment: 'id' },
+        },
+        'attachments.destroy': { uri: 'attachments\/{attachment}', methods: ['DELETE'], parameters: ['attachment'], bindings: { attachment: 'id' } },
         'members.store': { uri: 'projects\/{project}\/members', methods: ['POST'], parameters: ['project'], bindings: { project: 'id' } },
         'members.update': {
             uri: 'projects\/{project}\/members\/{user}',

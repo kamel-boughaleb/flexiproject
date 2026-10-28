@@ -54,7 +54,7 @@ class ProjectController extends Controller
             'tasks' => $project->tasks()
                 ->whereNull('parent_id')
                 ->with('assignee:id,name,color,avatar')
-                ->withCount(['subtasks', 'comments'])
+                ->withCount(['subtasks', 'comments', 'attachments'])
                 ->orderBy('position')
                 ->get(),
             'selectedTask' => fn () => $this->selectedTask($request, $project),
@@ -150,6 +150,7 @@ class ProjectController extends Controller
                 'parent:id,title',
                 'subtasks.assignee:id,name,color,avatar',
                 'comments.user:id,name,color,avatar',
+                'attachments.user:id,name',
                 'activities' => fn ($q) => $q->with('user:id,name')->limit(20),
             ])
             ->find($request->integer('task'));

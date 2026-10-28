@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Project extends Model
 {
@@ -19,6 +20,11 @@ class Project extends Model
     public const DEFAULT_SECTIONS = ['À faire', 'En cours', 'Terminé'];
 
     protected $fillable = ['name', 'description', 'color', 'start_date', 'end_date', 'archived', 'owner_id'];
+
+    protected static function booted(): void
+    {
+        static::deleted(fn (Project $project) => Storage::disk('local')->deleteDirectory("attachments/{$project->id}"));
+    }
 
     protected function casts(): array
     {

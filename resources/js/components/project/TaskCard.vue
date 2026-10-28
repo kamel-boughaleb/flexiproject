@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { dateRange, isOverdue } from '@/lib/labels';
 import type { Task } from '@/types';
-import { ListTree, MessageSquare } from 'lucide-vue-next';
+import { ListTree, MessageSquare, Paperclip } from 'lucide-vue-next';
 import PriorityBadge from './PriorityBadge.vue';
 import TaskCheck from './TaskCheck.vue';
 import UserAvatar from './UserAvatar.vue';
@@ -26,6 +26,7 @@ defineEmits<{ open: [id: number] }>();
             </span>
             <span v-if="task.subtasks_count" class="flex items-center gap-0.5"><ListTree class="size-3" />{{ task.subtasks_count }}</span>
             <span v-if="task.comments_count" class="flex items-center gap-0.5"><MessageSquare class="size-3" />{{ task.comments_count }}</span>
+            <span v-if="task.attachments_count" class="flex items-center gap-0.5"><Paperclip class="size-3" />{{ task.attachments_count }}</span>
             <UserAvatar class="ml-auto" :user="task.assignee" />
         </div>
     </div>

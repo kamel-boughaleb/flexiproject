@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
@@ -45,6 +46,10 @@ Route::middleware('auth')->group(function () {
     Route::post('tasks/{task}/move', [TaskController::class, 'move'])->name('tasks.move');
     Route::post('tasks/{task}/toggle', [TaskController::class, 'toggle'])->name('tasks.toggle');
     Route::post('tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::post('tasks/{task}/attachments', [AttachmentController::class, 'store'])->name('attachments.store');
+    Route::get('attachments/{attachment}', [AttachmentController::class, 'show'])->name('attachments.show');
+    Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
+    Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
 
     Route::post('projects/{project}/members', [MemberController::class, 'store'])->name('members.store');
     Route::patch('projects/{project}/members/{user}', [MemberController::class, 'update'])->name('members.update');

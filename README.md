@@ -6,7 +6,8 @@ Laravel 12 · Vue 3 (Inertia) · MariaDB / MySQL · Tailwind.
 ## Fonctionnalités (V1)
 
 - **Projets** avec description, couleur, dates de début et de fin, sections personnalisables.
-- **Tâches** : responsable, dates de début et d'échéance, priorité, description, sous-tâches, commentaires, historique.
+- **Tâches** : responsable, dates de début et d'échéance, priorité, description, sous-tâches, commentaires, pièces jointes, historique.
+- **Pièces jointes** : les éditeurs et administrateurs joignent des fichiers (glisser-déposer, 100 Mo max. par fichier) ; tous les membres les ouvrent dans une visionneuse : lecteur vidéo et audio, images, PDF, code coloré (SQL, JavaScript, PHP…). Les autres formats (PowerPoint, Excel…) se téléchargent. Les fichiers sont stockés dans `storage/app/private/attachments` et ne sont servis qu'aux membres du projet.
 - **Quatre vues** sur les mêmes tâches :
   - **Kanban** : glisser-déposer entre sections, ajout rapide, renommage des sections (double-clic) ;
   - **Liste** : tableau groupé par section ;
@@ -58,6 +59,8 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
 
 Faites pointer le serveur web (Nginx ou Apache) sur le dossier `public/`, et donnez à l'utilisateur du serveur web les droits d'écriture sur `storage/` et `bootstrap/cache/`.
+
+Pour les pièces jointes, autorisez des envois assez gros côté PHP (`upload_max_filesize = 100M` et `post_max_size = 110M` dans `php.ini`) et côté Nginx (`client_max_body_size 110M;`).
 
 Le premier compte se crée depuis `/register`. Les suivants peuvent s'inscrire de la même façon ou être invités depuis l'onglet « Collaborateurs » d'un projet.
 

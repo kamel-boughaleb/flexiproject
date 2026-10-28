@@ -28,6 +28,14 @@ class Task extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        // Les sous-tâches et pièces jointes sont supprimées en cascade par la base : on retire leurs fichiers.
+        static::deleting(fn (Task $task) => Attachment::deleteFilesOf(
+            Task::whereKey($task->id)->orWhere('parent_id', $task->id)->select('id')
+        ));
+    }
+
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
@@ -56,6 +64,11 @@ class Task extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class)->oldest();
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(Attachment::class)->latest('id');
     }
 
     public function activities(): HasMany

@@ -93,6 +93,7 @@ export interface Task {
     assignee?: MiniUser | null;
     subtasks_count?: number;
     comments_count?: number;
+    attachments_count?: number;
 }
 
 export interface Comment {
@@ -100,6 +101,20 @@ export interface Comment {
     body: string;
     created_at: string;
     user: MiniUser;
+}
+
+export type AttachmentKind = 'image' | 'video' | 'audio' | 'pdf' | 'text' | 'other';
+
+export interface Attachment {
+    id: number;
+    user_id: number | null;
+    name: string;
+    mime: string | null;
+    size: number;
+    kind: AttachmentKind;
+    extension: string;
+    created_at: string;
+    user: { id: number; name: string } | null;
 }
 
 export interface Activity {
@@ -113,6 +128,7 @@ export interface TaskDetail extends Task {
     parent: { id: number; title: string } | null;
     subtasks: Task[];
     comments: Comment[];
+    attachments: Attachment[];
     activities: Activity[];
 }
 

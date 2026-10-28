@@ -41,6 +41,7 @@ function openTask(id: number | null) {
             :members="members"
             :sections="sections"
             :can-edit="can.edit"
+            :can-manage="can.manage"
             @close="openTask(null)"
             @open="openTask"
         />
