@@ -21,6 +21,7 @@ export interface SharedData {
     auth: Auth;
     sidebarProjects: SidebarProject[];
     unreadNotifications: number;
+    flash?: { error?: string | null; success?: string | null };
     ziggy: {
         location: string;
         url: string;
@@ -34,7 +35,8 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    avatar?: string;
+    avatar?: string | null;
+    color: string;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
@@ -58,6 +60,7 @@ export interface MiniUser {
 export interface Member extends MiniUser {
     email: string;
     role: 'admin' | 'editor' | 'viewer';
+    pending?: boolean;
 }
 
 export interface Project {

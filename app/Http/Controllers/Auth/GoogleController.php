@@ -40,7 +40,8 @@ class GoogleController extends Controller
         $user->fill([
             'name' => $user->name ?: $google->getName(),
             'google_id' => $google->getId(),
-            'avatar' => $google->getAvatar(),
+            // Une photo envoyée par l'utilisateur reste prioritaire sur celle de Google.
+            'avatar' => $user->photo_path ? $user->avatar : $google->getAvatar(),
         ]);
         $user->email_verified_at ??= now();
         $user->save();

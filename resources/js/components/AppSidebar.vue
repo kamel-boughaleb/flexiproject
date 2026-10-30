@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import NavUser from '@/components/NavUser.vue';
 import {
     Sidebar,
     SidebarContent,
-    SidebarFooter,
     SidebarGroup,
     SidebarGroupLabel,
     SidebarHeader,
@@ -14,7 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Bell, CheckSquare, Home, Plus } from 'lucide-vue-next';
+import { Bell, CheckSquare, Home, Plus, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -25,6 +23,7 @@ const mainNavItems = computed(() => [
     { title: 'Accueil', href: route('dashboard'), icon: Home },
     { title: 'Mes tâches', href: route('my-tasks'), icon: CheckSquare },
     { title: 'Notifications', href: route('notifications.index'), icon: Bell, badge: page.props.unreadNotifications },
+    { title: 'Équipe', href: route('team.index'), icon: Users },
 ]);
 const isActive = (href: string) => path.value === new URL(href).pathname;
 </script>
@@ -80,10 +79,6 @@ const isActive = (href: string) => path.value === new URL(href).pathname;
                 </SidebarMenu>
             </SidebarGroup>
         </SidebarContent>
-
-        <SidebarFooter>
-            <NavUser />
-        </SidebarFooter>
     </Sidebar>
     <slot />
 </template>
