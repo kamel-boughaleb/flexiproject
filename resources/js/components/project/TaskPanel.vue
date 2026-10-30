@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { PRIORITIES, dateTime } from '@/lib/labels';
 import type { Member, Section, TaskDetail } from '@/types';
 import { router, useForm } from '@inertiajs/vue3';
-import { Trash2 } from 'lucide-vue-next';
+import { ChevronRight, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import TaskAttachments from './TaskAttachments.vue';
 import TaskCheck from './TaskCheck.vue';
@@ -219,15 +219,20 @@ function destroy() {
                     </div>
                 </section>
 
-                <section>
-                    <h4 class="mb-2 text-sm font-semibold">Historique</h4>
-                    <ul class="space-y-1 text-xs text-muted-foreground">
+                <details class="group">
+                    <summary
+                        class="flex cursor-pointer select-none list-none items-center gap-1 text-sm font-semibold [&::-webkit-details-marker]:hidden"
+                    >
+                        <ChevronRight class="size-4 transition-transform group-open:rotate-90" />
+                        Historique <span class="font-normal text-muted-foreground">({{ task.activities.length }})</span>
+                    </summary>
+                    <ul class="mt-2 space-y-1 text-xs text-muted-foreground">
                         <li v-for="a in task.activities" :key="a.id">
                             {{ dateTime(a.created_at) }} · <strong v-if="a.user">{{ a.user.name }}</strong
                             ><span v-else>⚙️</span> {{ a.message }}
                         </li>
                     </ul>
-                </section>
+                </details>
             </div>
         </SheetContent>
     </Sheet>
