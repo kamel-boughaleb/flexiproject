@@ -1,15 +1,24 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
 import { fileSize } from '@/lib/files';
-import { dateTime } from '@/lib/labels';
+import { shortDate } from '@/lib/labels';
 import type { Attachment, AttachmentKind, SharedData } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { FileCode, FileIcon, FileText, Film, Image, Music, Paperclip, Trash2 } from 'lucide-vue-next';
+import { FileCode, FileIcon, FileText, Film, Image, Music, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import AttachmentViewer from './AttachmentViewer.vue';
 
 const props = defineProps<{ taskId: number; attachments: Attachment[]; canEdit: boolean; canManage: boolean }>();
+
+// Vignette de chaque type de fichier : fond et couleur de la marque.
+const TILES: Record<AttachmentKind, string> = {
+    image: 'bg-info-tint text-info-active',
+    video: 'bg-info-tint text-info-active',
+    audio: 'bg-warning-tint text-warning-text',
+    pdf: 'bg-brand-tint text-brand-active',
+    text: 'bg-success-tint text-success-text',
+    other: 'bg-app-hover text-ink-soft',
+};
 
 const ICONS: Record<AttachmentKind, typeof FileIcon> = {
     image: Image,
@@ -56,60 +65,67 @@ function destroy(a: Attachment) {
 }
 
 const viewing = ref<number | null>(null);
+
+/** Ouvre le sélecteur de fichiers (bouton trombone de la barre d'outils de la fiche). */
+defineExpose({ pick: () => input.value?.click() });
 </script>
 
 <template>
     <section
-        class="rounded-md"
-        :class="{ 'ring-2 ring-primary ring-offset-2': dragging }"
+        aria-labelledby="attachments-title"
         @dragover.prevent="canEdit && (dragging = true)"
         @dragleave.self="dragging = false"
         @drop.prevent="onDrop"
     >
-        <div class="mb-2 flex items-center">
-            <h4 class="text-sm font-semibold">Pièces jointes</h4>
-            <template v-if="canEdit">
-                <Button variant="ghost" size="sm" class="ml-auto" :disabled="form.processing" @click="input?.click()">
-                    <Paperclip class="size-4" /> Joindre des fichiers
-                </Button>
-                <input ref="input" type="file" multiple class="hidden" @change="onPick" />
-            </template>
-        </div>
+        <h3 id="attachments-title" class="mb-3 flex items-baseline gap-2 text-base font-bold">
+            Pièces jointes <span class="text-sm font-semibold text-ink-soft">{{ attachments.length }}</span>
+        </h3>
+        <input v-if="canEdit" ref="input" type="file" multiple class="hidden" @change="onPick" />
 
-        <div v-if="form.progress" class="mb-2 h-1.5 overflow-hidden rounded-full bg-muted">
-            <div class="h-full bg-primary transition-all" :style="{ width: `${form.progress.percentage}%` }" />
+        <div v-if="form.progress" class="mb-3 h-1.5 overflow-hidden rounded-full bg-app-hover">
+            <div class="h-full rounded-full bg-success transition-all" :style="{ width: `${form.progress.percentage}%` }" />
         </div>
         <InputError v-for="message in errors" :key="message" :message="message" class="mb-2" />
 
-        <ul v-if="attachments.length" class="divide-y rounded-md border">
-            <li v-for="(a, i) in attachments" :key="a.id" class="group flex items-center gap-3 px-3 py-2 text-sm">
-                <component :is="ICONS[a.kind]" class="size-4 shrink-0 text-muted-foreground" />
-                <button class="min-w-0 flex-1 text-left" @click="viewing = i">
-                    <span class="block truncate hover:underline">{{ a.name }}</span>
-                    <span class="block text-xs text-muted-foreground">
-                        {{ fileSize(a.size) }} · <template v-if="a.user">{{ a.user.name }}, </template>{{ dateTime(a.created_at) }}
+        <ul class="flex gap-3 max-md:-mx-1 max-md:overflow-x-auto max-md:px-1 max-md:pb-1 md:grid md:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]">
+            <li
+                v-for="(a, i) in attachments"
+                :key="a.id"
+                class="group relative w-40 shrink-0 overflow-hidden rounded-2xl border border-app-border bg-background transition-shadow hover:shadow-hover md:w-auto"
+            >
+                <button class="block w-full text-left" :aria-label="`Ouvrir ${a.name}`" @click="viewing = i">
+                    <span class="flex h-[110px] items-center justify-center" :class="TILES[a.kind]">
+                        <img v-if="a.kind === 'image'" :src="route('attachments.show', a.id)" alt="" loading="lazy" class="size-full object-cover" />
+                        <span v-else-if="a.kind === 'pdf'" class="text-xl font-bold">PDF</span>
+                        <component :is="ICONS[a.kind]" v-else class="size-7" />
+                    </span>
+                    <span class="block px-3 py-2">
+                        <span class="block truncate text-[13px] font-bold">{{ a.name }}</span>
+                        <span class="block truncate text-xs text-ink-soft">{{ fileSize(a.size) }} · {{ shortDate(a.created_at) }}</span>
                     </span>
                 </button>
-                <Button
+                <button
                     v-if="canDelete(a)"
-                    variant="ghost"
-                    size="icon"
-                    class="size-7 text-rose-600 opacity-0 group-hover:opacity-100"
-                    title="Supprimer"
+                    class="absolute right-2 top-2 flex size-8 items-center justify-center rounded-icon bg-background/90 text-brand-active opacity-0 shadow-soft transition focus-visible:opacity-100 group-hover:opacity-100"
+                    :aria-label="`Supprimer ${a.name}`"
                     @click="destroy(a)"
                 >
                     <Trash2 class="size-4" />
-                </Button>
+                </button>
+            </li>
+            <li v-if="canEdit" class="w-40 shrink-0 md:w-auto">
+                <button
+                    class="flex h-full min-h-[150px] w-full flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed text-sm font-bold text-ink-soft transition hover:border-app-muted hover:text-ink"
+                    :class="dragging ? 'border-brand bg-brand-wash text-brand-active' : 'border-app-border-strong'"
+                    :disabled="form.processing"
+                    @click="input?.click()"
+                >
+                    <Plus class="size-5" />
+                    {{ form.processing ? 'Envoi…' : 'Glisser un fichier' }}
+                </button>
             </li>
         </ul>
-        <p
-            v-else-if="canEdit"
-            class="cursor-pointer rounded-md border border-dashed px-3 py-4 text-center text-xs text-muted-foreground"
-            @click="input?.click()"
-        >
-            Glissez des fichiers ici ou cliquez pour en joindre (vidéos, images, PDF, présentations, code…).
-        </p>
-        <p v-else class="text-xs text-muted-foreground">Aucune pièce jointe.</p>
+        <p v-if="!canEdit && !attachments.length" class="text-sm text-ink-soft">Aucune pièce jointe.</p>
 
         <AttachmentViewer
             v-if="viewing !== null && attachments[viewing]"
