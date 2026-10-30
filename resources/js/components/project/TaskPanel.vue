@@ -8,10 +8,11 @@ import type { Member, Section, TaskDetail } from '@/types';
 import { router, useForm } from '@inertiajs/vue3';
 import { Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import TaskAttachments from './TaskAttachments.vue';
 import TaskCheck from './TaskCheck.vue';
 import UserAvatar from './UserAvatar.vue';
 
-const props = defineProps<{ task: TaskDetail; members: Member[]; sections: Section[]; canEdit: boolean }>();
+const props = defineProps<{ task: TaskDetail; members: Member[]; sections: Section[]; canEdit: boolean; canManage: boolean }>();
 const emit = defineEmits<{ close: []; open: [id: number] }>();
 
 const opts = { preserveScroll: true, preserveState: true };
@@ -186,6 +187,8 @@ function destroy() {
                         </li>
                     </ul>
                 </section>
+
+                <TaskAttachments :task-id="task.id" :attachments="task.attachments" :can-edit="canEdit" :can-manage="canManage" />
 
                 <section>
                     <h4 class="mb-2 text-sm font-semibold">Commentaires</h4>

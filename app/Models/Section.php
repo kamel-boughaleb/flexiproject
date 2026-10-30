@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Section extends Model
 {
+    protected static function booted(): void
+    {
+        static::deleting(fn (Section $section) => Attachment::deleteFilesOf(Task::where('section_id', $section->id)->select('id')));
+    }
+
     protected $fillable = ['project_id', 'name', 'position'];
 
     public function project(): BelongsTo
