@@ -18,7 +18,6 @@ import StarterKit from '@tiptap/starter-kit';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import { useEventListener } from '@vueuse/core';
 import {
-    ArrowUp,
     AtSign,
     Bold,
     ChevronDown,
@@ -55,8 +54,10 @@ const props = withDefaults(
         submittable?: boolean;
         busy?: boolean;
         minHeight?: string;
+        /** Édition en place : pas de cadre ni de barre d'outils visibles tant que l'on ne survole ou n'édite pas. */
+        bare?: boolean;
     }>(),
-    { placeholder: 'Saisissez « / » pour afficher le menu', submittable: false, busy: false, minHeight: '4rem' },
+    { placeholder: 'Saisissez « / » pour afficher le menu', submittable: false, busy: false, minHeight: '4rem', bare: false },
 );
 const emit = defineEmits<{ 'update:modelValue': [html: string]; submit: [html: string]; change: [html: string] }>();
 
@@ -108,7 +109,7 @@ const editor = useEditor({
         SubmitShortcut,
     ],
     editorProps: {
-        attributes: { class: 'rich-text min-h-[var(--editor-min-height)] px-3 py-2 outline-none' },
+        attributes: { class: 'rich-text min-h-[var(--editor-min-height)] px-3.5 py-2.5 outline-none' },
         handlePaste: (_view, event) => uploadFrom(event.clipboardData?.files),
         handleDrop: (_view, event) => uploadFrom((event as DragEvent).dataTransfer?.files),
     },
@@ -282,10 +283,10 @@ function toggle(mark: Mark) {
 }
 
 const active = (name: string, attrs?: Record<string, unknown>) => editor.value?.isActive(name, attrs) ?? false;
-const btn = 'inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40';
-const on = 'bg-accent text-foreground';
+const btn = 'inline-flex size-8 items-center justify-center rounded-icon text-ink-soft hover:bg-app-hover hover:text-ink disabled:opacity-40';
+const on = 'bg-app-hover text-ink';
 // Classe liée dynamiquement : un bouton statique serait partagé entre les éditeurs et perdrait ses classes (as-child de radix-vue).
-const styleBtn = 'inline-flex h-7 items-center gap-1 rounded px-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground';
+const styleBtn = 'inline-flex h-8 items-center gap-1 rounded-icon px-2 text-sm font-semibold text-ink-soft hover:bg-app-hover hover:text-ink';
 
 function insertEmoji(emoji: string) {
     editor.value?.chain().focus().insertContent(emoji).run();
@@ -305,10 +306,17 @@ function mention() {
 <template>
     <div
         ref="root"
-        class="relative rounded-lg border bg-background transition-shadow focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/15"
+        class="group/editor relative rounded-2xl border-2 bg-background transition-colors focus-within:border-info focus-within:ring-4 focus-within:ring-info-tint"
+        :class="bare ? 'border-transparent hover:border-app-border' : 'border-app-border'"
         :style="{ '--editor-min-height': minHeight }"
     >
-        <div v-if="editor" class="flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1">
+        <div
+            v-if="editor"
+            class="flex flex-wrap items-center gap-0.5 border-b border-app-border px-1.5 py-1 transition-opacity"
+            :class="{
+                'opacity-0 group-focus-within/editor:opacity-100 group-hover/editor:opacity-100 group-has-[[data-state=open]]/editor:opacity-100': bare,
+            }"
+        >
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                     <button type="button" :class="styleBtn">
@@ -434,11 +442,11 @@ function mention() {
                 v-if="submittable"
                 type="button"
                 title="Envoyer (⌘ + Entrée)"
-                class="ml-auto inline-flex size-8 items-center justify-center rounded-md border text-muted-foreground transition-colors enabled:hover:bg-primary enabled:hover:text-primary-foreground disabled:opacity-40"
+                class="ml-auto inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-active px-4 text-sm font-bold text-white transition-colors hover:bg-brand-hover disabled:opacity-40"
                 :disabled="busy || uploading || !editor || editor.isEmpty"
                 @click="submit"
             >
-                <ArrowUp class="size-4" />
+                Envoyer
             </button>
         </div>
     </div>

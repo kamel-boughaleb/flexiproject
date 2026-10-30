@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Test projet — Calendrier</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F7F9;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button{font-family:inherit}
+.hov:hover{background:#F1F2F4}
+.bar:hover{filter:brightness(0.96)}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 960px; background: #F6F7F9; font-family: 'Quicksand', sans-serif; color: #121212">
+  <div style="flex: 1 1 232px; max-width: 100%"><dc-import name="Sidebar" hint-size="100%,960px"></dc-import></div>
+  <main style="flex: 999 1 560px; min-width: 0; margin: 10px 10px 10px 0; background: #FFFFFF; border-radius: 20px; box-shadow: 0 2px 4px 0 #112a3b1a; display: flex; flex-direction: column; overflow: hidden">
+    <dc-import name="ProjectHeader" active="calendrier" hint-size="100%,118px"></dc-import>
+
+    <!-- Toolbar -->
+    <div style="display: flex; align-items: center; gap: 10px; padding: 14px 28px; flex-wrap: wrap">
+      <button type="button" style="height: 36px; padding: 0 16px; border: 1px solid #DCDDE0; background: #FFFFFF; border-radius: 100px; font-size: 14px; font-weight: 700; color: #343434; cursor: pointer">Aujourd'hui</button>
+      <div style="display: flex; gap: 2px">
+        <button type="button" aria-label="Mois précédent" class="hov" style="width: 36px; height: 36px; border: none; background: none; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></button>
+        <button type="button" aria-label="Mois suivant" class="hov" style="width: 36px; height: 36px; border: none; background: none; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      </div>
+      <h2 style="margin: 0; font-size: 22px; font-weight: 700">Octobre 2026</h2>
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #575757; cursor: pointer"><input type="checkbox" checked="{{ showDone }}" onChange="{{ toggleDone }}" style="width: 16px; height: 16px; accent-color: #D10553">Afficher les tâches terminées</label>
+        <div role="tablist" aria-label="Échelle" style="display: flex; background: #F1F2F4; border-radius: 100px; padding: 3px">
+          <sc-for list="{{ scales }}" as="t" hint-placeholder-count="2">
+            <button type="button" role="tab" aria-selected="{{ t.selected }}" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month grid -->
+    <div style="flex: 1; overflow: auto; padding: 0 28px 28px">
+      <div style="min-width: 760px; border: 1px solid #ECEDEF; border-radius: 20px; overflow: hidden">
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); background: #FAFBFC; border-bottom: 1px solid #ECEDEF">
+          <sc-for list="{{ weekdays }}" as="d" hint-placeholder-count="7">
+            <span style="padding: 10px 12px; font-size: 12px; font-weight: 700; color: #575757; letter-spacing: 0.03em">{{ d }}</span>
+          </sc-for>
+        </div>
+        <sc-for list="{{ weeks }}" as="w" hint-placeholder-count="5">
+          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: 36px 28px 28px 28px minmax(18px, 1fr); min-height: 134px; border-bottom: 1px solid #ECEDEF">
+            <sc-for list="{{ w.days }}" as="day" hint-placeholder-count="7">
+              <div style="{{ day.cellStyle }}">
+                <span style="{{ day.numStyle }}">{{ day.label }}</span>
+              </div>
+            </sc-for>
+            <sc-for list="{{ w.bars }}" as="b" hint-placeholder-count="1">
+              <a href="Tache.dc.html" class="bar" style="{{ b.style }}"><span style="{{ b.dotStyle }}"></span><span style="overflow: hidden; text-overflow: ellipsis">{{ b.label }}</span></a>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { scale: 'mois', showDone: true };
+  }
+  renderVals() {
+    const s = this.state;
+    const kinds = {
+      basse: { bg: '#D6F0F7', fg: '#214258', dot: '#289DC9' },
+      moyenne: { bg: '#FFF1DE', fg: '#8A4B00', dot: '#FF9100' },
+      haute: { bg: '#FEE5F2', fg: '#D10553', dot: '#FF489C' },
+      late: { bg: '#FEE5F2', fg: '#D10553', dot: '#D10553' },
+      done: { bg: '#F1F2F4', fg: '#575757', dot: '#44AF01' }
+    };
+    // week index -> bars [label, colStart, colEnd(exclusive), row, kind, contLeft, contRight, done]
+    const barsByWeek = {
+      2: [['Upgrade PHP', 2, 5, 1, 'done', false, false, true]],
+      3: [['Encart Imprim’Vert', 2, 8, 1, 'basse', false, true, false]],
+      4: [
+        ['Encart Imprim’Vert · en retard', 1, 5, 1, 'late', true, false, false],
+        ['Design Paiement extra', 2, 8, 2, 'haute', false, true, false],
+        ['Orientation Poster/Cadre', 5, 8, 3, 'moyenne', false, true, false]
+      ]
+    };
+    const labels = [];
+    [28, 29, 30].forEach((n) => labels.push({ n, out: true }));
+    for (let n = 1; n <= 31; n++) labels.push({ n, out: false });
+    labels.push({ n: 1, out: true, nov: true });
+    const weeks = [];
+    for (let w = 0; w < 5; w++) {
+      const days = labels.slice(w * 7, w * 7 + 7).map((d, i) => {
+        const today = !d.out && d.n === 30;
+        const weekend = i >= 5;
+        return {
+          label: d.nov ? '1 nov.' : (d.n === 1 && !d.out ? '1 oct.' : String(d.n)),
+          cellStyle: 'grid-row: 1 / -1; grid-column: ' + (i + 1) + '; padding: 8px 10px; border-right: ' + (i < 6 ? '1px solid #ECEDEF' : 'none') + '; background: ' + (today ? '#FFF7FB' : weekend ? '#FAFBFC' : '#FFFFFF'),
+          numStyle: 'display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 6px; box-sizing: border-box; border-radius: 100px; font-size: 13px; font-weight: 700; ' + (today ? 'background: #D10553; color: #FFFFFF' : d.out ? 'color: #8A8B8E' : 'color: #343434')
+        };
+      });
+      const bars = (barsByWeek[w] || [])
+        .filter((b) => s.showDone || !b[7])
+        .map(([label, c1, c2, row, kind, cl, cr, done]) => {
+          const k = kinds[kind];
+          return {
+            label,
+            style: 'grid-column: ' + c1 + ' / ' + c2 + '; grid-row: ' + (row + 1) + '; z-index: 1; margin: 2px ' + (cr ? '0' : '6px') + ' 2px ' + (cl ? '0' : '6px') + '; height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: ' + (cl ? '0' : '8px') + ' ' + (cr ? '0' : '8px') + ' ' + (cr ? '0' : '8px') + ' ' + (cl ? '0' : '8px') + '; background: ' + k.bg + '; color: ' + k.fg + '; font-size: 12px; font-weight: 700; text-decoration: ' + (done ? 'line-through' : 'none') + '; white-space: nowrap; overflow: hidden',
+            dotStyle: 'flex: none; width: 8px; height: 8px; border-radius: 100px; background: ' + k.dot
+          };
+        });
+      weeks.push({ days, bars });
+    }
+    const scales = [['semaine', 'Semaine'], ['mois', 'Mois']].map(([id, label]) => ({
+      label,
+      selected: s.scale === id ? 'true' : 'false',
+      style: 'height: 30px; padding: 0 14px; border: none; border-radius: 100px; font-size: 13px; font-weight: 700; cursor: pointer; ' + (s.scale === id ? 'background: #FFFFFF; color: #121212; box-shadow: 0 2px 4px 0 #112a3b1a' : 'background: transparent; color: #575757'),
+      pick: () => this.setState({ scale: id })
+    }));
+    return {
+      weekdays: ['LUN.', 'MAR.', 'MER.', 'JEU.', 'VEN.', 'SAM.', 'DIM.'],
+      weeks, scales,
+      showDone: s.showDone,
+      toggleDone: () => this.setState({ showDone: !s.showDone })
+    };
+  }
+}
+</script>
+</body>
+</html>

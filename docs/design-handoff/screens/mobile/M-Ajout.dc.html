@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mobile — Ajout rapide</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button,input,textarea{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; overflow: hidden; position: relative; background: #F6F7F9; font-family: 'Quicksand', sans-serif; color: #121212">
+
+  <!-- Background (board, dimmed) -->
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px">
+    <div style="height: 32px; width: 180px; border-radius: 10px; background: #FFFFFF"></div>
+    <div style="height: 36px; border-radius: 100px; background: #ECEDEF"></div>
+    <div style="height: 92px; border-radius: 16px; background: #FFFFFF"></div>
+    <div style="height: 92px; border-radius: 16px; background: #FFFFFF"></div>
+  </div>
+  <a href="M-Kanban.dc.html" aria-label="Fermer" style="position: absolute; inset: 0; background: #12121280"></a>
+
+  <!-- Sheet -->
+  <form aria-label="Nouvelle tâche" style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-radius: 24px 24px 0 0; padding: 10px 16px 28px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 -6px 20px 0 #112a3b33">
+    <span aria-hidden="true" style="align-self: center; width: 40px; height: 5px; border-radius: 100px; background: #DCDDE0"></span>
+    <div style="display: flex; align-items: center">
+      <h1 style="margin: 0; font-size: 18px; font-weight: 700; flex: 1">Nouvelle tâche</h1>
+      <a href="M-Kanban.dc.html" aria-label="Fermer" style="width: 44px; height: 44px; border-radius: 100px; color: #575757; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></a>
+    </div>
+
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Nom de la tâche</span>
+      <input type="text" placeholder="Nom de la tâche" style="height: 52px; padding: 0 16px; border: 2px solid #FF489C; border-radius: 14px; font-size: 17px; font-weight: 700; color: #121212; outline: none; box-sizing: border-box">
+    </label>
+    <label style="display: flex; flex-direction: column">
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Description</span>
+      <textarea rows="2" placeholder="Ajouter une description (facultatif)" style="padding: 12px 16px; border: 1px solid #DCDDE0; border-radius: 14px; font-size: 15px; color: #121212; resize: none"></textarea>
+    </label>
+
+    <div style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 0 16px">
+      <button type="button" style="flex: none; height: 40px; padding: 0 14px 0 6px; border: 1px solid #DCDDE0; background: #FFFFFF; border-radius: 100px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #343434"><span style="width: 28px; height: 28px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 10px; display: flex; align-items: center; justify-content: center">KB</span>Moi</button>
+      <button type="button" style="flex: none; height: 40px; padding: 0 14px; border: 1px solid #DCDDE0; background: #FFFFFF; border-radius: 100px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #343434"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Échéance</button>
+      <button type="button" style="flex: none; height: 40px; padding: 0 14px; border: 1px solid #DCDDE0; background: #FFFFFF; border-radius: 100px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #343434"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4L15.5 7"/></svg>Fichier</button>
+    </div>
+
+    <fieldset style="border: none; margin: 0; padding: 0">
+      <legend style="font-size: 12px; font-weight: 700; color: #575757; margin-bottom: 8px; padding: 0">SECTION</legend>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{ sections }}" as="s" hint-placeholder-count="3">
+          <button type="button" aria-pressed="{{ s.pressed }}" onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.label }}</button>
+        </sc-for>
+      </div>
+    </fieldset>
+    <fieldset style="border: none; margin: 0; padding: 0">
+      <legend style="font-size: 12px; font-weight: 700; color: #575757; margin-bottom: 8px; padding: 0">PRIORITÉ</legend>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{ priorities }}" as="p" hint-placeholder-count="3">
+          <button type="button" aria-pressed="{{ p.pressed }}" onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
+        </sc-for>
+      </div>
+    </fieldset>
+
+    <a href="M-Kanban.dc.html" style="margin-top: 4px; height: 52px; border-radius: 100px; background: #FF489C; color: #FFFFFF; font-size: 18px; font-weight: 700; text-decoration: none; display: flex; align-items: center; justify-content: center">Créer la tâche</a>
+  </form>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { section: 'À faire', priority: 'Basse' };
+  }
+  renderVals() {
+    const s = this.state;
+    const base = 'height: 40px; padding: 0 16px; border-radius: 100px; font-size: 13px; font-weight: 700; cursor: pointer; border: 2px solid ';
+    const sections = ['À faire', 'En cours', 'Terminé'].map((label) => {
+      const on = s.section === label;
+      return { label, pressed: on ? 'true' : 'false', style: base + (on ? '#121212; background: #121212; color: #FFFFFF' : '#ECEDEF; background: #FFFFFF; color: #575757'), pick: () => this.setState({ section: label }) };
+    });
+    const pon = { Basse: '#289DC9; background: #D6F0F7; color: #214258', Moyenne: '#FF9100; background: #FFF1DE; color: #8A4B00', Haute: '#FF489C; background: #FEE5F2; color: #D10553' };
+    const priorities = ['Basse', 'Moyenne', 'Haute'].map((label) => {
+      const on = s.priority === label;
+      return { label, pressed: on ? 'true' : 'false', style: base + (on ? pon[label] : '#ECEDEF; background: #FFFFFF; color: #575757'), pick: () => this.setState({ priority: label }) };
+    });
+    return { sections, priorities };
+  }
+}
+</script>
+</body>
+</html>

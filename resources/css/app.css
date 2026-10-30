@@ -1,48 +1,46 @@
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body,
-html {
-    --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-}
 
 @layer base {
     :root {
+        /* Variables shadcn alignées sur le design system Flexilivre (voir tokens.css). */
         --background: 0 0% 100%;
-        --foreground: 0 0% 3.9%;
+        --foreground: 0 0% 7%;
         --card: 0 0% 100%;
-        --card-foreground: 0 0% 3.9%;
+        --card-foreground: 0 0% 7%;
         --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 3.9%;
-        --primary: 0 0% 9%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 92.1%;
-        --secondary-foreground: 0 0% 9%;
-        --muted: 0 0% 96.1%;
-        --muted-foreground: 0 0% 45.1%;
-        --accent: 0 0% 96.1%;
-        --accent-foreground: 0 0% 9%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 92.8%;
-        --input: 0 0% 89.8%;
-        --ring: 0 0% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-        --sidebar-background: 0 0% 98%;
-        --sidebar-foreground: 240 5.3% 26.1%;
-        --sidebar-primary: 0 0% 10%;
-        --sidebar-primary-foreground: 0 0% 98%;
-        --sidebar-accent: 0 0% 94%;
-        --sidebar-accent-foreground: 0 0% 30%;
-        --sidebar-border: 0 0% 91%;
-        --sidebar-ring: 217.2 91.2% 59.8%;
+        --popover-foreground: 0 0% 7%;
+        --primary: 337 95% 42%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 220 9% 95%;
+        --secondary-foreground: 0 0% 20%;
+        --muted: 220 9% 95%;
+        --muted-foreground: 0 0% 34%;
+        --accent: 220 9% 95%;
+        --accent-foreground: 0 0% 7%;
+        --destructive: 337 95% 42%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 220 6% 93%;
+        --input: 225 5% 87%;
+        --ring: 196 67% 47%;
+        --chart-1: 330 100% 64%;
+        --chart-2: 196 67% 47%;
+        --chart-3: 34 100% 50%;
+        --chart-4: 97 99% 35%;
+        --chart-5: 203 55% 15%;
+        --radius: 0.75rem;
+        --sidebar-background: 220 14% 97%;
+        --sidebar-foreground: 0 0% 7%;
+        --sidebar-primary: 330 100% 64%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 220 9% 95%;
+        --sidebar-accent-foreground: 0 0% 7%;
+        --sidebar-border: 220 6% 93%;
+        --sidebar-ring: 196 67% 47%;
     }
 
     .dark {
@@ -52,8 +50,8 @@ html {
         --card-foreground: 0 0% 98%;
         --popover: 0 0% 3.9%;
         --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
+        --primary: 331 100% 71%;
+        --primary-foreground: 0 0% 7%;
         --secondary: 0 0% 14.9%;
         --secondary-foreground: 0 0% 98%;
         --muted: 0 0% 6.9%;
@@ -89,6 +87,10 @@ html {
     body {
         @apply bg-background text-foreground;
     }
+
+    :focus-visible {
+        outline-color: var(--secondary-500);
+    }
 }
 
 /* Texte riche des descriptions et commentaires (éditeur Tiptap et affichage). */
@@ -109,7 +111,7 @@ html {
         @apply text-base font-semibold;
     }
     .rich-text a {
-        @apply text-blue-600 underline underline-offset-2 dark:text-blue-400;
+        @apply font-semibold text-info-active underline underline-offset-2;
     }
     .rich-text ul:not([data-type='taskList']) {
         @apply list-disc pl-5;
@@ -139,7 +141,7 @@ html {
         @apply border-l-4 pl-3 text-muted-foreground;
     }
     .rich-text code {
-        @apply rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-rose-600 dark:text-rose-400;
+        @apply rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-brand-active;
     }
     .rich-text pre {
         @apply overflow-x-auto rounded-md bg-neutral-900 p-3 font-mono text-xs text-neutral-100;
@@ -161,7 +163,7 @@ html {
     }
     .rich-text .mention,
     .rich-text span[data-type='mention'] {
-        @apply rounded bg-blue-100 px-1 font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300;
+        @apply rounded-full bg-info-tint px-1.5 font-semibold text-info-deep;
     }
     .rich-text p.is-editor-empty:first-child::before {
         @apply pointer-events-none float-left h-0 text-muted-foreground;

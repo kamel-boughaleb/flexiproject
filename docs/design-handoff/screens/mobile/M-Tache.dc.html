@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mobile — Fiche tâche</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: #FFFFFF; font-family: 'Quicksand', sans-serif; color: #121212">
+
+  <!-- Top bar -->
+  <div style="display: flex; align-items: center; gap: 4px; padding: 10px 8px; border-bottom: 1px solid #ECEDEF">
+    <a href="M-Kanban.dc.html" aria-label="Retour" style="width: 44px; height: 44px; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></a>
+    <span style="font-size: 13px; color: #575757; font-weight: 600; display: flex; align-items: center; gap: 6px; flex: 1"><span style="width: 8px; height: 8px; border-radius: 2px; background: #44AF01"></span>Test projet · En cours</span>
+    <button type="button" aria-label="Copier le lien" style="width: 44px; height: 44px; border: none; background: none; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+    <button type="button" aria-label="Plus d'actions" style="width: 44px; height: 44px; border: none; background: none; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 16px 24px">
+    <button type="button" onClick="{{ toggleDone }}" style="{{ doneBtnStyle }}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>{{ doneLabel }}</button>
+
+    <h1 style="{{ titleStyle }}">Ajouter un encart/label Imprim'Vert comme sur Flexi</h1>
+
+    <!-- Fields -->
+    <div style="margin-top: 14px; border: 1px solid #ECEDEF; border-radius: 16px; overflow: hidden">
+      <button type="button" style="width: 100%; min-height: 52px; border: none; border-bottom: 1px solid #ECEDEF; background: #FFFFFF; padding: 0 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; text-align: left"><span style="width: 96px; font-size: 13px; font-weight: 700; color: #575757">Responsable</span><span style="width: 26px; height: 26px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span><span style="flex: 1; font-size: 14px; font-weight: 700; color: #121212">kamel boughaleb</span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A8B8E" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button type="button" style="width: 100%; min-height: 52px; border: none; border-bottom: 1px solid #ECEDEF; background: #FFFFFF; padding: 0 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; text-align: left"><span style="width: 96px; font-size: 13px; font-weight: 700; color: #575757">Dates</span><span style="flex: 1; font-size: 14px; font-weight: 700; color: #121212">20 oct. → <span style="color: #D10553">Hier</span></span><span style="font-size: 11px; font-weight: 700; color: #D10553; background: #FEE5F2; padding: 2px 8px; border-radius: 100px">En retard</span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A8B8E" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button type="button" style="width: 100%; min-height: 52px; border: none; border-bottom: 1px solid #ECEDEF; background: #FFFFFF; padding: 0 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; text-align: left"><span style="width: 96px; font-size: 13px; font-weight: 700; color: #575757">Section</span><span style="flex: 1"><span style="display: inline-flex; align-items: center; gap: 6px; background: #D6F0F7; color: #214258; font-weight: 700; font-size: 13px; padding: 4px 12px; border-radius: 100px"><span style="width: 8px; height: 8px; border-radius: 100px; background: #289DC9"></span>En cours</span></span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A8B8E" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      <div style="min-height: 52px; padding: 8px 14px; display: flex; align-items: center; gap: 10px; box-sizing: border-box"><span style="width: 96px; flex: none; font-size: 13px; font-weight: 700; color: #575757">Priorité</span>
+        <div role="radiogroup" aria-label="Priorité" style="display: flex; gap: 6px">
+          <sc-for list="{{ priorities }}" as="p" hint-placeholder-count="3">
+            <button type="button" role="radio" aria-checked="{{ p.checked }}" onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="font-size: 15px; font-weight: 700; margin: 22px 0 6px">Description</h2>
+    <p style="margin: 0; font-size: 15px; line-height: 23px; color: #343434">Reprendre l'encart Imprim'Vert présent sur flexilivre.com (logo + phrase sur l'impression responsable) et l'ajouter sur Imprimeur.fr, au même emplacement.</p>
+
+    <div style="display: flex; align-items: center; gap: 10px; margin: 22px 0 8px">
+      <h2 style="font-size: 15px; font-weight: 700; margin: 0">Sous-tâches</h2>
+      <span style="font-size: 13px; color: #575757; font-weight: 600">{{ subDone }}/{{ subTotal }}</span>
+      <div style="flex: 1; height: 6px; border-radius: 100px; background: #F1F2F4; overflow: hidden"><div style="{{ progressStyle }}"></div></div>
+    </div>
+    <div style="border: 1px solid #ECEDEF; border-radius: 16px; overflow: hidden">
+      <sc-for list="{{ subtasks }}" as="s" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; gap: 4px; padding: 0 12px 0 2px; min-height: 52px; border-bottom: 1px solid #ECEDEF">
+          <button type="button" aria-label="{{ s.ariaLabel }}" onClick="{{ s.toggle }}" style="flex: none; width: 44px; height: 44px; border: none; background: none; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="{{ s.checkStyle }}"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span></button>
+          <span style="{{ s.textStyle }}">{{ s.label }}</span>
+          <span style="font-size: 12px; color: #575757; font-weight: 600">{{ s.due }}</span>
+        </div>
+      </sc-for>
+      <button type="button" style="width: 100%; border: none; background: #FFFFFF; text-align: left; padding: 0 16px; height: 50px; font-size: 14px; font-weight: 600; color: #575757; cursor: pointer">+ Ajouter une sous-tâche</button>
+    </div>
+
+    <h2 style="font-size: 15px; font-weight: 700; margin: 22px 0 8px">Pièces jointes <span style="font-size: 13px; color: #575757; font-weight: 600">2</span></h2>
+    <div style="display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px; padding: 0 16px 4px">
+      <a href="#" style="flex: none; width: 140px; border: 1px solid #ECEDEF; border-radius: 14px; overflow: hidden; text-decoration: none; color: #121212; display: flex; flex-direction: column">
+        <span style="height: 80px; background: #FEE5F2; color: #D10553; display: flex; align-items: center; justify-content: center; font-weight: 700">PDF</span>
+        <span style="padding: 8px 10px; font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Facture [1065150].pdf</span>
+      </a>
+      <a href="#" style="flex: none; width: 140px; border: 1px solid #ECEDEF; border-radius: 14px; overflow: hidden; text-decoration: none; color: #121212; display: flex; flex-direction: column">
+        <span style="height: 80px; background: #D6F0F7; color: #217299; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg></span>
+        <span style="padding: 8px 10px; font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">image00007.jpeg</span>
+      </a>
+      <button type="button" style="flex: none; width: 110px; border: 2px dashed #CCCDD0; background: none; border-radius: 14px; font-size: 12px; font-weight: 700; color: #575757; cursor: pointer">+ Ajouter</button>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; margin: 24px 0 12px; padding-top: 18px; border-top: 1px solid #ECEDEF">
+      <h2 style="font-size: 15px; font-weight: 700; margin: 0">Activité</h2>
+      <div role="tablist" aria-label="Filtrer l'activité" style="display: flex; background: #F1F2F4; border-radius: 100px; padding: 3px">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+          <button type="button" role="tab" aria-selected="{{ t.selected }}" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <sc-for list="{{ activity }}" as="a" hint-placeholder-count="3">
+        <sc-if value="{{ a.isComment }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 10px">
+            <span style="flex: none; width: 30px; height: 30px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span>
+            <div style="flex: 1; min-width: 0"><div style="font-size: 12px"><span style="font-weight: 700">{{ a.who }}</span><span style="color: #575757"> · {{ a.when }}</span></div>
+              <div style="margin-top: 4px; font-size: 14px; line-height: 21px; background: #F6F7F9; border-radius: 4px 14px 14px 14px; padding: 10px 12px">{{ a.text }}</div></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ a.isEvent }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 12px; line-height: 18px; color: #575757; padding-left: 10px">
+            <span style="flex: none; width: 10px; height: 10px; border-radius: 100px; background: #CCCDD0; margin-top: 4px"></span>
+            <span><span style="font-weight: 700; color: #343434">{{ a.who }}</span> {{ a.text }} · {{ a.when }}</span>
+          </div>
+        </sc-if>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- Composer -->
+  <div style="border-top: 1px solid #ECEDEF; padding: 10px 12px 22px; display: flex; gap: 8px; align-items: center; background: #FFFFFF">
+    <button type="button" aria-label="Joindre un fichier" style="flex: none; width: 44px; height: 44px; border: none; background: #F1F2F4; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+    <label style="flex: 1; min-width: 0; height: 44px; border: 1px solid #DCDDE0; border-radius: 100px; display: flex; align-items: center; padding: 0 16px">
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Commentaire</span>
+      <input type="text" placeholder="Écrire un commentaire…" style="border: none; outline: none; font-size: 15px; width: 100%; background: transparent; color: #121212">
+    </label>
+    <button type="button" aria-label="Envoyer" style="flex: none; width: 44px; height: 44px; border: none; background: #D10553; border-radius: 100px; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      done: false, priority: 'basse', tab: 'all',
+      subs: [
+        { id: 1, label: 'Récupérer le logo en SVG', due: '24 oct.', done: true },
+        { id: 2, label: 'Intégrer dans le pied de page', due: '29 oct.', done: false },
+        { id: 3, label: 'Vérifier l’affichage mobile', due: '1 nov.', done: false }
+      ]
+    };
+  }
+  renderVals() {
+    const s = this.state, done = s.done;
+    const subDone = s.subs.filter((x) => x.done).length, subTotal = s.subs.length;
+    const prioDefs = [
+      { id: 'basse', label: 'Basse', on: 'background: #D6F0F7; color: #214258; border-color: #289DC9' },
+      { id: 'moyenne', label: 'Moyenne', on: 'background: #FFF1DE; color: #8A4B00; border-color: #FF9100' },
+      { id: 'haute', label: 'Haute', on: 'background: #FEE5F2; color: #D10553; border-color: #FF489C' }
+    ];
+    const priorities = prioDefs.map((p) => ({
+      label: p.label,
+      checked: s.priority === p.id ? 'true' : 'false',
+      style: 'height: 36px; padding: 0 11px; border-radius: 100px; border: 2px solid #ECEDEF; background: #FFFFFF; color: #575757; font-weight: 700; font-size: 12px; cursor: pointer; ' + (s.priority === p.id ? p.on : ''),
+      pick: () => this.setState({ priority: p.id })
+    }));
+    const tabs = [['comments', 'Commentaires'], ['all', 'Tout']].map(([id, label]) => ({
+      label, selected: s.tab === id ? 'true' : 'false',
+      style: 'height: 32px; padding: 0 12px; border: none; border-radius: 100px; font-size: 12px; font-weight: 700; cursor: pointer; ' + (s.tab === id ? 'background: #FFFFFF; color: #121212; box-shadow: 0 2px 4px 0 #112a3b1a' : 'background: transparent; color: #575757'),
+      pick: () => this.setState({ tab: id })
+    }));
+    const log = [
+      { type: 'event', who: 'kamel boughaleb', text: 'a créé cette tâche', when: '20 oct.' },
+      { type: 'comment', who: 'kamel boughaleb', text: 'Le label doit être identique à celui du site Flexi, même taille et même lien.', when: '28 oct. à 14:20' },
+      { type: 'event', who: 'kamel boughaleb', text: 'a joint 2 fichiers', when: '30 oct. à 09:09' }
+    ];
+    if (done) log.push({ type: 'event', who: 'kamel boughaleb', text: 'a terminé cette tâche', when: 'à l’instant' });
+    const activity = log.filter((a) => s.tab === 'all' || a.type === 'comment').map((a) => ({ ...a, isComment: a.type === 'comment', isEvent: a.type === 'event' }));
+    const subtasks = s.subs.map((x) => ({
+      label: x.label, due: x.due,
+      ariaLabel: (x.done ? 'Rouvrir : ' : 'Terminer : ') + x.label,
+      checkStyle: 'width: 22px; height: 22px; border-radius: 100px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; ' + (x.done ? 'background: #44AF01; border: 1.5px solid #44AF01; color: #FFFFFF' : 'background: #FFFFFF; border: 1.5px solid #8A8B8E; color: transparent'),
+      textStyle: 'flex: 1; min-width: 0; font-size: 14px; font-weight: 600; ' + (x.done ? 'color: #575757; text-decoration: line-through' : 'color: #121212'),
+      toggle: () => this.setState({ subs: s.subs.map((y) => (y.id === x.id ? { ...y, done: !y.done } : y)) })
+    }));
+    return {
+      priorities, tabs, activity, subtasks, subDone, subTotal,
+      doneLabel: done ? 'Terminée' : 'Marquer comme terminée',
+      doneBtnStyle: 'width: 100%; height: 46px; border-radius: 100px; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; ' + (done ? 'border: 2px solid #44AF01; background: #EAF6E0; color: #2E6B00' : 'border: 2px solid #DCDDE0; background: #FFFFFF; color: #343434'),
+      titleStyle: 'margin: 16px 0 0; font-size: 22px; line-height: 1.3; font-weight: 700; ' + (done ? 'color: #575757; text-decoration: line-through' : 'color: #121212'),
+      progressStyle: 'height: 100%; border-radius: 100px; background: #44AF01; width: ' + Math.round((subDone / subTotal) * 100) + '%',
+      toggleDone: () => this.setState({ done: !s.done })
+    };
+  }
+}
+</script>
+</body>
+</html>

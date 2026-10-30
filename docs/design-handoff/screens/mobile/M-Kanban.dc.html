@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mobile — Kanban</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: #F6F7F9; font-family: 'Quicksand', sans-serif; color: #121212; position: relative">
+
+  <!-- Header -->
+  <header style="background: #FFFFFF; padding: 14px 12px 0; border-bottom: 1px solid #ECEDEF">
+    <div style="display: flex; align-items: center; gap: 6px">
+      <a href="M-Menu.dc.html" aria-label="Menu" style="width: 44px; height: 44px; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></a>
+      <span style="width: 14px; height: 14px; border-radius: 4px; background: #44AF01"></span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700; flex: 1">Test projet</h1>
+      <button type="button" aria-label="Rechercher" style="width: 44px; height: 44px; border: none; background: none; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <span style="width: 32px; height: 32px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-right: 4px">KB</span>
+    </div>
+    <nav aria-label="Vues du projet" style="display: flex; gap: 8px; overflow-x: auto; padding: 10px 4px 12px">
+      <a href="M-Kanban.dc.html" aria-current="page" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #121212; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Kanban</a>
+      <a href="M-Liste.dc.html" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #F1F2F4; color: #343434; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Liste</a>
+      <a href="M-Calendrier.dc.html" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #F1F2F4; color: #343434; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Calendrier</a>
+      <a href="#" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #F1F2F4; color: #343434; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Planning</a>
+    </nav>
+  </header>
+
+  <!-- Column switcher -->
+  <div role="tablist" aria-label="Sections" style="display: flex; gap: 4px; margin: 12px 12px 4px; background: #ECEDEF; border-radius: 100px; padding: 4px">
+    <sc-for list="{{ cols }}" as="c" hint-placeholder-count="3">
+      <button type="button" role="tab" aria-selected="{{ c.selected }}" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.name }}<span style="{{ c.countStyle }}">{{ c.count }}</span></button>
+    </sc-for>
+  </div>
+
+  <!-- Cards -->
+  <div style="flex: 1; overflow-y: auto; padding: 10px 12px 96px; display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{ cards }}" as="t" hint-placeholder-count="2">
+      <a href="M-Tache.dc.html" style="display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; border-radius: 16px; padding: 16px; box-shadow: 0 2px 4px 0 #112a3b1a; text-decoration: none; color: #121212">
+        <span style="display: flex; gap: 10px; align-items: flex-start">
+          <span style="{{ t.checkStyle }}"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>
+          <span style="{{ t.nameStyle }}">{{ t.name }}</span>
+        </span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #575757; padding-left: 32px">
+          <span style="{{ t.prioStyle }}">{{ t.prio }}</span>
+          <span style="{{ t.dueStyle }}">{{ t.due }}</span>
+          <span>{{ t.meta }}</span>
+          <span style="margin-left: auto; width: 26px; height: 26px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span>
+        </span>
+      </a>
+    </sc-for>
+    <a href="M-Ajout.dc.html" style="height: 48px; border: 2px dashed #CCCDD0; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 700; color: #575757; text-decoration: none">+ Ajouter une tâche</a>
+  </div>
+
+  <!-- FAB -->
+  <a href="M-Ajout.dc.html" aria-label="Nouvelle tâche" style="position: absolute; right: 16px; bottom: 92px; width: 56px; height: 56px; border-radius: 100px; background: #D10553; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 6px 10px 10px 0 #112a3b33"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></a>
+
+  <!-- Tab bar -->
+  <nav aria-label="Navigation" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; padding-bottom: 12px; box-sizing: border-box; background: #FFFFFF; border-top: 1px solid #ECEDEF; display: flex; justify-content: space-around; align-items: center">
+    <a href="#" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #575757; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</a>
+    <a href="#" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #575757; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>Mes tâches</a>
+    <a href="M-Kanban.dc.html" aria-current="page" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #D10553; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>Projets</a>
+    <a href="#" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #575757; font-size: 11px; font-weight: 700; position: relative"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21h4"/></svg>Notifications<span style="position: absolute; top: 2px; right: 18px; min-width: 16px; height: 16px; border-radius: 100px; background: #D10553; color: #FFFFFF; font-size: 10px; display: flex; align-items: center; justify-content: center">2</span></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { col: 'En cours' };
+  }
+  renderVals() {
+    const prioMap = {
+      Basse: 'background: #D6F0F7; color: #214258',
+      Moyenne: 'background: #FFF1DE; color: #8A4B00',
+      Haute: 'background: #FEE5F2; color: #D10553'
+    };
+    const tasks = [
+      { col: 'À faire', name: 'Orientation Poster/Cadre', prio: 'Moyenne', due: '4 nov.', late: false, meta: '', done: false },
+      { col: 'En cours', name: 'Ajouter un encart/label Imprim’Vert comme sur Flexi', prio: 'Basse', due: 'Hier', late: true, meta: '1/3 · 1 commentaire', done: false },
+      { col: 'En cours', name: 'Design Paiement extra', prio: 'Haute', due: '2 nov.', late: false, meta: '7 commentaires', done: false },
+      { col: 'Terminé', name: 'Upgrade PHP', prio: 'Basse', due: '15 oct.', late: false, meta: '', done: true }
+    ];
+    const cols = ['À faire', 'En cours', 'Terminé'].map((name) => {
+      const on = this.state.col === name;
+      return {
+        name,
+        count: tasks.filter((t) => t.col === name).length,
+        selected: on ? 'true' : 'false',
+        style: 'flex: 1; height: 40px; border: none; border-radius: 100px; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; ' + (on ? 'background: #FFFFFF; color: #121212; box-shadow: 0 2px 4px 0 #112a3b1a' : 'background: transparent; color: #575757'),
+        countStyle: 'font-size: 11px; min-width: 18px; height: 18px; border-radius: 100px; display: flex; align-items: center; justify-content: center; ' + (on ? 'background: #FEE5F2; color: #D10553' : 'background: #FFFFFF; color: #575757'),
+        pick: () => this.setState({ col: name })
+      };
+    });
+    const cards = tasks.filter((t) => t.col === this.state.col).map((t) => ({
+      ...t,
+      checkStyle: 'flex: none; width: 22px; height: 22px; border-radius: 100px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; ' + (t.done ? 'background: #44AF01; color: #FFFFFF' : 'border: 1.5px solid #8A8B8E; color: transparent'),
+      nameStyle: 'font-size: 15px; font-weight: 700; line-height: 21px; ' + (t.done ? 'color: #575757; text-decoration: line-through' : ''),
+      prioStyle: 'font-weight: 700; padding: 2px 8px; border-radius: 100px; ' + prioMap[t.prio],
+      dueStyle: 'font-weight: 700; ' + (t.late ? 'color: #D10553' : '')
+    }));
+    return { cols, cards };
+  }
+}
+</script>
+</body>
+</html>

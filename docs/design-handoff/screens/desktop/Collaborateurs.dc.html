@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Test projet — Collaborateurs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F7F9;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button,input,select{font-family:inherit}
+.hov:hover{background:#F1F2F4}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 960px; background: #F6F7F9; font-family: 'Quicksand', sans-serif; color: #121212">
+  <div style="flex: 1 1 232px; max-width: 100%"><dc-import name="Sidebar" hint-size="100%,960px"></dc-import></div>
+  <main style="flex: 999 1 560px; min-width: 0; margin: 10px 10px 10px 0; background: #FFFFFF; border-radius: 20px; box-shadow: 0 2px 4px 0 #112a3b1a; display: flex; flex-direction: column; overflow: hidden">
+    <dc-import name="ProjectHeader" active="collaborateurs" hint-size="100%,118px"></dc-import>
+
+    <div style="flex: 1; overflow: auto; padding: 28px">
+      <div style="max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px">
+
+        <div>
+          <h2 style="margin: 0; font-size: 26px; font-weight: 700; line-height: 1.3">Collaborateurs</h2>
+          <p style="margin: 4px 0 0; font-size: 15px; color: #575757">Invitez votre équipe pour assigner des tâches, commenter et suivre l'avancement.</p>
+        </div>
+
+        <!-- Invite -->
+        <form style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; padding: 20px; border-radius: 20px; background: #FAFBFC; border: 1px solid #ECEDEF">
+          <label style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: #343434">Adresse e-mail
+            <input type="email" placeholder="prenom@exemple.com" style="height: 44px; padding: 0 16px; border: 1px solid #DCDDE0; border-radius: 100px; font-size: 15px; background: #FFFFFF; color: #121212; box-sizing: border-box">
+          </label>
+          <label style="flex: 0 1 200px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: #343434">Rôle
+            <select style="height: 44px; padding: 0 14px; border: 1px solid #DCDDE0; border-radius: 100px; font-size: 15px; background: #FFFFFF; color: #121212">
+              <option>Éditeur</option><option>Commentateur</option><option>Lecteur</option>
+            </select>
+          </label>
+          <button type="button" style="height: 44px; padding: 0 24px; border: none; border-radius: 100px; background: #D10553; color: #FFFFFF; font-weight: 700; font-size: 15px; cursor: pointer">Inviter</button>
+        </form>
+
+        <!-- Members -->
+        <section aria-labelledby="mem-h" style="border: 1px solid #ECEDEF; border-radius: 20px; overflow: hidden">
+          <div style="display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid #ECEDEF; background: #FFFFFF">
+            <h3 id="mem-h" style="margin: 0; font-size: 15px; font-weight: 700">Membres du projet <span style="color: #575757; font-weight: 600">· 1</span></h3>
+            <button type="button" class="hov" style="margin-left: auto; height: 36px; padding: 0 14px; border: none; background: none; border-radius: 100px; font-size: 14px; font-weight: 700; color: #215D7D; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Copier le lien d'invitation</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; flex-wrap: wrap">
+            <span style="flex: none; width: 44px; height: 44px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span>
+            <div style="flex: 1 1 220px; display: flex; flex-direction: column">
+              <span style="font-size: 15px; font-weight: 700">kamel boughaleb <span style="font-size: 12px; font-weight: 700; color: #575757; background: #F1F2F4; padding: 2px 8px; border-radius: 100px; margin-left: 4px">Vous</span></span>
+              <span style="font-size: 13px; color: #575757">kamel.boughaleb@gmail.com</span>
+            </div>
+            <span style="font-size: 13px; font-weight: 700; padding: 6px 14px; border-radius: 100px; background: #FEE5F2; color: #D10553">Propriétaire</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 20px; border-top: 1px dashed #DCDDE0; background: #FAFBFC; color: #575757; font-size: 14px">
+            <span style="flex: none; width: 44px; height: 44px; border-radius: 100px; border: 2px dashed #CCCDD0; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+            <span>Personne d'autre pour l'instant. Les invitations en attente apparaîtront ici.</span>
+          </div>
+        </section>
+
+        <!-- Roles -->
+        <section aria-labelledby="roles-h" style="display: flex; flex-direction: column; gap: 12px">
+          <h3 id="roles-h" style="margin: 0; font-size: 15px; font-weight: 700">Ce que chaque rôle peut faire</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px">
+            <div style="border: 1px solid #ECEDEF; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 6px">
+              <span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: #FEE5F2; color: #D10553">Propriétaire</span>
+              <span style="font-size: 13px; line-height: 19px; color: #575757">Tout, y compris les paramètres, les règles et la suppression du projet.</span>
+            </div>
+            <div style="border: 1px solid #ECEDEF; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 6px">
+              <span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: #D6F0F7; color: #214258">Éditeur</span>
+              <span style="font-size: 13px; line-height: 19px; color: #575757">Crée, modifie et déplace les tâches et les sections.</span>
+            </div>
+            <div style="border: 1px solid #ECEDEF; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 6px">
+              <span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: #FFF1DE; color: #8A4B00">Commentateur</span>
+              <span style="font-size: 13px; line-height: 19px; color: #575757">Voit tout, commente et joint des fichiers.</span>
+            </div>
+            <div style="border: 1px solid #ECEDEF; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 6px">
+              <span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: #F1F2F4; color: #343434">Lecteur</span>
+              <span style="font-size: 13px; line-height: 19px; color: #575757">Consulte le projet sans rien modifier.</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

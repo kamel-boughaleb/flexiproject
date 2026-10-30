@@ -1,11 +1,15 @@
-import { format, isBefore, parseISO, startOfDay } from 'date-fns';
+import { differenceInCalendarDays, format, isBefore, parseISO, startOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+/**
+ * Priorités : `class` colore le badge, `border` l'option active du sélecteur, `bar` les barres du planning
+ * et `dot` les légendes (design system Flexilivre).
+ */
 export const PRIORITIES = {
-    none: { label: 'Aucune', class: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800' },
-    low: { label: 'Basse', class: 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' },
-    medium: { label: 'Moyenne', class: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
-    high: { label: 'Haute', class: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' },
+    none: { label: 'Aucune', class: 'bg-app-hover text-ink-soft', border: 'border-app-muted', bar: 'bg-app-muted', dot: 'bg-app-muted' },
+    low: { label: 'Basse', class: 'bg-info-tint text-info-deep', border: 'border-info', bar: 'bg-info', dot: 'bg-info' },
+    medium: { label: 'Moyenne', class: 'bg-warning-tint text-warning-text', border: 'border-warning', bar: 'bg-warning', dot: 'bg-warning' },
+    high: { label: 'Haute', class: 'bg-brand-tint text-brand-active', border: 'border-brand', bar: 'bg-brand', dot: 'bg-brand' },
 } as const;
 
 export const ROLES = {
@@ -50,6 +54,21 @@ export const dateRange = (start: string | null, due: string | null) => {
     if (start) return `dès le ${shortDate(start)}`;
     return '';
 };
+
+/** Échéance lisible : « Aujourd'hui », « Hier », « Demain » ou « 4 nov. ». */
+export const dueLabel = (d: string | null | undefined) => {
+    const date = toDate(d);
+    if (!date) return '';
+    const diff = differenceInCalendarDays(date, new Date());
+    if (diff === 0) return "Aujourd'hui";
+    if (diff === -1) return 'Hier';
+    if (diff === 1) return 'Demain';
+    return shortDate(d);
+};
+
+/** Couleur d'une section, choisie dans la palette de la marque selon sa place dans le projet. */
+export const SECTION_COLORS = ['#8A8B8E', '#289DC9', '#FF9100', '#FF489C', '#44AF01', '#215D7D'];
+export const sectionColor = (index: number) => SECTION_COLORS[Math.max(0, index) % SECTION_COLORS.length];
 
 export const isOverdue = (due: string | null, completed: boolean) => {
     const date = toDate(due);

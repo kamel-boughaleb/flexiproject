@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mobile — Calendrier</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: #F6F7F9; font-family: 'Quicksand', sans-serif; color: #121212; position: relative">
+
+  <header style="background: #FFFFFF; padding: 14px 12px 0; border-bottom: 1px solid #ECEDEF">
+    <div style="display: flex; align-items: center; gap: 6px">
+      <a href="M-Menu.dc.html" aria-label="Menu" style="width: 44px; height: 44px; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></a>
+      <span style="width: 14px; height: 14px; border-radius: 4px; background: #44AF01"></span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700; flex: 1">Test projet</h1>
+      <span style="width: 32px; height: 32px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-right: 4px">KB</span>
+    </div>
+    <nav aria-label="Vues du projet" style="display: flex; gap: 8px; overflow-x: auto; padding: 10px 4px 12px">
+      <a href="M-Kanban.dc.html" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #F1F2F4; color: #343434; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Kanban</a>
+      <a href="M-Liste.dc.html" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #F1F2F4; color: #343434; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Liste</a>
+      <a href="M-Calendrier.dc.html" aria-current="page" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #121212; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Calendrier</a>
+      <a href="#" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #F1F2F4; color: #343434; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Planning</a>
+    </nav>
+  </header>
+
+  <!-- Month -->
+  <div style="background: #FFFFFF; padding: 8px 12px 12px; border-bottom: 1px solid #ECEDEF; border-radius: 0 0 20px 20px; box-shadow: 0 2px 4px 0 #112a3b1a">
+    <div style="display: flex; align-items: center; padding: 0 4px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700; flex: 1">Octobre 2026</h2>
+      <button type="button" aria-label="Mois précédent" style="width: 44px; height: 44px; border: none; background: none; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></button>
+      <button type="button" aria-label="Mois suivant" style="width: 44px; height: 44px; border: none; background: none; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; font-size: 11px; font-weight: 700; color: #575757; padding: 4px 0">
+      <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 2px">
+      <sc-for list="{{ days }}" as="d" hint-placeholder-count="35">
+        <button type="button" aria-label="{{ d.aria }}" aria-pressed="{{ d.pressed }}" onClick="{{ d.pick }}" style="height: 46px; border: none; background: none; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer">
+          <span style="{{ d.numStyle }}">{{ d.n }}</span>
+          <span style="{{ d.dotStyle }}"></span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- Agenda -->
+  <div style="flex: 1; overflow-y: auto; padding: 18px 16px 96px">
+    <h3 style="margin: 0 0 10px; font-size: 15px; font-weight: 700">{{ dayTitle }}</h3>
+    <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <sc-for list="{{ items }}" as="t" hint-placeholder-count="2">
+          <a href="M-Tache.dc.html" style="{{ t.cardStyle }}">
+            <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1">
+              <span style="{{ t.nameStyle }}">{{ t.name }}</span>
+              <span style="font-size: 12px; color: #575757; font-weight: 600">{{ t.range }}</span>
+            </span>
+            <span style="{{ t.badgeStyle }}">{{ t.badge }}</span>
+          </a>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+      <div style="background: #FFFFFF; border-radius: 16px; padding: 24px; text-align: center; font-size: 14px; color: #575757">Rien de prévu ce jour-là.</div>
+    </sc-if>
+  </div>
+
+  <a href="M-Ajout.dc.html" aria-label="Nouvelle tâche" style="position: absolute; right: 16px; bottom: 92px; width: 56px; height: 56px; border-radius: 100px; background: #D10553; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 6px 10px 10px 0 #112a3b33"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></a>
+
+  <nav aria-label="Navigation" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; padding-bottom: 12px; box-sizing: border-box; background: #FFFFFF; border-top: 1px solid #ECEDEF; display: flex; justify-content: space-around; align-items: center">
+    <a href="#" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #575757; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</a>
+    <a href="#" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #575757; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>Mes tâches</a>
+    <a href="M-Kanban.dc.html" aria-current="page" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #D10553; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>Projets</a>
+    <a href="#" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #575757; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21h4"/></svg>Notifications</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: 30 };
+  }
+  renderVals() {
+    const sel = this.state.sel;
+    // day keys: october d = d, november n = 31 + n
+    const tasks = [
+      { name: 'Upgrade PHP', s: 13, e: 15, range: '13 → 15 oct.', kind: 'done' },
+      { name: 'Encart Imprim’Vert', s: 20, e: 29, range: '20 → 29 oct.', kind: 'late' },
+      { name: 'Design Paiement extra', s: 27, e: 33, range: '27 oct. → 2 nov.', kind: 'haute' },
+      { name: 'Orientation Poster/Cadre', s: 30, e: 35, range: '30 oct. → 4 nov.', kind: 'moyenne' }
+    ];
+    const k = {
+      done: ['#44AF01', 'Terminée', 'background: #EAF6E0; color: #2E6B00'],
+      late: ['#D10553', 'En retard', 'background: #FEE5F2; color: #D10553'],
+      haute: ['#FF489C', 'Haute', 'background: #FEE5F2; color: #D10553'],
+      moyenne: ['#FF9100', 'Moyenne', 'background: #FFF1DE; color: #8A4B00']
+    };
+    const cells = [];
+    [28, 29, 30].forEach((n) => cells.push({ n, key: null }));
+    for (let d = 1; d <= 31; d++) cells.push({ n: d, key: d });
+    cells.push({ n: 1, key: 32 });
+    const days = cells.map((c) => {
+      const has = c.key !== null && tasks.some((t) => c.key >= t.s && c.key <= t.e);
+      const isSel = c.key === sel;
+      const today = c.key === 30;
+      const out = c.key === null || c.key > 31;
+      return {
+        n: c.n,
+        aria: (c.key && c.key > 31 ? c.n + ' novembre' : c.key ? c.n + ' octobre' : c.n + ' septembre'),
+        pressed: isSel ? 'true' : 'false',
+        numStyle: 'width: 32px; height: 32px; border-radius: 100px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; ' + (isSel ? 'background: #D10553; color: #FFFFFF' : today ? 'background: #FEE5F2; color: #D10553' : out ? 'color: #8A8B8E' : 'color: #121212'),
+        dotStyle: 'width: 5px; height: 5px; border-radius: 100px; background: ' + (has ? '#289DC9' : 'transparent'),
+        pick: () => { if (c.key !== null) this.setState({ sel: c.key }); }
+      };
+    });
+    const items = tasks.filter((t) => sel >= t.s && sel <= t.e).map((t) => ({
+      name: t.name, range: t.range, badge: k[t.kind][1],
+      cardStyle: 'display: flex; align-items: center; gap: 12px; background: #FFFFFF; border-radius: 16px; padding: 14px 14px 14px 16px; text-decoration: none; color: #121212; box-shadow: 0 2px 4px 0 #112a3b1a; border-left: 4px solid ' + k[t.kind][0],
+      nameStyle: 'font-size: 15px; font-weight: 700; ' + (t.kind === 'done' ? 'text-decoration: line-through; color: #575757' : ''),
+      badgeStyle: 'flex: none; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 100px; ' + k[t.kind][2]
+    }));
+    const label = sel > 31 ? (sel - 31) + ' novembre' : sel + ' octobre';
+    return {
+      days, items,
+      hasItems: items.length > 0,
+      empty: items.length === 0,
+      dayTitle: (sel === 30 ? 'Aujourd’hui · ' : '') + label
+    };
+  }
+}
+</script>
+</body>
+</html>
