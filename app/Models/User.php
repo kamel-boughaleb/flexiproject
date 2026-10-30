@@ -32,6 +32,7 @@ class User extends Authenticatable
         'google_id',
         'avatar',
         'color',
+        'notification_preferences',
     ];
 
     /**
@@ -58,12 +59,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'invited_at' => 'datetime',
             'password' => 'hashed',
+            'notification_preferences' => 'array',
         ];
     }
 
     public const INVITATION_DAYS = 14;
 
     public const COLORS = ['#f97316', '#6366f1', '#10b981', '#ec4899', '#0ea5e9', '#eab308', '#8b5cf6', '#14b8a6'];
+
+    /** E-mails envoyés par défaut ; chaque collaborateur peut les régler dans Réglages › Notifications. */
+    public const NOTIFICATION_DEFAULTS = [
+        'assigned' => true,      // une tâche m'est assignée
+        'comments' => true,      // commentaire sur une tâche à laquelle je participe
+        'updates' => true,       // modification d'une tâche à laquelle je participe
+        'daily_digest' => true,  // récapitulatif de mes tâches chaque matin à 8 h
+    ];
 
     protected static function booted(): void
     {
@@ -170,5 +180,18 @@ class User extends Authenticatable
     public function roleIn(Project $project): ?string
     {
         return $project->members()->whereKey($this->id)->first()?->pivot->role;
+    }
+
+    /** @return array<string, bool> */
+    public function notificationPreferences(): array
+    {
+        $saved = array_intersect_key($this->notification_preferences ?? [], self::NOTIFICATION_DEFAULTS);
+
+        return array_map('boolval', $saved + self::NOTIFICATION_DEFAULTS);
+    }
+
+    public function wantsEmail(string $type): bool
+    {
+        return $this->notificationPreferences()[$type] ?? false;
     }
 }

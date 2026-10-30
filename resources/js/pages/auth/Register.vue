@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AvatarPicker from '@/components/AvatarPicker.vue';
+import GoogleButton from '@/components/GoogleButton.vue';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,11 @@ const submit = () => {
 <template>
     <AuthBase title="Créer un compte" description="Renseignez vos informations pour créer votre compte">
         <Head title="Inscription" />
+
+        <GoogleButton label="S'inscrire avec Google" />
+        <div class="flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
+            <span class="h-px flex-1 bg-border" />ou avec votre e-mail<span class="h-px flex-1 bg-border" />
+        </div>
 
         <form @submit.prevent="submit" class="flex flex-col gap-6">
             <div class="grid gap-6">
@@ -84,7 +90,7 @@ const submit = () => {
                     <InputError :message="form.errors.password_confirmation" />
                 </div>
 
-                <Button type="submit" class="mt-2 w-full" tabindex="5" :disabled="form.processing">
+                <Button type="submit" class="mt-2 h-11 w-full bg-orange-500 text-white hover:bg-orange-600" tabindex="5" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                     Créer le compte
                 </Button>
