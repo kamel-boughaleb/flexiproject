@@ -18,7 +18,7 @@ class InvitationTest extends TestCase
     private function inviteFromTeam(string $email = 'lea@flexilivre.com'): string
     {
         Notification::fake();
-        $this->actingAs(User::factory()->create())->post('/team', ['email' => $email, 'name' => 'Léa'])->assertSessionHasNoErrors();
+        $this->actingAs(User::factory()->admin()->create())->post('/team', ['email' => $email, 'name' => 'Léa'])->assertSessionHasNoErrors();
         $token = null;
         Notification::assertSentTo(User::where('email', $email)->first(), InvitationNotification::class, function ($n) use (&$token) {
             $token = $n->token;
@@ -42,7 +42,7 @@ class InvitationTest extends TestCase
     {
         $existing = User::factory()->create();
 
-        $this->actingAs(User::factory()->create())->post('/team', ['email' => $existing->email])->assertSessionHasErrors('email');
+        $this->actingAs(User::factory()->admin()->create())->post('/team', ['email' => $existing->email])->assertSessionHasErrors('email');
     }
 
     public function test_invited_person_creates_account_with_photo(): void
@@ -86,7 +86,7 @@ class InvitationTest extends TestCase
         $old = $this->inviteFromTeam();
         $lea = User::where('email', 'lea@flexilivre.com')->first();
 
-        $this->actingAs(User::factory()->create())->post("/team/{$lea->id}/resend")->assertRedirect();
+        $this->actingAs(User::factory()->admin()->create())->post("/team/{$lea->id}/resend")->assertRedirect();
         Notification::assertSentToTimes($lea, InvitationNotification::class, 2);
         auth()->logout();
 
@@ -97,11 +97,38 @@ class InvitationTest extends TestCase
     {
         $this->inviteFromTeam();
         $lea = User::where('email', 'lea@flexilivre.com')->first();
-        $me = User::factory()->create();
+        $me = User::factory()->admin()->create();
 
         $this->actingAs($me)->delete("/team/{$me->id}")->assertStatus(422);
         $this->actingAs($me)->delete("/team/{$lea->id}")->assertRedirect();
         $this->assertModelMissing($lea);
+    }
+
+    public function test_only_administrators_can_invite(): void
+    {
+        Notification::fake();
+        $member = User::factory()->create();
+
+        $this->actingAs($member)->post('/team', ['email' => 'nouveau@flexilivre.com'])->assertForbidden();
+        $this->assertDatabaseMissing('users', ['email' => 'nouveau@flexilivre.com']);
+    }
+
+    public function test_public_registration_is_disabled(): void
+    {
+        $this->get('/register')->assertNotFound();
+        $this->post('/register', ['name' => 'X', 'email' => 'x@flexilivre.com', 'password' => 'password', 'password_confirmation' => 'password'])->assertNotFound();
+        $this->assertDatabaseMissing('users', ['email' => 'x@flexilivre.com']);
+    }
+
+    public function test_admin_can_promote_another_user_but_not_demote_themselves(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $other = User::factory()->create();
+
+        $this->actingAs($admin)->patch("/team/{$other->id}/admin", ['is_admin' => true])->assertRedirect();
+        $this->assertTrue($other->fresh()->is_admin);
+        $this->actingAs($admin)->patch("/team/{$admin->id}/admin", ['is_admin' => false])->assertStatus(422);
+        $this->actingAs(User::factory()->create())->patch("/team/{$other->id}/admin", ['is_admin' => false])->assertForbidden();
     }
 
     public function test_user_can_change_and_remove_photo(): void

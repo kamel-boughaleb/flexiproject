@@ -22,10 +22,14 @@ class MemberController extends Controller
         ]);
 
         $email = strtolower($data['email']);
-        $user = User::firstOrCreate(['email' => $email], ['name' => $data['name'] ?: strstr($email, '@', true)]);
+        $user = User::where('email', $email)->first();
 
-        if ($user->wasRecentlyCreated) {
-            // Nouveau compte : la personne reçoit un lien pour créer son compte (photo, mot de passe ou Google).
+        if (! $user) {
+            // Nouvelle personne : seul un administrateur de la plateforme peut l'inviter.
+            if ($request->user()->cannot('invite')) {
+                return back()->withErrors(['email' => 'Cette personne n\'a pas encore de compte. Demandez à un administrateur de l\'inviter.']);
+            }
+            $user = User::create(['email' => $email, 'name' => $data['name'] ?: strstr($email, '@', true)]);
             $user->invite($request->user(), $project);
         }
 

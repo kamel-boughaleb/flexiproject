@@ -45,14 +45,29 @@ class GoogleAuthenticationTest extends TestCase
         $this->assertStringContainsString('hd=flexilivre.com', $response->headers->get('Location'));
     }
 
-    public function test_new_google_user_is_created_and_logged_in()
+    public function test_unknown_google_account_cannot_create_an_account()
     {
         config(['services.google.allowed_domains' => ['flexilivre.com']]);
+        $this->fakeGoogleUser('inconnu@flexilivre.com');
+
+        $this->get('/auth/google/callback')->assertRedirect(route('login'))->assertSessionHasErrors('google');
+
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'inconnu@flexilivre.com']);
+    }
+
+    public function test_invited_user_signs_in_with_google()
+    {
+        config(['services.google.allowed_domains' => ['flexilivre.com']]);
+        $user = User::create(['email' => 'camille@flexilivre.com', 'name' => 'Camille']);
+        $user->forceFill(['invitation_token' => hash('sha256', 'x'), 'invited_at' => now()])->save();
+        $this->assertTrue($user->isPending());
         $this->fakeGoogleUser('Camille@flexilivre.com');
 
         $this->get('/auth/google/callback')->assertRedirect(route('dashboard'));
 
-        $user = User::where('email', 'camille@flexilivre.com')->firstOrFail();
+        $user->refresh();
+        $this->assertFalse($user->isPending());
         $this->assertAuthenticatedAs($user);
         $this->assertSame('google-123', $user->google_id);
         $this->assertNotNull($user->email_verified_at);

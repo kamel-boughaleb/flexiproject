@@ -85,8 +85,13 @@ const remove = (m: Member) =>
                 </label>
                 <Button type="submit" :disabled="form.processing">Ajouter</Button>
                 <p class="text-xs text-muted-foreground sm:col-span-4">
-                    Choisissez un membre de l'équipe ou saisissez une nouvelle adresse : la personne reçoit alors une invitation pour créer son compte
-                    et ajouter sa photo.
+                    <template v-if="me.is_admin">
+                        Choisissez un membre de l'équipe ou saisissez une nouvelle adresse : la personne reçoit alors une invitation pour créer son
+                        compte et ajouter sa photo.
+                    </template>
+                    <template v-else
+                        >Choisissez un membre de l'équipe. Pour une nouvelle personne, demandez à un administrateur de l'inviter.</template
+                    >
                 </p>
             </form>
         </div>

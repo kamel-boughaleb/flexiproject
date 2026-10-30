@@ -17,6 +17,7 @@ class DemoSeeder extends Seeder
             ['name' => $name, 'password' => 'password', 'color' => $color, 'email_verified_at' => now()],
         );
         $kamel = $user('Kamel Boughaleb', 'kamel@flexilivre.com', '#f97316');
+        $kamel->forceFill(['is_admin' => true])->save();
         $sophie = $user('Sophie Martin', 'sophie@flexilivre.com', '#6366f1');
         $lucas = $user('Lucas Bernard', 'lucas@flexilivre.com', '#10b981');
         $ines = $user('Inès Petit', 'ines@flexilivre.com', '#ec4899');
