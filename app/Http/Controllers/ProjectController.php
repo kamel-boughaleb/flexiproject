@@ -56,7 +56,7 @@ class ProjectController extends Controller
             'tasks' => $project->tasks()
                 ->whereNull('parent_id')
                 ->with('assignee:id,name,color,avatar')
-                ->withCount(['subtasks', 'comments', 'attachments'])
+                ->withCount(['subtasks', 'subtasks as subtasks_done_count' => fn ($q) => $q->where('completed', true), 'comments', 'attachments'])
                 ->orderBy('position')
                 ->get(),
             'selectedTask' => fn () => $this->selectedTask($request, $project),

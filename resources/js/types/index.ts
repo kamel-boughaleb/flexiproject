@@ -95,7 +95,11 @@ export interface Task {
     completed: boolean;
     position: number;
     assignee?: MiniUser | null;
+    completed_at?: string | null;
+    created_at?: string;
+    updated_at?: string;
     subtasks_count?: number;
+    subtasks_done_count?: number;
     comments_count?: number;
     attachments_count?: number;
 }
