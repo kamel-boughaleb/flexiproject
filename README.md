@@ -63,8 +63,8 @@ Le premier compte se crée depuis `/register`. Les suivants peuvent s'inscrire d
 
 ### Connexion Google Workspace (facultatif)
 
-1. Dans [Google Cloud Console](https://console.cloud.google.com/apis/credentials), créez un identifiant « ID client OAuth » de type « Application Web ».
-2. URI de redirection autorisée : `https://projets.flexilivre.com/auth/google/callback`.
+1. Dans [Google Cloud Console](https://console.cloud.google.com/), créez un projet, configurez l'écran de consentement OAuth avec l'audience « Interne » (comptes flexilivre.com uniquement).
+2. Créez un identifiant « ID client OAuth » de type « Application Web », avec comme URI de redirection autorisés `http://localhost:8000/auth/google/callback` (développement) et `https://projets.flexilivre.com/auth/google/callback` (production).
 3. Renseignez dans `.env` :
 
 ```dotenv
@@ -74,7 +74,7 @@ GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
 GOOGLE_ALLOWED_DOMAINS=flexilivre.com
 ```
 
-Le bouton « Continuer avec Google » apparaît sur la page de connexion dès que `GOOGLE_CLIENT_ID` est renseigné. Un compte Google dont l'adresse correspond à un compte existant s'y rattache automatiquement.
+puis `php artisan config:clear`. Le bouton « Continuer avec Google » est toujours affiché sur les pages de connexion et d'inscription ; tant que les clés ne sont pas renseignées, il renvoie vers la page de connexion avec un message explicatif. Un compte Google dont l'adresse correspond à un compte existant s'y rattache automatiquement.
 
 ## Développement
 
