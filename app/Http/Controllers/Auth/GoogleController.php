@@ -47,7 +47,12 @@ class GoogleController extends Controller
             return to_route('login')->withErrors(['google' => 'Ce compte Google n\'appartient pas à un domaine autorisé.']);
         }
 
-        $user = User::firstOrNew(['email' => $email]);
+        // Pas d'inscription libre : seuls les comptes existants ou invités peuvent se connecter.
+        $user = User::where('email', $email)->first();
+        if (! $user) {
+            return to_route('login')->withErrors(['google' => 'Aucun compte n\'est associé à cette adresse. Demandez une invitation à un administrateur.']);
+        }
+
         $user->fill([
             'name' => $user->name ?: $google->getName(),
             'google_id' => $google->getId(),

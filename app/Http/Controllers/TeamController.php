@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,7 +17,7 @@ class TeamController extends Controller
     public function index(): Response
     {
         $users = User::withCount('projects')->orderBy('name')->get()->map(fn (User $u) => [
-            ...$u->only(['id', 'name', 'email', 'color', 'avatar', 'projects_count']),
+            ...$u->only(['id', 'name', 'email', 'color', 'avatar', 'projects_count', 'is_admin']),
             'pending' => $u->isPending(),
             'invited_at' => $u->invited_at,
         ]);
@@ -26,6 +27,7 @@ class TeamController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('invite');
         $data = $request->validate([
             'email' => ['required', 'email', 'max:255'],
             'name' => ['nullable', 'string', 'max:255'],
@@ -44,6 +46,7 @@ class TeamController extends Controller
 
     public function resend(Request $request, User $user): RedirectResponse
     {
+        Gate::authorize('invite');
         abort_unless($user->isPending(), 422, 'Cette personne a déjà accepté son invitation.');
         $user->invite($request->user());
 
@@ -53,8 +56,19 @@ class TeamController extends Controller
     /** Annule une invitation pas encore acceptée (supprime le compte en attente). */
     public function destroy(User $user): RedirectResponse
     {
+        Gate::authorize('invite');
         abort_unless($user->isPending(), 422, 'Seules les invitations en attente peuvent être annulées.');
         $user->delete();
+
+        return back();
+    }
+
+    /** Donne ou retire le rôle d'administrateur de la plateforme. */
+    public function admin(Request $request, User $user): RedirectResponse
+    {
+        Gate::authorize('invite');
+        abort_if($user->is($request->user()), 422, 'Vous ne pouvez pas retirer vos propres droits d\'administrateur.');
+        $user->forceFill(['is_admin' => $request->boolean('is_admin')])->save();
 
         return back();
     }

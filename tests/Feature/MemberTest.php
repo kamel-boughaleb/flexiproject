@@ -18,6 +18,7 @@ class MemberTest extends TestCase
     {
         Notification::fake();
         $project = Project::factory()->create();
+        $project->owner->forceFill(['is_admin' => true])->save();
 
         $this->actingAs($project->owner)->post("/projects/{$project->id}/members", [
             'email' => 'Sophie@Flexilivre.com',
@@ -29,6 +30,22 @@ class MemberTest extends TestCase
         $this->assertSame('editor', $sophie->roleIn($project));
         Notification::assertSentTo($sophie, InvitationNotification::class, fn ($n) => $n->project->is($project));
         $this->assertTrue($sophie->isPending());
+    }
+
+    public function test_project_admin_cannot_invite_a_new_person_without_platform_admin_rights(): void
+    {
+        Notification::fake();
+        $project = Project::factory()->create();
+        $colleague = User::factory()->create();
+
+        $this->actingAs($project->owner)->post("/projects/{$project->id}/members", ['email' => 'inconnu@flexilivre.com', 'role' => 'editor'])
+            ->assertSessionHasErrors('email');
+        $this->assertDatabaseMissing('users', ['email' => 'inconnu@flexilivre.com']);
+
+        // Un collaborateur déjà dans l'équipe peut toujours être ajouté.
+        $this->actingAs($project->owner)->post("/projects/{$project->id}/members", ['email' => $colleague->email, 'role' => 'editor'])
+            ->assertSessionHasNoErrors();
+        $this->assertSame('editor', $colleague->roleIn($project));
     }
 
     public function test_removing_a_member_unassigns_their_tasks(): void
