@@ -16,6 +16,7 @@ Laravel 12 · Vue 3 (Inertia) · MariaDB / MySQL · Tailwind.
 - **Collaborateurs** avec trois rôles : administrateur (gère le projet et les membres), éditeur (modifie tâches et règles), lecteur (consulte et commente). Inviter une adresse inconnue crée le compte et envoie un lien pour choisir son mot de passe.
 - **Règles « quand… alors… »** : quand une tâche est créée, déplacée dans une section, terminée, réassignée ou que son échéance change, alors déplacer, terminer, assigner, changer la priorité, fixer l'échéance à J + n, notifier ou commenter. Les règles ne s'enchaînent pas entre elles, il n'y a donc pas de boucle possible.
 - **Notifications** dans l'application (assignation, commentaire, ajout à un projet, règles) et page **Mes tâches**.
+- **Notifications par e-mail** : à la personne à qui l'on assigne une tâche, et à tous les participants d'une tâche (responsable, personnes qui l'ont créée, modifiée ou commentée) à chaque commentaire ou modification. Chaque matin à 8 h (heure de Paris), un **récapitulatif** des tâches en cours. Chacun règle ses e-mails dans **Réglages › Notifications**.
 - **Connexion** par e-mail et mot de passe, ou avec Google Workspace (limitable au domaine `flexilivre.com`).
 
 ## Installation sur votre serveur
@@ -47,7 +48,7 @@ DB_DATABASE=flexiproject
 DB_USERNAME=flexi
 DB_PASSWORD=un-mot-de-passe-solide
 
-# Envoi des e-mails (invitations, mot de passe oublié)
+# Envoi des e-mails (invitations, mot de passe oublié, notifications)
 MAIL_MAILER=smtp
 MAIL_HOST=...
 MAIL_FROM_ADDRESS=projets@flexilivre.com
@@ -58,6 +59,14 @@ php artisan migrate --force
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
 
+Ajoutez enfin **une** ligne à la crontab de l'utilisateur du serveur web (`crontab -e`). Elle envoie les e-mails de notification (mis en file d'attente pour ne pas ralentir l'application) et le récapitulatif de 8 h :
+
+```cron
+* * * * * cd /chemin/vers/flexiproject && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Pour tester le récapitulatif sans attendre le lendemain : `php artisan notifications:daily-digest`.
+
 Faites pointer le serveur web (Nginx ou Apache) sur le dossier `public/`, et donnez à l'utilisateur du serveur web les droits d'écriture sur `storage/` et `bootstrap/cache/`.
 
 Pour les pièces jointes, autorisez des envois assez gros côté PHP (`upload_max_filesize = 100M` et `post_max_size = 110M` dans `php.ini`) et côté Nginx (`client_max_body_size 110M;`).
@@ -66,8 +75,8 @@ Le premier compte se crée depuis `/register`. Les suivants peuvent s'inscrire d
 
 ### Connexion Google Workspace (facultatif)
 
-1. Dans [Google Cloud Console](https://console.cloud.google.com/apis/credentials), créez un identifiant « ID client OAuth » de type « Application Web ».
-2. URI de redirection autorisée : `https://projets.flexilivre.com/auth/google/callback`.
+1. Dans [Google Cloud Console](https://console.cloud.google.com/), créez un projet, configurez l'écran de consentement OAuth avec l'audience « Interne » (comptes flexilivre.com uniquement).
+2. Créez un identifiant « ID client OAuth » de type « Application Web », avec comme URI de redirection autorisés `http://localhost:8000/auth/google/callback` (développement) et `https://projets.flexilivre.com/auth/google/callback` (production).
 3. Renseignez dans `.env` :
 
 ```dotenv
@@ -77,7 +86,7 @@ GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
 GOOGLE_ALLOWED_DOMAINS=flexilivre.com
 ```
 
-Le bouton « Continuer avec Google » apparaît sur la page de connexion dès que `GOOGLE_CLIENT_ID` est renseigné. Un compte Google dont l'adresse correspond à un compte existant s'y rattache automatiquement.
+puis `php artisan config:clear`. Le bouton « Continuer avec Google » est toujours affiché sur les pages de connexion et d'inscription ; tant que les clés ne sont pas renseignées, il renvoie vers la page de connexion avec un message explicatif. Un compte Google dont l'adresse correspond à un compte existant s'y rattache automatiquement.
 
 ## Développement
 

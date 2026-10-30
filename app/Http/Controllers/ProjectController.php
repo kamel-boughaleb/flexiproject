@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Rule;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -81,6 +83,9 @@ class ProjectController extends Controller
         return Inertia::render('Projects/Members', [
             ...$this->shared($request, $project),
             'roles' => Project::ROLES,
+            // Collaborateurs de l'équipe pas encore membres du projet, proposés à l'ajout.
+            'directory' => User::whereNotIn('id', $project->members()->select('users.id'))
+                ->orderBy('name')->get(['id', 'name', 'email']),
         ]);
     }
 
@@ -108,6 +113,7 @@ class ProjectController extends Controller
     {
         Gate::authorize('manage', $project);
         $project->delete();
+        Storage::disk('local')->deleteDirectory("editor-images/{$project->id}");
 
         return to_route('dashboard');
     }
@@ -130,8 +136,9 @@ class ProjectController extends Controller
 
         return [
             'project' => $project->only(['id', 'name', 'description', 'color', 'start_date', 'end_date']),
-            'members' => $project->members()->orderBy('project_user.created_at')->get(['users.id', 'name', 'email', 'color', 'avatar'])
-                ->map(fn ($m) => [...$m->only(['id', 'name', 'email', 'color', 'avatar']), 'role' => $m->pivot->role]),
+            'members' => $project->members()->orderBy('project_user.created_at')
+                ->get(['users.id', 'name', 'email', 'color', 'avatar', 'password', 'google_id', 'invitation_token'])
+                ->map(fn ($m) => [...$m->only(['id', 'name', 'email', 'color', 'avatar']), 'role' => $m->pivot->role, 'pending' => $m->isPending()]),
             'can' => [
                 'edit' => $user->can('edit', $project),
                 'manage' => $user->can('manage', $project),

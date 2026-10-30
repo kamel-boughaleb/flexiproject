@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import UserMenu from '@/components/UserMenu.vue';
 import type { BreadcrumbItemType } from '@/types';
 
 defineProps<{
@@ -33,6 +34,9 @@ defineProps<{
                     </BreadcrumbList>
                 </Breadcrumb>
             </template>
+        </div>
+        <div class="ml-auto">
+            <UserMenu />
         </div>
     </header>
 </template>

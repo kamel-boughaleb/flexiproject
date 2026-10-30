@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Task;
-use App\Notifications\ProjectNotification;
 use App\Services\RuleEngine;
+use App\Services\TaskNotifier;
+use App\Support\RichText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ use Illuminate\Validation\Rules\Exists;
 
 class TaskController extends Controller
 {
-    public function __construct(private RuleEngine $rules) {}
+    public function __construct(private RuleEngine $rules, private TaskNotifier $notifier) {}
 
     public function store(Request $request, Project $project): RedirectResponse
     {
@@ -38,6 +39,7 @@ class TaskController extends Controller
 
         $task = $project->tasks()->create($data);
         $project->log("a créé la tâche « {$task->title} »", $request->user(), $task);
+        $this->notifier->assigned($task, $request->user());
         $this->rules->fire('task_created', $task, $request->user());
 
         return back();
@@ -49,7 +51,7 @@ class TaskController extends Controller
         Gate::authorize('edit', $project);
         $data = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
-            'description' => ['sometimes', 'nullable', 'string', 'max:20000'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:60000'],
             'assignee_id' => ['sometimes', 'nullable', $this->memberRule($project)],
             'section_id' => ['sometimes', ValidationRule::exists('sections', 'id')->where('project_id', $project->id)],
             'start_date' => ['sometimes', 'nullable', 'date'],
@@ -62,15 +64,29 @@ class TaskController extends Controller
         if (! $changed) {
             return back();
         }
+        $before = $task->getOriginal();
         $task->save();
 
         $actor = $request->user();
         $project->log("a modifié la tâche « {$task->title} »", $actor, $task);
 
-        if (in_array('assignee_id', $changed, true)) {
-            if ($task->assignee && $task->assignee->isNot($actor)) {
-                $task->assignee->notify(new ProjectNotification("{$actor->name} vous a assigné « {$task->title} »", $project->id, $task->id));
-            }
+        // Les personnes nouvellement mentionnées dans la description reçoivent un avis de mention.
+        $mentioned = [];
+        if (in_array('description', $changed, true)) {
+            $newIds = array_diff(RichText::mentionedIds($task->description), RichText::mentionedIds($before['description'] ?? null));
+            $mentioned = $this->notifier->mentioned($task, $actor, array_values($newIds), (string) $task->description, inComment: false);
+        }
+
+        // Le nouveau responsable reçoit l'avis d'assignation, l'ancien et les autres participants l'avis de modification.
+        $reassigned = in_array('assignee_id', $changed, true);
+        $this->notifier->updated(
+            $task, $this->notifier->describe($task, $before, $changed), $actor,
+            also: $reassigned ? [$before['assignee_id']] : [],
+            except: [...($reassigned ? [$task->assignee_id] : []), ...$mentioned],
+        );
+
+        if ($reassigned) {
+            $this->notifier->assigned($task->load('assignee'), $actor);
             $this->rules->fire('assignee_changed', $task, $actor);
         }
         if (in_array('due_date', $changed, true)) {
@@ -109,6 +125,7 @@ class TaskController extends Controller
         if ($fromSection !== $toSection) {
             $task->refresh();
             $project->log("a déplacé « {$task->title} » vers « {$task->section->name} »", $request->user(), $task);
+            $this->notifier->updated($task, $this->notifier->describe($task, ['section_id' => $fromSection], ['section_id']), $request->user());
             $this->rules->fire('task_moved', $task, $request->user(), $toSection);
         }
 
@@ -120,6 +137,7 @@ class TaskController extends Controller
         Gate::authorize('edit', $task->project);
         $task->markCompleted(! $task->completed);
         $task->project->log(($task->completed ? 'a terminé' : 'a rouvert')." « {$task->title} »", $request->user(), $task);
+        $this->notifier->updated($task, [$task->completed ? 'tâche marquée comme terminée' : 'tâche rouverte'], $request->user());
         if ($task->completed) {
             $this->rules->fire('task_completed', $task, $request->user());
         }

@@ -71,7 +71,7 @@ const submit = () => {
                     <InputError :message="form.errors.password_confirmation" />
                 </div>
 
-                <Button type="submit" class="mt-4 w-full" :disabled="form.processing">
+                <Button type="submit" class="mt-4 h-11 w-full bg-orange-500 text-white hover:bg-orange-600" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                     Réinitialiser le mot de passe
                 </Button>

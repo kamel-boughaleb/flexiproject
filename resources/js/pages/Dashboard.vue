@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import InviteDialog from '@/components/InviteDialog.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -33,7 +34,10 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
                     <h1 class="text-2xl font-semibold">Bonjour {{ user.name.split(' ')[0] }} 👋</h1>
                     <p class="text-sm text-muted-foreground">Vos projets Flexilivre</p>
                 </div>
-                <Button class="ml-auto" @click="creating = true"><Plus class="size-4" /> Nouveau projet</Button>
+                <div class="ml-auto flex gap-2">
+                    <InviteDialog v-if="user.is_admin" />
+                    <Button @click="creating = true"><Plus class="size-4" /> Nouveau projet</Button>
+                </div>
             </div>
 
             <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

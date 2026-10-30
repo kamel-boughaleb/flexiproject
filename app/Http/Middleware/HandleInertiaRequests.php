@@ -47,7 +47,10 @@ class HandleInertiaRequests extends Middleware
             'sidebarProjects' => fn () => $user?->projects()->where('archived', false)
                 ->orderBy('projects.created_at')->get(['projects.id', 'name', 'color']),
             'unreadNotifications' => fn () => $user?->unreadNotifications()->count() ?? 0,
-            'flash' => ['error' => fn () => $request->session()->get('error')],
+            'flash' => [
+                'error' => fn () => $request->session()->get('error'),
+                'success' => fn () => $request->session()->get('success'),
+            ],
         ]);
     }
 }

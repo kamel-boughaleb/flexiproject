@@ -8,7 +8,6 @@ use App\Notifications\ProjectNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule as ValidationRule;
 
 class MemberController extends Controller
@@ -23,11 +22,15 @@ class MemberController extends Controller
         ]);
 
         $email = strtolower($data['email']);
-        $user = User::firstOrCreate(['email' => $email], ['name' => $data['name'] ?: strstr($email, '@', true)]);
+        $user = User::where('email', $email)->first();
 
-        if ($user->wasRecentlyCreated) {
-            // Nouveau compte : la personne choisit son mot de passe via le lien reçu (ou se connecte avec Google).
-            Password::sendResetLink(['email' => $email]);
+        if (! $user) {
+            // Nouvelle personne : seul un administrateur de la plateforme peut l'inviter.
+            if ($request->user()->cannot('invite')) {
+                return back()->withErrors(['email' => 'Cette personne n\'a pas encore de compte. Demandez à un administrateur de l\'inviter.']);
+            }
+            $user = User::create(['email' => $email, 'name' => $data['name'] ?: strstr($email, '@', true)]);
+            $user->invite($request->user(), $project);
         }
 
         $project->members()->syncWithoutDetaching([$user->id => ['role' => $data['role']]]);

@@ -8,13 +8,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirect;
+use Throwable;
 
 /** Connexion avec un compte Google Workspace. */
 class GoogleController extends Controller
 {
     public function redirect(): SymfonyRedirect
     {
-        abort_unless(config('services.google.client_id'), 404);
+        if (! config('services.google.client_id') || ! config('services.google.client_secret')) {
+            return to_route('login')->withErrors(['google' => 'La connexion Google n\'est pas encore configurée (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).']);
+        }
 
         $driver = Socialite::driver('google');
         $domains = config('services.google.allowed_domains');
@@ -28,19 +31,33 @@ class GoogleController extends Controller
 
     public function callback(): RedirectResponse
     {
-        $google = Socialite::driver('google')->user();
+        try {
+            $google = Socialite::driver('google')->user();
+        } catch (Throwable $e) {
+            // Connexion annulée par l'utilisateur, session expirée ou clés invalides.
+            report($e);
+
+            return to_route('login')->withErrors(['google' => 'La connexion avec Google a échoué. Veuillez réessayer.']);
+        }
+
         $email = strtolower($google->getEmail());
         $domains = config('services.google.allowed_domains');
 
         if ($domains && ! in_array(substr(strrchr($email, '@'), 1), $domains, true)) {
-            return to_route('login')->withErrors(['email' => 'Ce compte Google n\'appartient pas à un domaine autorisé.']);
+            return to_route('login')->withErrors(['google' => 'Ce compte Google n\'appartient pas à un domaine autorisé.']);
         }
 
-        $user = User::firstOrNew(['email' => $email]);
+        // Pas d'inscription libre : seuls les comptes existants ou invités peuvent se connecter.
+        $user = User::where('email', $email)->first();
+        if (! $user) {
+            return to_route('login')->withErrors(['google' => 'Aucun compte n\'est associé à cette adresse. Demandez une invitation à un administrateur.']);
+        }
+
         $user->fill([
             'name' => $user->name ?: $google->getName(),
             'google_id' => $google->getId(),
-            'avatar' => $google->getAvatar(),
+            // Ne remplace ni une photo envoyée par le collaborateur, ni un avatar déjà choisi.
+            'avatar' => $user->avatar ?: $google->getAvatar(),
         ]);
         $user->email_verified_at ??= now();
         $user->save();

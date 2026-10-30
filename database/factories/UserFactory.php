@@ -33,6 +33,12 @@ class UserFactory extends Factory
         ];
     }
 
+    /** Administrateur de la plateforme (peut inviter de nouveaux collaborateurs). */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => ['is_admin' => true]);
+    }
+
     /**
      * Indicate that the model's email address should be unverified.
      */
