@@ -14,6 +14,8 @@ use App\Notifications\ProjectNotification;
  */
 class RuleEngine
 {
+    public function __construct(private TaskNotifier $notifier) {}
+
     public function fire(string $trigger, Task $task, User $actor, ?int $sectionId = null): void
     {
         $rules = Rule::where('project_id', $task->project_id)
@@ -51,6 +53,9 @@ class RuleEngine
                 break;
             case 'assign_to':
                 $task->update(['assignee_id' => $action['user_id'] ?? null]);
+                if ($task->wasChanged('assignee_id')) {
+                    $this->notifier->assigned($task->load('assignee'), $actor);
+                }
                 break;
             case 'set_priority':
                 $task->update(['priority' => $action['priority'] ?? 'none']);
