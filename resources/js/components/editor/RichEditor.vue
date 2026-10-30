@@ -312,10 +312,12 @@ function mention() {
     >
         <div
             v-if="editor"
-            class="flex flex-wrap items-center gap-0.5 border-b border-app-border px-1.5 py-1 transition-opacity"
-            :class="{
-                'opacity-0 group-focus-within/editor:opacity-100 group-hover/editor:opacity-100 group-has-[[data-state=open]]/editor:opacity-100': bare,
-            }"
+            class="flex flex-wrap items-center gap-0.5 px-1.5 py-1 transition-opacity"
+            :class="
+                bare || submittable
+                    ? 'pointer-events-none absolute bottom-full left-0 z-10 mb-1.5 max-w-full rounded-2xl border border-app-border bg-background opacity-0 shadow-hover group-focus-within/editor:pointer-events-auto group-focus-within/editor:opacity-100 group-has-[[data-state=open]]/editor:pointer-events-auto group-has-[[data-state=open]]/editor:opacity-100'
+                    : 'border-b border-app-border'
+            "
         >
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
@@ -430,7 +432,10 @@ function mention() {
 
         <EditorContent :editor="editor" />
 
-        <div class="flex items-center gap-0.5 px-1.5 pb-1.5">
+        <div
+            class="flex items-center gap-0.5 px-1.5 pb-1.5 transition-opacity"
+            :class="{ 'opacity-0 group-focus-within/editor:opacity-100 group-hover/editor:opacity-100': bare }"
+        >
             <button type="button" title="Insérer une image" :class="btn" :disabled="uploading" @click="pickImage"><Plus class="size-4" /></button>
             <input ref="fileInput" type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple class="hidden" @change="onPick" />
             <EmojiPicker @pick="insertEmoji">

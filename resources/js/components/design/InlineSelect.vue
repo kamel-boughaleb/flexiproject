@@ -8,7 +8,10 @@ const model = defineModel<string | number>({ required: true });
 </script>
 
 <template>
-    <span class="relative inline-flex max-w-full rounded-full transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring" :class="{ 'hover:bg-app-hover': !disabled }">
+    <span
+        class="relative inline-flex max-w-full rounded-full transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
+        :class="{ 'hover:bg-app-hover': !disabled }"
+    >
         <slot />
         <select
             v-model="model"

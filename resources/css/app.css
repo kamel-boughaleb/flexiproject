@@ -4,7 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
     :root {
         /* Variables shadcn alignées sur le design system Flexilivre (voir tokens.css). */

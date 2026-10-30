@@ -18,7 +18,11 @@ const OPTIONS = ['low', 'medium', 'high'] as const;
             :aria-checked="model === p"
             :disabled="disabled"
             class="h-7 rounded-full border-2 px-3 text-xs font-bold transition disabled:cursor-default"
-            :class="model === p ? [PRIORITIES[p].class, PRIORITIES[p].border] : 'border-app-border bg-background text-ink-soft hover:border-app-border-strong'"
+            :class="
+                model === p
+                    ? [PRIORITIES[p].class, PRIORITIES[p].border]
+                    : 'border-app-border bg-background text-ink-soft hover:border-app-border-strong'
+            "
             @click="model = model === p ? 'none' : p"
         >
             {{ PRIORITIES[p].label }}

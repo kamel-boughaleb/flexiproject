@@ -30,13 +30,18 @@ const priorityModel = computed({ get: () => props.task.priority, set: (v: Priori
 </script>
 
 <template>
-    <dl class="grid items-center gap-x-4" :class="stacked ? 'grid-cols-1 gap-y-1' : 'grid-cols-[110px_minmax(0,1fr)] gap-y-2 sm:grid-cols-[140px_minmax(0,1fr)]'">
+    <dl
+        class="grid items-center gap-x-4"
+        :class="stacked ? 'grid-cols-1 gap-y-1' : 'grid-cols-[110px_minmax(0,1fr)] gap-y-2 sm:grid-cols-[140px_minmax(0,1fr)]'"
+    >
         <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">Responsable</dt>
         <dd class="min-h-9 py-0.5">
             <InlineSelect v-model="assigneeModel" label="Responsable" :options="assigneeOptions" :disabled="!canEdit">
                 <span class="flex items-center gap-2 py-0.5 pl-0.5 pr-3">
                     <UserAvatar :user="assignee" size="sm" />
-                    <span class="truncate text-sm font-bold" :class="{ 'font-semibold text-ink-soft': !assignee }">{{ assignee?.name ?? 'Personne' }}</span>
+                    <span class="truncate text-sm font-bold" :class="{ 'font-semibold text-ink-soft': !assignee }">{{
+                        assignee?.name ?? 'Personne'
+                    }}</span>
                 </span>
             </InlineSelect>
         </dd>

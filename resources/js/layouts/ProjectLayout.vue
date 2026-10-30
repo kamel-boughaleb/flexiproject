@@ -76,7 +76,9 @@ function addTask() {
                         :href="tab.href"
                         :aria-current="isActive(tab.href) ? 'page' : undefined"
                         class="whitespace-nowrap border-b-2 px-2.5 pb-2.5 pt-1.5 text-sm transition-colors md:px-3.5"
-                        :class="isActive(tab.href) ? 'border-brand font-bold text-ink' : 'border-transparent font-semibold text-ink-soft hover:text-ink'"
+                        :class="
+                            isActive(tab.href) ? 'border-brand font-bold text-ink' : 'border-transparent font-semibold text-ink-soft hover:text-ink'
+                        "
                     >
                         {{ tab.label }}
                     </Link>

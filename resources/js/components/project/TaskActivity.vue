@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import RichContent from '@/components/editor/RichContent.vue';
 import SegmentedControl from '@/components/design/SegmentedControl.vue';
+import RichContent from '@/components/editor/RichContent.vue';
 import { dateTime } from '@/lib/labels';
 import type { TaskDetail } from '@/types';
 import { computed, ref } from 'vue';

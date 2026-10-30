@@ -29,7 +29,13 @@ function submit() {
         ...data,
         assignee_id: data.assignee_id || null,
         due_date: data.due_date || null,
-        description: data.description.trim() ? data.description.trim().split(/\n+/).map((l) => `<p>${escape(l)}</p>`).join('') : null,
+        description: data.description.trim()
+            ? data.description
+                  .trim()
+                  .split(/\n+/)
+                  .map((l) => `<p>${escape(l)}</p>`)
+                  .join('')
+            : null,
     })).post(route('tasks.store', props.projectId), {
         preserveScroll: true,
         preserveState: true,
@@ -79,7 +85,10 @@ function submit() {
                 </div>
                 <label class="block">
                     <span class="mb-1.5 block text-xs font-bold uppercase tracking-[.04em] text-ink-soft">Section</span>
-                    <select v-model="form.section_id" class="h-11 w-full rounded-field border-2 border-app-border-strong bg-background px-3 text-sm font-semibold">
+                    <select
+                        v-model="form.section_id"
+                        class="h-11 w-full rounded-field border-2 border-app-border-strong bg-background px-3 text-sm font-semibold"
+                    >
                         <option v-for="s in sections" :key="s.id" :value="s.id">{{ s.name }}</option>
                     </select>
                 </label>

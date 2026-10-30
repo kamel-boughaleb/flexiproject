@@ -10,9 +10,7 @@ defineProps<{
 </script>
 
 <template>
-    <header
-        class="flex h-14 shrink-0 items-center gap-2 border-b border-app-border px-4 transition-[width,height] ease-linear md:px-7"
-    >
+    <header class="flex h-14 shrink-0 items-center gap-2 border-b border-app-border px-4 transition-[width,height] ease-linear md:px-7">
         <div class="flex items-center gap-2">
             <SidebarTrigger class="-ml-1" />
             <template v-if="breadcrumbs.length > 0">

@@ -6,19 +6,7 @@ import { dateTime, sectionColor } from '@/lib/labels';
 import type { Member, Project, Section, TaskDetail } from '@/types';
 import { router, useForm } from '@inertiajs/vue3';
 import { useEventListener } from '@vueuse/core';
-import {
-    ArrowRightToLine,
-    Check,
-    ChevronLeft,
-    ChevronRight,
-    Ellipsis,
-    Link2,
-    Maximize2,
-    Minimize2,
-    Paperclip,
-    Plus,
-    Trash2,
-} from 'lucide-vue-next';
+import { ArrowRightToLine, Check, ChevronLeft, ChevronRight, Ellipsis, Link2, Maximize2, Minimize2, Paperclip, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import TaskActivity from './TaskActivity.vue';
 import TaskAttachments from './TaskAttachments.vue';
@@ -202,7 +190,9 @@ const iconBtn =
                 <DropdownMenu>
                     <DropdownMenuTrigger :class="iconBtn" aria-label="Plus d'actions"><Ellipsis /></DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-52 rounded-2xl p-1.5">
-                        <DropdownMenuItem class="rounded-icon font-semibold" @select="copyLink"><Link2 class="size-4" /> Copier le lien</DropdownMenuItem>
+                        <DropdownMenuItem class="rounded-icon font-semibold" @select="copyLink"
+                            ><Link2 class="size-4" /> Copier le lien</DropdownMenuItem
+                        >
                         <template v-if="canEdit">
                             <DropdownMenuSeparator />
                             <DropdownMenuItem class="rounded-icon font-semibold text-brand-active focus:text-brand-active" @select="destroy">
@@ -222,11 +212,11 @@ const iconBtn =
             <div
                 :class="
                     full
-                        ? 'mx-auto grid max-w-[1180px] gap-8 px-5 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:px-10'
-                        : 'space-y-7 px-4 py-5 md:px-8 md:py-6'
+                        ? 'mx-auto grid max-w-[1180px] items-start gap-8 px-5 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] lg:px-10'
+                        : 'px-4 py-5 md:px-8 md:py-6'
                 "
             >
-                <div class="min-w-0 space-y-7">
+                <div class="flex min-w-0 flex-col gap-7">
                     <!-- Mobile : bouton Terminer pleine largeur -->
                     <button
                         v-if="!full"
@@ -240,7 +230,11 @@ const iconBtn =
                         <Check class="size-4" :stroke-width="2.5" /> {{ done ? 'Terminée' : 'Marquer comme terminée' }}
                     </button>
 
-                    <p v-if="done" role="status" class="flex items-center gap-2 rounded-2xl bg-success-tint px-4 py-2.5 text-[13px] font-bold text-success-text">
+                    <p
+                        v-if="done"
+                        role="status"
+                        class="flex items-center gap-2 rounded-2xl bg-success-tint px-4 py-2.5 text-[13px] font-bold text-success-text"
+                    >
                         <Check class="size-4" :stroke-width="2.5" />
                         Tâche terminée<template v-if="task.completed_at"> · {{ dateTime(task.completed_at) }}</template>
                     </p>
@@ -250,7 +244,9 @@ const iconBtn =
                             <span class="size-2 rounded-[2px]" :style="{ backgroundColor: project.color }" />{{ project.name }}
                             <ChevronRight class="size-3" aria-hidden="true" />
                             <span class="flex items-center gap-1"
-                                ><span class="size-1.5 rounded-full" :style="{ backgroundColor: sectionColor(sectionIndex) }" />{{ section?.name }}</span
+                                ><span class="size-1.5 rounded-full" :style="{ backgroundColor: sectionColor(sectionIndex) }" />{{
+                                    section?.name
+                                }}</span
                             >
                         </nav>
                         <button
@@ -267,7 +263,7 @@ const iconBtn =
                             :disabled="!canEdit"
                             rows="1"
                             aria-label="Nom de la tâche"
-                            class="-mx-2 block w-[calc(100%+1rem)] resize-none overflow-hidden rounded-field border-2 border-transparent bg-transparent px-2 py-0.5 font-bold leading-tight outline-none transition enabled:hover:border-app-border focus:border-info disabled:bg-transparent"
+                            class="-mx-2 block w-[calc(100%+1rem)] resize-none overflow-hidden rounded-field border-2 border-transparent bg-transparent px-2 py-0.5 font-bold leading-tight outline-none transition focus:border-info enabled:hover:border-app-border disabled:bg-transparent"
                             :class="[full ? 'text-[28px] md:text-[35px]' : 'text-[22px] md:text-[26px]', { 'text-ink-soft line-through': done }]"
                             @input="autosize"
                             @keydown.enter.prevent="($event.target as HTMLTextAreaElement).blur()"
@@ -316,7 +312,10 @@ const iconBtn =
                                     :aria-valuemax="task.subtasks.length"
                                     aria-label="Avancement des sous-tâches"
                                 >
-                                    <span class="block h-full rounded-full bg-success transition-all" :style="{ width: `${(subDoneCount / task.subtasks.length) * 100}%` }" />
+                                    <span
+                                        class="block h-full rounded-full bg-success transition-all"
+                                        :style="{ width: `${(subDoneCount / task.subtasks.length) * 100}%` }"
+                                    />
                                 </span>
                             </template>
                         </div>
@@ -353,7 +352,13 @@ const iconBtn =
                         </ul>
                     </section>
 
-                    <TaskAttachments ref="attachments" :task-id="task.id" :attachments="task.attachments" :can-edit="canEdit" :can-manage="canManage" />
+                    <TaskAttachments
+                        ref="attachments"
+                        :task-id="task.id"
+                        :attachments="task.attachments"
+                        :can-edit="canEdit"
+                        :can-manage="canManage"
+                    />
 
                     <div class="border-t border-app-border pt-6">
                         <TaskActivity :task="task" />
@@ -363,7 +368,7 @@ const iconBtn =
                 </div>
 
                 <!-- Plein écran : colonne de droite -->
-                <div v-if="full" class="space-y-4">
+                <div v-if="full" class="space-y-4 lg:sticky lg:top-8">
                     <section class="rounded-card border border-app-border p-5 shadow-soft" aria-labelledby="details-title">
                         <h3 id="details-title" class="mb-1 text-xs font-bold uppercase tracking-[.04em] text-ink-soft">Détails</h3>
                         <TaskFields

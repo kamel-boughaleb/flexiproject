@@ -6,7 +6,13 @@ type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 const props = withDefaults(defineProps<{ user?: MiniUser | null; size?: Size; src?: string | null }>(), { size: 'sm' });
 
-const SIZES: Record<Size, string> = { xs: 'size-6 text-[10px]', sm: 'size-7 text-[10px]', md: 'size-8 text-xs', lg: 'size-11 text-sm', xl: 'size-20 text-xl' };
+const SIZES: Record<Size, string> = {
+    xs: 'size-6 text-[10px]',
+    sm: 'size-7 text-[10px]',
+    md: 'size-8 text-xs',
+    lg: 'size-11 text-sm',
+    xl: 'size-20 text-xl',
+};
 const FACES = ['#fff7ed', '#fefce8', '#f0fdfa', '#eef2ff', '#fdf2f8', '#f8fafc'];
 
 // Photo (ou aperçu d'une photo en cours d'envoi), sinon avatar dessiné à partir du collaborateur.
