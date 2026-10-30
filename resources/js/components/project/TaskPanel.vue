@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import RichContent from '@/components/editor/RichContent.vue';
+import RichEditor from '@/components/editor/RichEditor.vue';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { PRIORITIES, dateTime } from '@/lib/labels';
 import type { Member, Section, TaskDetail } from '@/types';
 import { router, useForm } from '@inertiajs/vue3';
 import { Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import TaskCheck from './TaskCheck.vue';
 import UserAvatar from './UserAvatar.vue';
 
@@ -20,9 +23,31 @@ function save(field: string, value: string | number | null) {
 }
 const val = (e: Event) => (e.target as HTMLInputElement).value;
 
+/**
+ * Enregistre la description d'une tâche précise : l'éditeur peut signaler sa dernière modification
+ * en se fermant, alors que le panneau affiche déjà une autre tâche.
+ */
+function descriptionSaver(id: number) {
+    return (html: string) => {
+        if (id === props.task.id) save('description', html);
+        else router.patch(route('tasks.update', id), { description: html || null }, opts);
+    };
+}
+
+/** Collaborateurs que l'on peut mentionner avec « @ » (invitations acceptées seulement). */
+const mentionable = computed(() => props.members.filter((m) => !m.pending));
+
 const comment = useForm({ body: '' });
-function addComment() {
-    comment.post(route('comments.store', props.task.id), { ...opts, onSuccess: () => comment.reset() });
+const commentEditor = ref<InstanceType<typeof RichEditor>>();
+function addComment(html: string) {
+    comment.body = html;
+    comment.post(route('comments.store', props.task.id), {
+        ...opts,
+        onSuccess: () => {
+            comment.reset();
+            commentEditor.value?.clear();
+        },
+    });
 }
 
 const subtask = useForm({ title: '', parent_id: 0 });
@@ -120,18 +145,21 @@ function destroy() {
                     </label>
                 </div>
 
-                <label class="block text-sm">
+                <div class="text-sm">
                     <span class="mb-1 block text-xs text-muted-foreground">Description</span>
-                    <textarea
+                    <RichEditor
+                        v-if="canEdit"
                         :key="`desc-${task.id}`"
-                        :value="task.description ?? ''"
-                        :disabled="!canEdit"
-                        rows="4"
-                        placeholder="Ajoutez des détails…"
-                        class="w-full rounded-md border bg-background px-3 py-2"
-                        @change="save('description', val($event))"
+                        :model-value="task.description"
+                        :project-id="task.project_id"
+                        :members="mentionable"
+                        placeholder="Ajoutez des détails… Saisissez « / » pour afficher le menu"
+                        min-height="5rem"
+                        :onChange="descriptionSaver(task.id)"
                     />
-                </label>
+                    <RichContent v-else-if="task.description" :html="task.description" />
+                    <p v-else class="text-muted-foreground">Aucune description.</p>
+                </div>
 
                 <section v-if="!task.parent_id">
                     <h4 class="mb-2 text-sm font-semibold">Sous-tâches</h4>
@@ -168,18 +196,24 @@ function destroy() {
                                 <div class="mb-0.5 text-xs text-muted-foreground">
                                     <strong class="text-foreground">{{ c.user.name }}</strong> · {{ dateTime(c.created_at) }}
                                 </div>
-                                <p class="whitespace-pre-wrap">{{ c.body }}</p>
+                                <RichContent :html="c.body" />
                             </div>
                         </li>
                     </ul>
-                    <form class="mt-3 flex gap-2" @submit.prevent="addComment">
-                        <input
-                            v-model="comment.body"
-                            placeholder="Écrire un commentaire…"
-                            class="flex-1 rounded-md border bg-background px-3 py-1.5 text-sm"
+                    <div class="mt-3">
+                        <RichEditor
+                            ref="commentEditor"
+                            :key="`comment-${task.id}`"
+                            :model-value="comment.body"
+                            :project-id="task.project_id"
+                            :members="mentionable"
+                            submittable
+                            :busy="comment.processing"
+                            placeholder="Écrire un commentaire… « / » pour le menu, « @ » pour mentionner"
+                            @submit="addComment"
                         />
-                        <Button type="submit" size="sm" :disabled="comment.processing || !comment.body.trim()">Envoyer</Button>
-                    </form>
+                        <p v-if="comment.errors.body" class="mt-1 text-xs text-rose-600">{{ comment.errors.body }}</p>
+                    </div>
                 </section>
 
                 <section>

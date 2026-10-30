@@ -10,7 +10,7 @@ import { TransitionRoot } from '@headlessui/vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-type Key = 'assigned' | 'comments' | 'updates' | 'daily_digest';
+type Key = 'assigned' | 'mentions' | 'comments' | 'updates' | 'daily_digest';
 type Preferences = Record<Key, boolean>;
 
 const props = defineProps<{ preferences: Preferences }>();
@@ -19,6 +19,11 @@ const breadcrumbItems: BreadcrumbItem[] = [{ title: 'Notifications', href: '/set
 
 const OPTIONS: { key: Key; label: string; description: string }[] = [
     { key: 'assigned', label: 'Une tâche m’est assignée', description: 'Un e-mail dès qu’un collaborateur (ou une règle) vous confie une tâche.' },
+    {
+        key: 'mentions',
+        label: 'On me mentionne avec « @ »',
+        description: 'Quand un collaborateur vous cite dans la description ou un commentaire d’une tâche.',
+    },
     {
         key: 'comments',
         label: 'Nouveaux commentaires',
@@ -38,9 +43,9 @@ const OPTIONS: { key: Key; label: string; description: string }[] = [
 
 /** Niveaux prédéfinis : on peut ensuite affiner case par case. */
 const LEVELS: { label: string; values: Preferences }[] = [
-    { label: 'Tout', values: { assigned: true, comments: true, updates: true, daily_digest: true } },
-    { label: 'L’essentiel', values: { assigned: true, comments: true, updates: false, daily_digest: true } },
-    { label: 'Aucun e-mail', values: { assigned: false, comments: false, updates: false, daily_digest: false } },
+    { label: 'Tout', values: { assigned: true, mentions: true, comments: true, updates: true, daily_digest: true } },
+    { label: 'L’essentiel', values: { assigned: true, mentions: true, comments: true, updates: false, daily_digest: true } },
+    { label: 'Aucun e-mail', values: { assigned: false, mentions: false, comments: false, updates: false, daily_digest: false } },
 ];
 
 const form = useForm<Preferences>({ ...props.preferences });

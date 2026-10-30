@@ -116,7 +116,7 @@ class EmailNotificationTest extends TestCase
         $marie = $this->member($project);
 
         $this->actingAs($marie)->get('/settings/notifications')->assertOk();
-        $this->actingAs($marie)->patch('/settings/notifications', ['assigned' => false, 'comments' => true, 'updates' => false, 'daily_digest' => true])
+        $this->actingAs($marie)->patch('/settings/notifications', ['assigned' => false, 'mentions' => true, 'comments' => true, 'updates' => false, 'daily_digest' => true])
             ->assertSessionHasNoErrors();
         $this->assertFalse($marie->fresh()->wantsEmail('assigned'));
         $this->assertTrue($marie->fresh()->wantsEmail('comments'));

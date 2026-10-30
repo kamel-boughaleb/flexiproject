@@ -71,6 +71,7 @@ class User extends Authenticatable
     /** E-mails envoyés par défaut ; chaque collaborateur peut les régler dans Réglages › Notifications. */
     public const NOTIFICATION_DEFAULTS = [
         'assigned' => true,      // une tâche m'est assignée
+        'mentions' => true,      // on me mentionne avec « @ » dans une description ou un commentaire
         'comments' => true,      // commentaire sur une tâche à laquelle je participe
         'updates' => true,       // modification d'une tâche à laquelle je participe
         'daily_digest' => true,  // récapitulatif de mes tâches chaque matin à 8 h
