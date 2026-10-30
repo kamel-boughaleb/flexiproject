@@ -90,3 +90,81 @@ html {
         @apply bg-background text-foreground;
     }
 }
+
+/* Texte riche des descriptions et commentaires (éditeur Tiptap et affichage). */
+@layer components {
+    .rich-text {
+        @apply break-words text-sm leading-relaxed;
+    }
+    .rich-text > * + * {
+        @apply mt-2;
+    }
+    .rich-text h1 {
+        @apply text-xl font-bold;
+    }
+    .rich-text h2 {
+        @apply text-lg font-semibold;
+    }
+    .rich-text h3 {
+        @apply text-base font-semibold;
+    }
+    .rich-text a {
+        @apply text-blue-600 underline underline-offset-2 dark:text-blue-400;
+    }
+    .rich-text ul:not([data-type='taskList']) {
+        @apply list-disc pl-5;
+    }
+    .rich-text ol {
+        @apply list-decimal pl-5;
+    }
+    .rich-text li > p {
+        @apply m-0;
+    }
+    .rich-text ul[data-type='taskList'] {
+        @apply pl-0;
+    }
+    .rich-text ul[data-type='taskList'] li {
+        @apply flex items-start gap-2;
+    }
+    .rich-text ul[data-type='taskList'] li > label {
+        @apply mt-0.5 shrink-0;
+    }
+    .rich-text ul[data-type='taskList'] li > div {
+        @apply flex-1;
+    }
+    .rich-text ul[data-type='taskList'] li[data-checked='true'] > div {
+        @apply text-muted-foreground line-through;
+    }
+    .rich-text blockquote {
+        @apply border-l-4 pl-3 text-muted-foreground;
+    }
+    .rich-text code {
+        @apply rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-rose-600 dark:text-rose-400;
+    }
+    .rich-text pre {
+        @apply overflow-x-auto rounded-md bg-neutral-900 p-3 font-mono text-xs text-neutral-100;
+    }
+    .rich-text pre code {
+        @apply bg-transparent p-0 text-inherit;
+    }
+    .rich-text hr {
+        @apply my-3 border-border;
+    }
+    .rich-text img {
+        @apply my-1 max-h-96 max-w-full rounded-md border;
+    }
+    .rich-text img.ProseMirror-selectednode {
+        @apply ring-2 ring-primary;
+    }
+    .rich-text mark {
+        @apply rounded-sm px-0.5 text-inherit;
+    }
+    .rich-text .mention,
+    .rich-text span[data-type='mention'] {
+        @apply rounded bg-blue-100 px-1 font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300;
+    }
+    .rich-text p.is-editor-empty:first-child::before {
+        @apply pointer-events-none float-left h-0 text-muted-foreground;
+        content: attr(data-placeholder);
+    }
+}

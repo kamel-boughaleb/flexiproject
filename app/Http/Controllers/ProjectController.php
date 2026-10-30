@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -112,6 +113,7 @@ class ProjectController extends Controller
     {
         Gate::authorize('manage', $project);
         $project->delete();
+        Storage::disk('local')->deleteDirectory("editor-images/{$project->id}");
 
         return to_route('dashboard');
     }

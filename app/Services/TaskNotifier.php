@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskAssigned;
 use App\Notifications\TaskCommented;
+use App\Notifications\TaskMentioned;
 use App\Notifications\TaskUpdated;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -38,9 +39,29 @@ class TaskNotifier
         }
     }
 
-    public function commented(Task $task, Comment $comment, User $actor): void
+    /** @param  list<int>  $except  personnes déjà prévenues autrement (ex. mentionnées dans le commentaire) */
+    public function commented(Task $task, Comment $comment, User $actor, array $except = []): void
     {
-        Notification::send($this->participants($task, $actor), new TaskCommented($task, $actor, $comment));
+        $recipients = $this->participants($task, $actor)->whereNotIn('id', $except);
+        Notification::send($recipients, new TaskCommented($task, $actor, $comment));
+    }
+
+    /**
+     * Prévient les membres du projet mentionnés avec « @ ».
+     *
+     * @param  list<int>  $ids
+     * @return list<int> les personnes prévenues
+     */
+    public function mentioned(Task $task, User $actor, array $ids, string $html, bool $inComment): array
+    {
+        $ids = array_diff($ids, [$actor->id]);
+        if (! $ids) {
+            return [];
+        }
+        $users = $task->project->members()->whereIn('users.id', $ids)->get();
+        Notification::send($users, new TaskMentioned($task, $actor, $html, $inComment));
+
+        return $users->modelKeys();
     }
 
     /**

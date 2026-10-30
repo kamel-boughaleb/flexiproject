@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\RichTextCast;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ class Task extends Model
     protected function casts(): array
     {
         return [
+            'description' => RichTextCast::class,
             'start_date' => 'date:Y-m-d',
             'due_date' => 'date:Y-m-d',
             'completed' => 'boolean',

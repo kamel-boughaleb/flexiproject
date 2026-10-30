@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Services\RuleEngine;
 use App\Services\TaskNotifier;
+use App\Support\RichText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -50,7 +51,7 @@ class TaskController extends Controller
         Gate::authorize('edit', $project);
         $data = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
-            'description' => ['sometimes', 'nullable', 'string', 'max:20000'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:60000'],
             'assignee_id' => ['sometimes', 'nullable', $this->memberRule($project)],
             'section_id' => ['sometimes', ValidationRule::exists('sections', 'id')->where('project_id', $project->id)],
             'start_date' => ['sometimes', 'nullable', 'date'],
@@ -69,12 +70,19 @@ class TaskController extends Controller
         $actor = $request->user();
         $project->log("a modifié la tâche « {$task->title} »", $actor, $task);
 
+        // Les personnes nouvellement mentionnées dans la description reçoivent un avis de mention.
+        $mentioned = [];
+        if (in_array('description', $changed, true)) {
+            $newIds = array_diff(RichText::mentionedIds($task->description), RichText::mentionedIds($before['description'] ?? null));
+            $mentioned = $this->notifier->mentioned($task, $actor, array_values($newIds), (string) $task->description, inComment: false);
+        }
+
         // Le nouveau responsable reçoit l'avis d'assignation, l'ancien et les autres participants l'avis de modification.
         $reassigned = in_array('assignee_id', $changed, true);
         $this->notifier->updated(
             $task, $this->notifier->describe($task, $before, $changed), $actor,
             also: $reassigned ? [$before['assignee_id']] : [],
-            except: $reassigned ? [$task->assignee_id] : [],
+            except: [...($reassigned ? [$task->assignee_id] : []), ...$mentioned],
         );
 
         if ($reassigned) {

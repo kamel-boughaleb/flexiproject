@@ -2,12 +2,18 @@
 
 namespace App\Models;
 
+use App\Casts\RichTextCast;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Comment extends Model
 {
     protected $fillable = ['task_id', 'user_id', 'body'];
+
+    protected function casts(): array
+    {
+        return ['body' => RichTextCast::class];
+    }
 
     public function task(): BelongsTo
     {

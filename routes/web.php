@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EditorImageController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MyTasksController;
 use App\Http\Controllers\NotificationController;
@@ -45,6 +46,9 @@ Route::middleware('auth')->group(function () {
     Route::get('projects/{project}/{view}', [ProjectController::class, 'show'])->whereIn('view', ProjectController::VIEWS)->name('projects.view');
     Route::patch('projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
     Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+    Route::post('projects/{project}/images', [EditorImageController::class, 'store'])->name('editor-images.store');
+    Route::get('projects/{project}/images/{name}', [EditorImageController::class, 'show'])
+        ->where('name', '[A-Za-z0-9]+\.(png|jpg|gif|webp)')->name('editor-images.show');
 
     Route::post('projects/{project}/sections', [SectionController::class, 'store'])->name('sections.store');
     Route::patch('sections/{section}', [SectionController::class, 'update'])->name('sections.update');
