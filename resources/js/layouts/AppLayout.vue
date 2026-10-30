@@ -4,6 +4,8 @@ import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
+    /** La page affiche son propre en-tête (pages de projet). */
+    bare?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -12,7 +14,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <AppLayout :breadcrumbs="breadcrumbs" :bare="bare">
         <slot />
     </AppLayout>
 </template>

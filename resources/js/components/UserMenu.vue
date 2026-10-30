@@ -14,7 +14,7 @@ const user = computed(() => page.props.auth.user);
 <template>
     <DropdownMenu>
         <DropdownMenuTrigger
-            class="rounded-full ring-offset-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+            class="rounded-full ring-offset-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             :title="user.name"
         >
             <UserAvatar :user="user" size="md" />

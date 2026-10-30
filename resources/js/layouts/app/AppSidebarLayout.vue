@@ -8,6 +8,7 @@ import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
+    bare?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -21,8 +22,9 @@ useLiveRefresh();
 <template>
     <AppShell variant="sidebar">
         <AppSidebar />
-        <AppContent variant="sidebar">
-            <AppSidebarHeader :breadcrumbs="breadcrumbs" />
+        <!-- Les pages de projet occupent toute la hauteur : le board et le panneau de tâche défilent chacun de leur côté. -->
+        <AppContent variant="sidebar" :class="bare ? 'h-svh overflow-hidden md:h-[calc(100svh-20px)]' : ''">
+            <AppSidebarHeader v-if="!bare" :breadcrumbs="breadcrumbs" />
             <slot />
         </AppContent>
     </AppShell>

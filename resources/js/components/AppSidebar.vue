@@ -52,25 +52,25 @@ const isActive = (href: string) => path.value === new URL(href).pathname;
                                 <span>{{ item.title }}</span>
                             </Link>
                         </SidebarMenuButton>
-                        <SidebarMenuBadge v-if="item.badge" class="bg-orange-500 text-white">{{ item.badge }}</SidebarMenuBadge>
+                        <SidebarMenuBadge v-if="item.badge" class="rounded-full bg-brand-active px-1.5 font-bold text-white">{{ item.badge }}</SidebarMenuBadge>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarGroup>
 
-            <SidebarGroup class="px-2">
+            <SidebarGroup class="px-2 pt-5">
                 <SidebarGroupLabel>Projets</SidebarGroupLabel>
                 <SidebarMenu>
                     <SidebarMenuItem v-for="p in page.props.sidebarProjects" :key="p.id">
                         <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
                             <Link :href="route('projects.show', p.id)">
-                                <span class="size-2.5 shrink-0 rounded-sm" :style="{ backgroundColor: p.color }" />
+                                <span class="size-2.5 shrink-0 rounded-[3px]" :style="{ backgroundColor: p.color }" />
                                 <span class="truncate">{{ p.name }}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child tooltip="Nouveau projet">
-                            <Link :href="`${route('dashboard')}?new=1`" class="text-muted-foreground">
+                            <Link :href="`${route('dashboard')}?new=1`" class="text-ink-soft">
                                 <Plus />
                                 <span>Nouveau projet</span>
                             </Link>
