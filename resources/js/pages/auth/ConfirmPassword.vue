@@ -42,7 +42,7 @@ const submit = () => {
                 </div>
 
                 <div class="flex items-center">
-                    <Button class="h-11 w-full bg-orange-500 text-white hover:bg-orange-600" :disabled="form.processing">
+                    <Button class="h-11 w-full" :disabled="form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                         Confirmer
                     </Button>

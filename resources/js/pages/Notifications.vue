@@ -31,7 +31,7 @@ const href = (n: Notification) =>
                     class="flex items-center gap-3 px-4 py-3 text-sm"
                     :class="n.read_at ? 'text-muted-foreground' : 'font-medium'"
                 >
-                    <span v-if="!n.read_at" class="size-2 rounded-full bg-orange-500" />
+                    <span v-if="!n.read_at" class="size-2 rounded-full bg-brand-active" />
                     <Link :href="href(n)" class="flex-1 hover:underline">{{ n.data.message }}</Link>
                     <span class="text-xs text-muted-foreground">{{ dateTime(n.created_at) }}</span>
                 </li>

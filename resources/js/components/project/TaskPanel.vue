@@ -291,7 +291,7 @@ const iconBtn =
                             :project-id="task.project_id"
                             :members="mentionable"
                             placeholder="Ajoutez des détails… Saisissez « / » pour afficher le menu"
-                            min-height="4rem"
+                            min-height="2.5rem"
                             :onChange="descriptionSaver(task.id)"
                             class="-mx-1.5"
                         />

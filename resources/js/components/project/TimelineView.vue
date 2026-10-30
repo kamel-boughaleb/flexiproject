@@ -26,12 +26,18 @@ const days = computed(() => eachDayOfInterval({ start: start.value, end: addDays
 const offset = (d: Date) => differenceInCalendarDays(startOfDay(d), start.value);
 const goToday = () => (start.value = startOfWeek(addDays(new Date(), -3), { weekStartsOn: 1 }));
 
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
 /** Bandeau des mois au-dessus des jours. */
 const months = computed(() => {
     const result: { label: string; left: number; width: number }[] = [];
     days.value.forEach((d, i) => {
         if (i === 0 || d.getDate() === 1)
-            result.push({ label: format(d, scale.value === 'months' ? 'MMM yyyy' : 'MMMM', { locale: fr }), left: i * DAY.value, width: 0 });
+            result.push({
+                label: capitalize(format(d, scale.value === 'months' ? 'MMM yyyy' : 'MMMM yyyy', { locale: fr })),
+                left: i * DAY.value,
+                width: 0,
+            });
         result[result.length - 1].width += DAY.value;
     });
     return result;
@@ -169,7 +175,7 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                             <span
                                 v-for="m in months"
                                 :key="m.left"
-                                class="absolute top-0 h-full overflow-hidden whitespace-nowrap border-l border-app-border px-2 pt-1.5 text-xs font-bold capitalize text-ink"
+                                class="absolute top-0 h-full overflow-hidden whitespace-nowrap border-l border-app-border px-2 pt-1.5 text-xs font-bold text-ink"
                                 :style="{ left: `${m.left}px`, width: `${m.width}px` }"
                                 >{{ m.label }}</span
                             >
@@ -208,7 +214,7 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                             :style="{ left: `${i * DAY}px`, width: `${DAY}px` }"
                         />
                     </template>
-                    <div v-if="todayX !== null" class="absolute inset-y-0 z-10 w-0.5 bg-brand-active" :style="{ left: `${todayX}px` }" />
+                    <div v-if="todayX !== null" class="absolute inset-y-0 w-0.5 bg-brand-active" :style="{ left: `${todayX}px` }" />
                     <div
                         v-if="marker(project.start_date) !== null"
                         title="Début du projet"
@@ -258,7 +264,7 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                                 />
                                 <div
                                     :title="t.title"
-                                    class="absolute top-2 flex h-[30px] items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-full border-2 py-0 pl-[3px] pr-2.5 text-xs font-bold hover:shadow-hover"
+                                    class="absolute top-2 z-[1] flex h-[30px] items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-full border-2 py-0 pl-[3px] pr-2.5 text-xs font-bold hover:shadow-hover"
                                     :class="[tone(t), canEdit ? 'cursor-grab' : 'cursor-pointer']"
                                     :style="{ left: `${bar(t)!.left}px`, width: `${bar(t)!.width}px` }"
                                     @pointerdown.prevent="startDrag($event, t, 'move')"

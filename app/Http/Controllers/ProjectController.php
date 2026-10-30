@@ -96,6 +96,7 @@ class ProjectController extends Controller
         return Inertia::render('Projects/Settings', [
             ...$this->shared($request, $project),
             'colors' => Project::COLORS,
+            'sections' => $project->sections()->withCount(['tasks' => fn ($q) => $q->whereNull('parent_id')])->get(['id', 'name', 'position']),
             'activities' => $project->activities()->with('user:id,name')->limit(40)->get(),
         ]);
     }

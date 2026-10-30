@@ -7,7 +7,7 @@ defineProps<{
 <template>
     <a
         :href="route('google.redirect')"
-        class="flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-input bg-background px-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+        class="flex h-[52px] w-full items-center justify-center gap-3 rounded-full border-2 border-app-border-strong bg-background px-4 text-[15px] font-bold text-app-strong transition-colors hover:bg-app-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
         <svg class="size-5" viewBox="0 0 48 48" aria-hidden="true">
             <path

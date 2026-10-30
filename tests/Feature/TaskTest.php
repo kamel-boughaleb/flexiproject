@@ -24,6 +24,32 @@ class TaskTest extends TestCase
         $this->assertSame(1, $task->subtasks()->count());
     }
 
+    public function test_task_created_from_mobile_sheet_keeps_priority_and_description(): void
+    {
+        $project = Project::factory()->create();
+
+        $this->actingAs($project->owner)->post("/projects/{$project->id}/tasks", [
+            'title' => 'Encart', 'priority' => 'high', 'description' => '<p>Logo &amp; phrase</p><script>x</script>',
+        ])->assertRedirect();
+
+        $task = Task::firstOrFail();
+        $this->assertSame('high', $task->priority);
+        $this->assertStringNotContainsString('<script', (string) $task->description);
+        $this->actingAs($project->owner)->post("/projects/{$project->id}/tasks", ['title' => 'Sans priorité']);
+        $this->assertSame('none', Task::where('title', 'Sans priorité')->value('priority'));
+    }
+
+    public function test_board_counts_completed_subtasks(): void
+    {
+        $project = Project::factory()->create();
+        $task = Task::factory()->in($project)->create();
+        Task::factory()->in($project)->count(2)->create(['parent_id' => $task->id]);
+        $task->subtasks()->first()->markCompleted();
+
+        $this->actingAs($project->owner)->get("/projects/{$project->id}/board")
+            ->assertInertia(fn ($page) => $page->where('tasks.0.subtasks_count', 2)->where('tasks.0.subtasks_done_count', 1));
+    }
+
     public function test_viewer_cannot_modify_tasks(): void
     {
         $project = Project::factory()->create();
