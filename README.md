@@ -15,6 +15,7 @@ Laravel 12 · Vue 3 (Inertia) · MariaDB / MySQL · Tailwind.
 - **Collaborateurs** avec trois rôles : administrateur (gère le projet et les membres), éditeur (modifie tâches et règles), lecteur (consulte et commente). Inviter une adresse inconnue crée le compte et envoie un lien pour choisir son mot de passe.
 - **Règles « quand… alors… »** : quand une tâche est créée, déplacée dans une section, terminée, réassignée ou que son échéance change, alors déplacer, terminer, assigner, changer la priorité, fixer l'échéance à J + n, notifier ou commenter. Les règles ne s'enchaînent pas entre elles, il n'y a donc pas de boucle possible.
 - **Notifications** dans l'application (assignation, commentaire, ajout à un projet, règles) et page **Mes tâches**.
+- **Notifications par e-mail** : à la personne à qui l'on assigne une tâche, et à tous les participants d'une tâche (responsable, personnes qui l'ont créée, modifiée ou commentée) à chaque commentaire ou modification. Chaque matin à 8 h (heure de Paris), un **récapitulatif** des tâches en cours. Chacun règle ses e-mails dans **Réglages › Notifications**.
 - **Connexion** par e-mail et mot de passe, ou avec Google Workspace (limitable au domaine `flexilivre.com`).
 
 ## Installation sur votre serveur
@@ -46,7 +47,7 @@ DB_DATABASE=flexiproject
 DB_USERNAME=flexi
 DB_PASSWORD=un-mot-de-passe-solide
 
-# Envoi des e-mails (invitations, mot de passe oublié)
+# Envoi des e-mails (invitations, mot de passe oublié, notifications)
 MAIL_MAILER=smtp
 MAIL_HOST=...
 MAIL_FROM_ADDRESS=projets@flexilivre.com
@@ -56,6 +57,14 @@ MAIL_FROM_ADDRESS=projets@flexilivre.com
 php artisan migrate --force
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
+
+Ajoutez enfin **une** ligne à la crontab de l'utilisateur du serveur web (`crontab -e`). Elle envoie les e-mails de notification (mis en file d'attente pour ne pas ralentir l'application) et le récapitulatif de 8 h :
+
+```cron
+* * * * * cd /chemin/vers/flexiproject && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Pour tester le récapitulatif sans attendre le lendemain : `php artisan notifications:daily-digest`.
 
 Faites pointer le serveur web (Nginx ou Apache) sur le dossier `public/`, et donnez à l'utilisateur du serveur web les droits d'écriture sur `storage/` et `bootstrap/cache/`.
 
