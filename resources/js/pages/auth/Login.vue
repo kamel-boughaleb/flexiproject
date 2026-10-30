@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GoogleButton from '@/components/GoogleButton.vue';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -6,14 +7,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
-    googleEnabled: boolean;
 }>();
+
+const page = usePage();
+const googleError = computed(() => (page.props.errors as Record<string, string>).google);
 
 const form = useForm({
     email: '',
@@ -29,27 +33,18 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Connexion à votre compte" description="Connectez-vous avec Google ou avec votre e-mail et mot de passe">
+    <AuthBase title="Bon retour parmi nous" description="Connectez-vous pour retrouver vos projets et vos tâches.">
         <Head title="Connexion" />
 
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
+        <div v-if="status" class="rounded-lg bg-green-50 px-3 py-2 text-center text-sm font-medium text-green-700">
             {{ status }}
         </div>
 
-        <template v-if="googleEnabled">
-            <Button as="a" :href="route('google.redirect')" variant="outline" class="w-full">
-                <svg class="size-4" viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                        fill="#EA4335"
-                        d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.2 14.6 2.2 12 2.2 6.6 2.2 2.2 6.6 2.2 12s4.4 9.8 9.8 9.8c5.7 0 9.4-4 9.4-9.6 0-.6-.1-1.1-.2-1.6H12z"
-                    />
-                </svg>
-                Continuer avec Google
-            </Button>
-            <div class="flex items-center gap-3 text-xs text-muted-foreground">
-                <span class="h-px flex-1 bg-border" />ou<span class="h-px flex-1 bg-border" />
-            </div>
-        </template>
+        <GoogleButton />
+        <InputError :message="googleError" class="-mt-3 text-center" />
+        <div class="flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
+            <span class="h-px flex-1 bg-border" />ou avec votre e-mail<span class="h-px flex-1 bg-border" />
+        </div>
 
         <form @submit.prevent="submit" class="flex flex-col gap-6">
             <div class="grid gap-6">
@@ -94,7 +89,7 @@ const submit = () => {
                     </Label>
                 </div>
 
-                <Button type="submit" class="mt-4 w-full" tabindex="4" :disabled="form.processing">
+                <Button type="submit" class="mt-2 h-11 w-full bg-orange-500 text-white hover:bg-orange-600" tabindex="4" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                     Se connecter
                 </Button>
