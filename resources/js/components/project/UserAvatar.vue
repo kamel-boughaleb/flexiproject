@@ -2,11 +2,17 @@
 import type { MiniUser } from '@/types';
 import { computed } from 'vue';
 
-type Size = 'sm' | 'md' | 'lg' | 'xl';
+type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 const props = withDefaults(defineProps<{ user?: MiniUser | null; size?: Size; src?: string | null }>(), { size: 'sm' });
 
-const SIZES: Record<Size, string> = { sm: 'size-6 text-[10px]', md: 'size-8 text-xs', lg: 'size-10 text-sm', xl: 'size-20 text-xl' };
+const SIZES: Record<Size, string> = {
+    xs: 'size-6 text-[10px]',
+    sm: 'size-7 text-[10px]',
+    md: 'size-8 text-xs',
+    lg: 'size-11 text-sm',
+    xl: 'size-20 text-xl',
+};
 const FACES = ['#fff7ed', '#fefce8', '#f0fdfa', '#eef2ff', '#fdf2f8', '#f8fafc'];
 
 // Photo (ou aperçu d'une photo en cours d'envoi), sinon avatar dessiné à partir du collaborateur.
@@ -19,7 +25,7 @@ const face = computed(() => {
     for (const c of seed) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0;
     const pick = (n: number, shift: number) => (h >>> shift) % n;
     return {
-        background: props.user?.color ?? '#f97316',
+        background: props.user?.color ?? '#FF489C',
         fill: FACES[pick(FACES.length, 3)],
         radius: 6 + pick(7, 6) * 2,
         rotate: pick(21, 9) - 10,
@@ -35,7 +41,7 @@ const face = computed(() => {
     <span
         v-if="!user && !src"
         :class="SIZES[size]"
-        class="inline-flex shrink-0 items-center justify-center rounded-full border border-dashed border-neutral-300 text-neutral-400"
+        class="inline-flex shrink-0 items-center justify-center rounded-full border-[1.5px] border-dashed border-app-muted text-app-muted"
         >?</span
     >
     <img v-else-if="photo" :src="photo" :alt="user?.name" :title="user?.name" :class="SIZES[size]" class="shrink-0 rounded-full object-cover" />

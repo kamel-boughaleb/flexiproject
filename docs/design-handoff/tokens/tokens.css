@@ -1,0 +1,73 @@
+/* Flexi Projets — design tokens (design system Flexilivre + ajouts App) */
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap");
+
+:root {
+  /* Marque — rose */
+  --primary-500: #FF489C;
+  --primary-hover: #F0126D;
+  --primary-active: #D10553;
+  --primary-disabled-text: #FF63AF;
+  --primary-disabled-bg: #FFCAE6;
+  --primary-outline-active-bg: #FF9FD0;
+  --primary-tint: #FEE5F2;
+
+  /* Marque — bleu */
+  --secondary-500: #289DC9;
+  --secondary-400: #40ABD0;
+  --secondary-hover: #217299;
+  --secondary-active: #215D7D;
+  --secondary-deep: #214258;
+  --secondary-light-active: #7CCBE4;
+  --secondary-disabled-bg: #B2E1EF;
+  --secondary-tint: #D6F0F7;
+  --secondary-950: #112A3B;
+
+  /* Neutres */
+  --grey-max: #121212;
+  --grey-dark-hover: #343434;
+  --grey-text: #575757;
+  --grey-medium: #CCCDD0;
+  --white: #FFFFFF;
+
+  /* États */
+  --focus: #1FDDFF;
+  --success: #44AF01;
+  --warning-strong: #FF6C00;
+  --warning: #FF9100;
+  --danger: #FC0900;
+
+  /* Typo */
+  --font-sans: "Quicksand", sans-serif;
+  --font-script: "Rock Salt", cursive;
+
+  /* Rayons */
+  --radius-xs: 5px;
+  --radius-l: 20px;
+  --radius-2xl: 100px;
+
+  /* Ombres */
+  --shadow-soft: 0 2px 4px 0 #112a3b1a;
+  --shadow-product: 6px 10px 10px 0 #112a3b33;
+
+  /* Espacements boutons */
+  --spacing-5: 5px;
+  --btn-pad-y-s: 10px;
+  --btn-pad-x-m: 30px;
+  --btn-pad-x-l: 40px;
+  --outline-s: 2px;
+
+  /* ---- App (ajouts hors design system, utilisés par les maquettes) ---- */
+  --app-bg: #F6F7F9;
+  --app-surface-2: #FAFBFC;
+  --app-hover: #F1F2F4;
+  --app-border: #ECEDEF;
+  --app-border-strong: #DCDDE0;
+  --app-icon-muted: #8A8B8E;
+  --app-text-strong: #343434;
+  --success-tint: #EAF6E0;
+  --success-text: #2E6B00;
+  --warning-tint: #FFF1DE;
+  --warning-text: #8A4B00;
+  --primary-wash: #FFF7FB;
+  --shadow-hover: 0 4px 10px 0 #112a3b26;
+}

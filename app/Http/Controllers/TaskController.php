@@ -23,6 +23,8 @@ class TaskController extends Controller
         Gate::authorize('edit', $project);
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:60000'],
+            'priority' => ['nullable', ValidationRule::in(Task::PRIORITIES)],
             'section_id' => ['nullable', ValidationRule::exists('sections', 'id')->where('project_id', $project->id)],
             'parent_id' => ['nullable', ValidationRule::exists('tasks', 'id')->where('project_id', $project->id)],
             'assignee_id' => ['nullable', $this->memberRule($project)],
@@ -34,6 +36,7 @@ class TaskController extends Controller
             $data['section_id'] = Task::find($data['parent_id'])->section_id;
         }
         $data['section_id'] ??= $project->sections()->value('id');
+        $data['priority'] ??= 'none';
         $data['position'] = (Task::where('section_id', $data['section_id'])
             ->where('parent_id', $data['parent_id'] ?? null)->max('position') ?? 0) + 1;
 

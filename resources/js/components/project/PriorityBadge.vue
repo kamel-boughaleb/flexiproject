@@ -6,7 +6,7 @@ defineProps<{ priority: Priority }>();
 </script>
 
 <template>
-    <span v-if="priority !== 'none'" :class="PRIORITIES[priority].class" class="rounded px-1.5 py-0.5 text-[11px] font-medium">{{
+    <span v-if="priority !== 'none'" :class="PRIORITIES[priority].class" class="inline-flex rounded-full px-2 py-0.5 text-xs font-bold leading-4">{{
         PRIORITIES[priority].label
     }}</span>
 </template>

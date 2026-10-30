@@ -46,7 +46,7 @@ const show = () => {
                     <Label for="invite-name">Nom (facultatif)</Label>
                     <Input id="invite-name" v-model="form.name" placeholder="Prénom Nom" />
                 </div>
-                <p v-if="sent" class="text-sm text-emerald-600">Invitation envoyée à {{ sent }}. Vous pouvez en envoyer une autre.</p>
+                <p v-if="sent" class="text-sm font-bold text-success-text">Invitation envoyée à {{ sent }}. Vous pouvez en envoyer une autre.</p>
                 <Button type="submit" :disabled="form.processing">Envoyer l'invitation</Button>
             </form>
         </DialogContent>

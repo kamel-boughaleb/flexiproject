@@ -12,14 +12,57 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Instrument Sans', ...defaultTheme.fontFamily.sans],
+                sans: ['Quicksand', ...defaultTheme.fontFamily.sans],
+                script: ['"Rock Salt"', 'cursive'],
             },
             borderRadius: {
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
                 sm: 'calc(var(--radius) - 4px)',
+                card: '20px',
+                task: '14px',
+                field: '12px',
+                icon: '10px',
+            },
+            boxShadow: {
+                soft: 'var(--shadow-soft)',
+                hover: 'var(--shadow-hover)',
+                product: 'var(--shadow-product)',
             },
             colors: {
+                // Design system Flexilivre (variables de resources/css/tokens.css)
+                brand: {
+                    DEFAULT: 'var(--primary-500)',
+                    hover: 'var(--primary-hover)',
+                    active: 'var(--primary-active)',
+                    tint: 'var(--primary-tint)',
+                    wash: 'var(--primary-wash)',
+                    disabled: 'var(--primary-disabled-bg)',
+                },
+                info: {
+                    DEFAULT: 'var(--secondary-500)',
+                    hover: 'var(--secondary-hover)',
+                    active: 'var(--secondary-active)',
+                    deep: 'var(--secondary-deep)',
+                    tint: 'var(--secondary-tint)',
+                    night: 'var(--secondary-950)',
+                },
+                app: {
+                    bg: 'var(--app-bg)',
+                    surface: 'var(--app-surface-2)',
+                    hover: 'var(--app-hover)',
+                    border: 'var(--app-border)',
+                    'border-strong': 'var(--app-border-strong)',
+                    muted: 'var(--app-icon-muted)',
+                    strong: 'var(--app-text-strong)',
+                },
+                ink: {
+                    DEFAULT: 'var(--grey-max)',
+                    soft: 'var(--grey-text)',
+                    medium: 'var(--grey-medium)',
+                },
+                success: { DEFAULT: 'var(--success)', tint: 'var(--success-tint)', text: 'var(--success-text)' },
+                warning: { DEFAULT: 'var(--warning)', tint: 'var(--warning-tint)', text: 'var(--warning-text)' },
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',
                 card: {

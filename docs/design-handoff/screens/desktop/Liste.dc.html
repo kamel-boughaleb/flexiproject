@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Test projet — Liste</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F7F9;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button,input{font-family:inherit}
+.hov:hover{background:#F1F2F4}
+.row:hover{background:#FAFBFC}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 960px; background: #F6F7F9; font-family: 'Quicksand', sans-serif; color: #121212">
+  <div style="flex: 1 1 232px; max-width: 100%"><dc-import name="Sidebar" hint-size="100%,960px"></dc-import></div>
+  <main style="flex: 999 1 560px; min-width: 0; margin: 10px 10px 10px 0; background: #FFFFFF; border-radius: 20px; box-shadow: 0 2px 4px 0 #112a3b1a; display: flex; flex-direction: column; overflow: hidden">
+    <dc-import name="ProjectHeader" active="liste" hint-size="100%,118px"></dc-import>
+
+    <!-- Toolbar -->
+    <div style="display: flex; align-items: center; gap: 8px; padding: 14px 28px; border-bottom: 1px solid #ECEDEF; flex-wrap: wrap">
+      <label style="display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border: 1px solid #DCDDE0; border-radius: 100px; color: #575757; min-width: 240px">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Rechercher une tâche</span>
+        <input type="search" placeholder="Rechercher une tâche" style="border: none; outline: none; font-size: 14px; background: transparent; flex: 1; color: #121212">
+      </label>
+      <div style="margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap">
+        <button type="button" class="hov" style="height: 36px; padding: 0 12px; border: none; background: none; border-radius: 100px; font-size: 14px; font-weight: 600; color: #343434; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filtrer</button>
+        <button type="button" class="hov" style="height: 36px; padding: 0 12px; border: none; background: none; border-radius: 100px; font-size: 14px; font-weight: 600; color: #343434; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></svg>Trier</button>
+        <button type="button" style="height: 36px; padding: 0 14px; border: none; background: #F1F2F4; border-radius: 100px; font-size: 14px; font-weight: 600; color: #343434; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/></svg>Regrouper : Section</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div style="flex: 1; overflow: auto; padding: 8px 28px 28px">
+      <div style="min-width: 860px">
+        <div style="display: grid; grid-template-columns: minmax(280px, 1fr) 170px 130px 120px 110px 70px; align-items: center; height: 40px; border-bottom: 1px solid #ECEDEF; font-size: 12px; font-weight: 700; color: #575757; letter-spacing: 0.03em; position: sticky; top: 0; background: #FFFFFF">
+          <span style="padding-left: 36px">NOM DE LA TÂCHE</span><span>RESPONSABLE</span><span>ÉCHÉANCE</span><span>PRIORITÉ</span><span>SOUS-TÂCHES</span><span style="text-align: right; padding-right: 8px">ACTIVITÉ</span>
+        </div>
+
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+          <div style="margin-top: 14px">
+            <button type="button" onClick="{{ g.toggle }}" aria-expanded="{{ g.expanded }}" class="hov" style="display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 8px; border: none; background: none; border-radius: 10px; font-size: 16px; font-weight: 700; color: #121212; cursor: pointer">
+              <span style="{{ g.chevronStyle }}"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+              {{ g.name }}<span style="font-size: 13px; font-weight: 600; color: #575757">{{ g.count }}</span>
+            </button>
+            <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+                  <div class="row" style="display: grid; grid-template-columns: minmax(280px, 1fr) 170px 130px 120px 110px 70px; align-items: center; min-height: 46px; border-bottom: 1px solid #ECEDEF; font-size: 14px">
+                    <span style="display: flex; align-items: center; gap: 10px; padding-left: 8px; min-width: 0">
+                      <button type="button" aria-label="{{ r.checkLabel }}" onClick="{{ r.toggle }}" style="{{ r.checkStyle }}"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></button>
+                      <a href="Tache.dc.html" style="{{ r.nameStyle }}">{{ r.name }}</a>
+                    </span>
+                    <span style="display: flex; align-items: center; gap: 8px; font-weight: 600"><span style="width: 26px; height: 26px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span>kamel boughaleb</span>
+                    <span style="{{ r.dueStyle }}">{{ r.due }}</span>
+                    <span><span style="{{ r.prioStyle }}">{{ r.prio }}</span></span>
+                    <span style="font-size: 13px; font-weight: 600; color: #575757">{{ r.subs }}</span>
+                    <span style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; padding-right: 8px; font-size: 13px; color: #575757"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6A8 8 0 1 1 21 12z"/></svg>{{ r.comments }}</span>
+                  </div>
+                </sc-for>
+                <button type="button" class="hov" style="width: 100%; text-align: left; height: 42px; padding: 0 0 0 36px; border: none; background: none; font-size: 14px; font-weight: 600; color: #575757; cursor: pointer">Ajouter une tâche…</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+
+        <button type="button" class="hov" style="margin-top: 18px; height: 40px; padding: 0 14px; border: 2px dashed #CCCDD0; background: none; border-radius: 100px; font-size: 14px; font-weight: 600; color: #575757; cursor: pointer">+ Ajouter une section</button>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      closed: {},
+      tasks: [
+        { id: 1, section: 'À faire', name: 'Orientation Poster/Cadre', due: '4 nov.', late: false, prio: 'Moyenne', subs: '—', comments: 0, done: false },
+        { id: 2, section: 'En cours', name: 'Ajouter un encart/label Imprim’Vert comme sur Flexi', due: 'Hier', late: true, prio: 'Basse', subs: '1/3', comments: 1, done: false },
+        { id: 3, section: 'En cours', name: 'Design Paiement extra', due: '2 nov.', late: false, prio: 'Haute', subs: '—', comments: 7, done: false },
+        { id: 4, section: 'Terminé', name: 'Upgrade PHP', due: '15 oct.', late: false, prio: 'Basse', subs: '—', comments: 1, done: true }
+      ]
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const prioMap = {
+      Basse: 'background: #D6F0F7; color: #214258',
+      Moyenne: 'background: #FFF1DE; color: #8A4B00',
+      Haute: 'background: #FEE5F2; color: #D10553'
+    };
+    const groups = ['À faire', 'En cours', 'Terminé'].map((name) => {
+      const rows = s.tasks.filter((t) => t.section === name).map((t) => ({
+        ...t,
+        checkLabel: (t.done ? 'Rouvrir : ' : 'Terminer : ') + t.name,
+        checkStyle: 'flex: none; width: 20px; height: 20px; padding: 0; border-radius: 100px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; cursor: pointer; ' + (t.done ? 'background: #44AF01; border: 1.5px solid #44AF01; color: #FFFFFF' : 'background: #FFFFFF; border: 1.5px solid #8A8B8E; color: transparent'),
+        nameStyle: 'text-decoration: none; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ' + (t.done ? 'color: #575757; text-decoration: line-through' : 'color: #121212'),
+        dueStyle: 'font-size: 13px; font-weight: 700; ' + (t.late && !t.done ? 'color: #D10553' : 'color: #575757'),
+        prioStyle: 'font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 100px; ' + prioMap[t.prio],
+        toggle: () => this.setState({ tasks: s.tasks.map((x) => (x.id === t.id ? { ...x, done: !x.done } : x)) })
+      }));
+      const open = !s.closed[name];
+      return {
+        name, rows, open,
+        count: rows.length,
+        expanded: open ? 'true' : 'false',
+        chevronStyle: 'display: flex; transition: transform .15s; ' + (open ? '' : 'transform: rotate(-90deg)'),
+        toggle: () => this.setState({ closed: { ...s.closed, [name]: open } })
+      };
+    });
+    return { groups };
+  }
+}
+</script>
+</body>
+</html>

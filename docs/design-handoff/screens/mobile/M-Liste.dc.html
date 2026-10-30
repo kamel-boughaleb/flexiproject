@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mobile — Liste</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: #FFFFFF; font-family: 'Quicksand', sans-serif; color: #121212; position: relative">
+
+  <header style="background: #FFFFFF; padding: 14px 12px 0; border-bottom: 1px solid #ECEDEF">
+    <div style="display: flex; align-items: center; gap: 6px">
+      <a href="M-Menu.dc.html" aria-label="Menu" style="width: 44px; height: 44px; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></a>
+      <span style="width: 14px; height: 14px; border-radius: 4px; background: #44AF01"></span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700; flex: 1">Test projet</h1>
+      <button type="button" aria-label="Filtrer" style="width: 44px; height: 44px; border: none; background: none; border-radius: 100px; color: #343434; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>
+      <span style="width: 32px; height: 32px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-right: 4px">KB</span>
+    </div>
+    <nav aria-label="Vues du projet" style="display: flex; gap: 8px; overflow-x: auto; padding: 10px 4px 12px">
+      <a href="M-Kanban.dc.html" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #F1F2F4; color: #343434; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Kanban</a>
+      <a href="M-Liste.dc.html" aria-current="page" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #121212; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Liste</a>
+      <a href="M-Calendrier.dc.html" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #F1F2F4; color: #343434; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Calendrier</a>
+      <a href="#" style="flex: none; height: 34px; padding: 0 14px; border-radius: 100px; background: #F1F2F4; color: #343434; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center">Planning</a>
+    </nav>
+  </header>
+
+  <div style="flex: 1; overflow-y: auto; padding: 4px 0 96px">
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+      <section>
+        <button type="button" onClick="{{ g.toggle }}" aria-expanded="{{ g.expanded }}" style="width: 100%; height: 48px; border: none; background: #FAFBFC; border-bottom: 1px solid #ECEDEF; padding: 0 16px; display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #121212; cursor: pointer; text-align: left">
+          <span style="{{ g.chevronStyle }}"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          {{ g.name }}<span style="font-size: 12px; font-weight: 700; color: #575757; background: #ECEDEF; min-width: 20px; height: 20px; border-radius: 100px; display: flex; align-items: center; justify-content: center">{{ g.count }}</span>
+        </button>
+        <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+              <div style="display: flex; align-items: center; gap: 2px; padding: 6px 12px 6px 4px; border-bottom: 1px solid #F1F2F4; min-height: 64px; box-sizing: border-box">
+                <button type="button" aria-label="{{ r.checkLabel }}" onClick="{{ r.toggle }}" style="flex: none; width: 44px; height: 44px; border: none; background: none; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="{{ r.checkStyle }}"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span></button>
+                <a href="M-Tache.dc.html" style="flex: 1; min-width: 0; text-decoration: none; display: flex; flex-direction: column; gap: 4px">
+                  <span style="{{ r.nameStyle }}">{{ r.name }}</span>
+                  <span style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #575757"><span style="{{ r.dueStyle }}">{{ r.due }}</span><span style="{{ r.prioStyle }}">{{ r.prio }}</span><span>{{ r.meta }}</span></span>
+                </a>
+                <span style="flex: none; width: 26px; height: 26px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </section>
+    </sc-for>
+  </div>
+
+  <a href="M-Ajout.dc.html" aria-label="Nouvelle tâche" style="position: absolute; right: 16px; bottom: 92px; width: 56px; height: 56px; border-radius: 100px; background: #D10553; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 6px 10px 10px 0 #112a3b33"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></a>
+
+  <nav aria-label="Navigation" style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; padding-bottom: 12px; box-sizing: border-box; background: #FFFFFF; border-top: 1px solid #ECEDEF; display: flex; justify-content: space-around; align-items: center">
+    <a href="#" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #575757; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</a>
+    <a href="#" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #575757; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>Mes tâches</a>
+    <a href="M-Kanban.dc.html" aria-current="page" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #D10553; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>Projets</a>
+    <a href="#" style="width: 72px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #575757; font-size: 11px; font-weight: 700"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21h4"/></svg>Notifications</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      closed: {},
+      tasks: [
+        { id: 1, section: 'À faire', name: 'Orientation Poster/Cadre', due: '4 nov.', late: false, prio: 'Moyenne', meta: '', done: false },
+        { id: 2, section: 'En cours', name: 'Ajouter un encart/label Imprim’Vert comme sur Flexi', due: 'Hier', late: true, prio: 'Basse', meta: '1/3', done: false },
+        { id: 3, section: 'En cours', name: 'Design Paiement extra', due: '2 nov.', late: false, prio: 'Haute', meta: '7 comm.', done: false },
+        { id: 4, section: 'Terminé', name: 'Upgrade PHP', due: '15 oct.', late: false, prio: 'Basse', meta: '', done: true }
+      ]
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const prioMap = { Basse: 'background: #D6F0F7; color: #214258', Moyenne: 'background: #FFF1DE; color: #8A4B00', Haute: 'background: #FEE5F2; color: #D10553' };
+    const groups = ['À faire', 'En cours', 'Terminé'].map((name) => {
+      const rows = s.tasks.filter((t) => t.section === name).map((t) => ({
+        ...t,
+        checkLabel: (t.done ? 'Rouvrir : ' : 'Terminer : ') + t.name,
+        checkStyle: 'width: 22px; height: 22px; border-radius: 100px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; ' + (t.done ? 'background: #44AF01; color: #FFFFFF' : 'border: 1.5px solid #8A8B8E; color: transparent'),
+        nameStyle: 'font-size: 15px; font-weight: 700; line-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ' + (t.done ? 'color: #575757; text-decoration: line-through' : 'color: #121212'),
+        dueStyle: 'font-weight: 700; ' + (t.late && !t.done ? 'color: #D10553' : ''),
+        prioStyle: 'font-weight: 700; padding: 1px 8px; border-radius: 100px; ' + prioMap[t.prio],
+        toggle: () => this.setState({ tasks: s.tasks.map((x) => (x.id === t.id ? { ...x, done: !x.done } : x)) })
+      }));
+      const open = !s.closed[name];
+      return {
+        name, rows, open, count: rows.length,
+        expanded: open ? 'true' : 'false',
+        chevronStyle: 'display: flex; ' + (open ? '' : 'transform: rotate(-90deg)'),
+        toggle: () => this.setState({ closed: { ...s.closed, [name]: open } })
+      };
+    });
+    return { groups };
+  }
+}
+</script>
+</body>
+</html>

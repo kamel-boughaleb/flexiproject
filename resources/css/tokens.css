@@ -1,0 +1,94 @@
+/* Flexi Projets — design tokens (design system Flexilivre + ajouts App) */
+
+:root {
+    /* Marque — rose */
+    --primary-500: #ff489c;
+    --primary-hover: #f0126d;
+    --primary-active: #d10553;
+    --primary-disabled-text: #ff63af;
+    --primary-disabled-bg: #ffcae6;
+    --primary-outline-active-bg: #ff9fd0;
+    --primary-tint: #fee5f2;
+
+    /* Marque — bleu */
+    --secondary-500: #289dc9;
+    --secondary-400: #40abd0;
+    --secondary-hover: #217299;
+    --secondary-active: #215d7d;
+    --secondary-deep: #214258;
+    --secondary-light-active: #7ccbe4;
+    --secondary-disabled-bg: #b2e1ef;
+    --secondary-tint: #d6f0f7;
+    --secondary-950: #112a3b;
+
+    /* Neutres */
+    --grey-max: #121212;
+    --grey-dark-hover: #343434;
+    --grey-text: #575757;
+    --grey-medium: #cccdd0;
+    --white: #ffffff;
+
+    /* États */
+    --focus: #1fddff;
+    --success: #44af01;
+    --warning-strong: #ff6c00;
+    --warning: #ff9100;
+    --danger: #fc0900;
+
+    /* Typo */
+    --font-sans: 'Quicksand', sans-serif;
+    --font-script: 'Rock Salt', cursive;
+
+    /* Rayons */
+    --radius-xs: 5px;
+    --radius-l: 20px;
+    --radius-2xl: 100px;
+
+    /* Ombres */
+    --shadow-soft: 0 2px 4px 0 #112a3b1a;
+    --shadow-product: 6px 10px 10px 0 #112a3b33;
+
+    /* Espacements boutons */
+    --spacing-5: 5px;
+    --btn-pad-y-s: 10px;
+    --btn-pad-x-m: 30px;
+    --btn-pad-x-l: 40px;
+    --outline-s: 2px;
+
+    /* ---- App (ajouts hors design system, utilisés par les maquettes) ---- */
+    --app-bg: #f6f7f9;
+    --app-surface-2: #fafbfc;
+    --app-hover: #f1f2f4;
+    --app-border: #ecedef;
+    --app-border-strong: #dcdde0;
+    --app-icon-muted: #8a8b8e;
+    --app-text-strong: #343434;
+    --success-tint: #eaf6e0;
+    --success-text: #2e6b00;
+    --warning-tint: #fff1de;
+    --warning-text: #8a4b00;
+    --primary-wash: #fff7fb;
+    --shadow-hover: 0 4px 10px 0 #112a3b26;
+}
+
+/* Mode sombre : neutres d'interface adaptés (la maquette ne définit que le mode clair). */
+.dark {
+    --app-bg: #0e0f11;
+    --app-surface-2: #17181b;
+    --app-hover: #222327;
+    --app-border: #2a2b30;
+    --app-border-strong: #3a3b40;
+    --app-icon-muted: #8a8b8e;
+    --app-text-strong: #e5e5e7;
+    --success-tint: #16310a;
+    --success-text: #9bd86f;
+    --warning-tint: #3a2507;
+    --warning-text: #ffc277;
+    --primary-tint: #3d0f25;
+    --primary-wash: #24101a;
+    --secondary-tint: #0f2a38;
+    --secondary-deep: #a8dcee;
+    --primary-active: #ff6cb0;
+    --grey-text: #a3a4a8;
+    --grey-max: #f2f2f3;
+}

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Test projet — Règles</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F7F9;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button{font-family:inherit}
+.hov:hover{background:#F1F2F4}
+.tpl:hover{border-color:#FF489C}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 960px; background: #F6F7F9; font-family: 'Quicksand', sans-serif; color: #121212">
+  <div style="flex: 1 1 232px; max-width: 100%"><dc-import name="Sidebar" hint-size="100%,960px"></dc-import></div>
+  <main style="flex: 999 1 560px; min-width: 0; margin: 10px 10px 10px 0; background: #FFFFFF; border-radius: 20px; box-shadow: 0 2px 4px 0 #112a3b1a; display: flex; flex-direction: column; overflow: hidden">
+    <dc-import name="ProjectHeader" active="regles" hint-size="100%,118px"></dc-import>
+
+    <div style="flex: 1; overflow: auto; padding: 28px">
+      <div style="max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px">
+
+        <div style="display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+          <div style="flex: 1 1 320px">
+            <h2 style="margin: 0; font-size: 26px; font-weight: 700; line-height: 1.3">Règles</h2>
+            <p style="margin: 4px 0 0; font-size: 15px; color: #575757">Automatisez les gestes répétitifs : quand quelque chose se passe, Flexi Projets s'occupe du reste.</p>
+          </div>
+          <button type="button" style="height: 44px; padding: 0 22px; border: none; border-radius: 100px; background: #D10553; color: #FFFFFF; font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Créer une règle</button>
+        </div>
+
+        <section aria-labelledby="active-h" style="display: flex; flex-direction: column; gap: 12px">
+          <h3 id="active-h" style="margin: 0; font-size: 15px; font-weight: 700">Règles du projet <span style="color: #575757; font-weight: 600">· {{ activeCount }} actives sur {{ total }}</span></h3>
+          <sc-for list="{{ rules }}" as="r" hint-placeholder-count="3">
+            <article style="{{ r.cardStyle }}">
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+                <span style="flex: none; width: 40px; height: 40px; border-radius: 12px; background: #FEE5F2; color: #D10553; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 4 14h7l-1 7 9-11h-7z"/></svg></span>
+                <span style="flex: 1 1 240px; font-size: 16px; font-weight: 700">{{ r.title }}</span>
+                <button type="button" class="hov" aria-label="Modifier la règle" style="width: 40px; height: 40px; border: none; background: none; border-radius: 10px; color: #575757; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button>
+                <button type="button" role="switch" aria-checked="{{ r.checked }}" aria-label="{{ r.switchLabel }}" onClick="{{ r.toggle }}" style="{{ r.switchStyle }}"><span style="{{ r.knobStyle }}"></span></button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-left: 52px">
+                <span style="font-size: 12px; font-weight: 700; color: #575757; letter-spacing: 0.04em">QUAND</span>
+                <span style="font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 100px; background: #D6F0F7; color: #214258">{{ r.when }}</span>
+                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8B8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                <span style="font-size: 12px; font-weight: 700; color: #575757; letter-spacing: 0.04em">ALORS</span>
+                <sc-for list="{{ r.then }}" as="t" hint-placeholder-count="1">
+                  <span style="font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 100px; background: #FEE5F2; color: #D10553">{{ t }}</span>
+                </sc-for>
+              </div>
+            </article>
+          </sc-for>
+        </section>
+
+        <section aria-labelledby="tpl-h" style="display: flex; flex-direction: column; gap: 12px">
+          <h3 id="tpl-h" style="margin: 0; font-size: 15px; font-weight: 700">Modèles suggérés</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px">
+            <button type="button" class="tpl" style="text-align: left; border: 2px solid #ECEDEF; background: #FFFFFF; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; color: #121212">
+              <span style="width: 36px; height: 36px; border-radius: 10px; background: #D6F0F7; color: #217299; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+              <span style="font-size: 15px; font-weight: 700">Assigner les nouvelles tâches</span>
+              <span style="font-size: 13px; line-height: 19px; color: #575757">Chaque tâche créée dans « À faire » reçoit un responsable par défaut.</span>
+            </button>
+            <button type="button" class="tpl" style="text-align: left; border: 2px solid #ECEDEF; background: #FFFFFF; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; color: #121212">
+              <span style="width: 36px; height: 36px; border-radius: 10px; background: #FFF1DE; color: #8A4B00; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M5 3 2 6M19 3l3 3"/></svg></span>
+              <span style="font-size: 15px; font-weight: 700">Rappel avant l'échéance</span>
+              <span style="font-size: 13px; line-height: 19px; color: #575757">Notifier le responsable la veille de la date d'échéance.</span>
+            </button>
+            <button type="button" class="tpl" style="text-align: left; border: 2px solid #ECEDEF; background: #FFFFFF; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; color: #121212">
+              <span style="width: 36px; height: 36px; border-radius: 10px; background: #EAF6E0; color: #2E6B00; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6A8 8 0 1 1 21 12z"/></svg></span>
+              <span style="font-size: 15px; font-weight: 700">Prévenir à chaque commentaire</span>
+              <span style="font-size: 13px; line-height: 19px; color: #575757">Les collaborateurs de la tâche reçoivent un e-mail pour chaque nouveau commentaire.</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      rules: [
+        { id: 1, on: true, title: 'Terminer les tâches déplacées dans « Terminé »', when: 'Tâche déplacée vers « Terminé »', then: ['Marquer comme terminée'] },
+        { id: 2, on: true, title: 'Ranger les tâches terminées', when: 'Tâche marquée comme terminée', then: ['Déplacer vers « Terminé »'] },
+        { id: 3, on: false, title: 'Relancer les tâches en retard', when: 'Échéance dépassée', then: ['Notifier le responsable', 'Priorité → Haute'] }
+      ]
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const rules = s.rules.map((r) => ({
+      ...r,
+      checked: r.on ? 'true' : 'false',
+      switchLabel: (r.on ? 'Désactiver : ' : 'Activer : ') + r.title,
+      cardStyle: 'border: 1px solid #ECEDEF; border-radius: 20px; padding: 18px 20px; box-shadow: 0 2px 4px 0 #112a3b1a; background: #FFFFFF; ' + (r.on ? '' : 'opacity: 0.7'),
+      switchStyle: 'flex: none; width: 48px; height: 28px; padding: 3px; border: none; border-radius: 100px; cursor: pointer; display: flex; align-items: center; justify-content: ' + (r.on ? 'flex-end' : 'flex-start') + '; background: ' + (r.on ? '#44AF01' : '#CCCDD0'),
+      knobStyle: 'width: 22px; height: 22px; border-radius: 100px; background: #FFFFFF; box-shadow: 0 2px 4px 0 #112a3b33',
+      toggle: () => this.setState({ rules: s.rules.map((x) => (x.id === r.id ? { ...x, on: !x.on } : x)) })
+    }));
+    return { rules, activeCount: s.rules.filter((r) => r.on).length, total: s.rules.length };
+  }
+}
+</script>
+</body>
+</html>

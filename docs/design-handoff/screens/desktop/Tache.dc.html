@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Tâche — plein écran</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F7F9;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button,textarea{font-family:inherit}
+.hov:hover{background:#F1F2F4}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 1100px; background: #F6F7F9; font-family: 'Quicksand', sans-serif; color: #121212">
+  <div style="flex: 1 1 232px; max-width: 100%"><dc-import name="Sidebar" hint-size="100%,960px"></dc-import></div>
+  <main style="flex: 999 1 560px; min-width: 0; margin: 10px 10px 10px 0; background: #FFFFFF; border-radius: 20px; box-shadow: 0 2px 4px 0 #112a3b1a; display: flex; flex-direction: column">
+
+    <!-- Top bar -->
+    <div style="display: flex; align-items: center; gap: 10px; padding: 14px 24px; border-bottom: 1px solid #ECEDEF; flex-wrap: wrap">
+      <a href="Main.dc.html" class="hov" style="height: 36px; padding: 0 12px 0 8px; border-radius: 100px; display: flex; align-items: center; gap: 6px; text-decoration: none; color: #343434; font-size: 14px; font-weight: 700"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>Test projet</a>
+      <span style="font-size: 13px; color: #575757; display: flex; align-items: center; gap: 6px"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>En cours</span>
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 6px">
+        <button type="button" onClick="{{ toggleDone }}" style="{{ doneBtnStyle }}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>{{ doneLabel }}</button>
+        <button type="button" aria-label="Copier le lien de la tâche" class="hov" style="width: 40px; height: 40px; border: none; background: none; border-radius: 10px; color: #575757; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+        <a href="Main.dc.html" aria-label="Réduire en panneau" class="hov" style="width: 40px; height: 40px; border-radius: 10px; color: #575757; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg></a>
+        <button type="button" aria-label="Plus d'actions" class="hov" style="width: 40px; height: 40px; border: none; background: none; border-radius: 10px; color: #575757; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 32px; padding: 32px 40px 40px; align-items: flex-start">
+
+      <!-- Left: content -->
+      <article style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column">
+        <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 8px; background: #EAF6E0; color: #2E6B00; font-size: 13px; font-weight: 700; padding: 10px 14px; border-radius: 12px; margin-bottom: 16px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>Tâche terminée par kamel boughaleb · à l'instant</div>
+        </sc-if>
+        <h1 style="{{ titleStyle }}">Ajouter un encart/label Imprim'Vert comme sur Flexi</h1>
+
+        <div class="hov" style="margin: 18px -14px 0; padding: 12px 14px; border-radius: 14px; font-size: 16px; line-height: 26px; color: #343434; cursor: text">Reprendre l'encart Imprim'Vert présent sur flexilivre.com (logo + phrase sur l'impression responsable) et l'ajouter sur Imprimeur.fr, au même emplacement.</div>
+
+        <div style="display: flex; align-items: center; gap: 10px; margin: 30px 0 10px">
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0">Sous-tâches</h2>
+          <span style="font-size: 13px; color: #575757; font-weight: 600">{{ subDone }}/{{ subTotal }}</span>
+          <div style="flex: 1; height: 6px; border-radius: 100px; background: #F1F2F4; overflow: hidden"><div style="{{ progressStyle }}"></div></div>
+        </div>
+        <div style="border: 1px solid #ECEDEF; border-radius: 16px; overflow: hidden">
+          <sc-for list="{{ subtasks }}" as="s" hint-placeholder-count="3">
+            <div class="hov" style="display: flex; align-items: center; gap: 10px; padding: 0 16px; min-height: 50px; border-bottom: 1px solid #ECEDEF">
+              <button type="button" aria-label="{{ s.ariaLabel }}" onClick="{{ s.toggle }}" style="{{ s.checkStyle }}"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></button>
+              <span style="{{ s.textStyle }}">{{ s.label }}</span>
+              <span style="font-size: 12px; color: #575757; font-weight: 600">{{ s.due }}</span>
+              <span style="width: 26px; height: 26px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span>
+            </div>
+          </sc-for>
+          <button type="button" class="hov" style="width: 100%; border: none; background: none; text-align: left; padding: 0 16px; height: 50px; font-size: 14px; font-weight: 600; color: #575757; display: flex; align-items: center; gap: 10px; cursor: pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter une sous-tâche</button>
+        </div>
+
+        <h2 style="font-size: 16px; font-weight: 700; margin: 30px 0 10px">Pièces jointes <span style="font-size: 13px; color: #575757; font-weight: 600">2</span></h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px">
+          <a href="#" style="display: flex; flex-direction: column; border: 1px solid #ECEDEF; border-radius: 16px; overflow: hidden; text-decoration: none; color: #121212">
+            <span style="height: 110px; background: #FEE5F2; color: #D10553; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700">PDF</span>
+            <span style="padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Facture [1065150].pdf</span><span style="font-size: 12px; color: #575757">30 oct.</span></span>
+          </a>
+          <a href="#" style="display: flex; flex-direction: column; border: 1px solid #ECEDEF; border-radius: 16px; overflow: hidden; text-decoration: none; color: #121212">
+            <span style="height: 110px; background: #D6F0F7; color: #217299; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg></span>
+            <span style="padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">image00007.jpeg</span><span style="font-size: 12px; color: #575757">30 oct.</span></span>
+          </a>
+          <button type="button" class="hov" style="min-height: 160px; border: 2px dashed #CCCDD0; background: none; border-radius: 16px; font-size: 13px; font-weight: 600; color: #575757; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Glisser un fichier</button>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 34px 0 14px; padding-top: 24px; border-top: 1px solid #ECEDEF; flex-wrap: wrap">
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0">Activité</h2>
+          <div role="tablist" aria-label="Filtrer l'activité" style="display: flex; background: #F1F2F4; border-radius: 100px; padding: 3px">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+              <button type="button" role="tab" aria-selected="{{ t.selected }}" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <sc-for list="{{ activity }}" as="a" hint-placeholder-count="4">
+            <sc-if value="{{ a.isComment }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; gap: 12px">
+                <span style="flex: none; width: 34px; height: 34px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span>
+                <div style="flex: 1; min-width: 0">
+                  <div style="font-size: 13px"><span style="font-weight: 700">{{ a.who }}</span><span style="color: #575757"> · {{ a.when }}</span></div>
+                  <div style="margin-top: 4px; font-size: 15px; line-height: 23px; background: #F6F7F9; border-radius: 4px 14px 14px 14px; padding: 10px 14px">{{ a.text }}</div>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ a.isEvent }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; gap: 12px; align-items: center; font-size: 13px; color: #575757; padding-left: 12px">
+                <span style="flex: none; width: 10px; height: 10px; border-radius: 100px; background: #CCCDD0"></span>
+                <span><span style="font-weight: 700; color: #343434">{{ a.who }}</span> {{ a.text }} · {{ a.when }}</span>
+              </div>
+            </sc-if>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: flex-start; margin-top: 22px">
+          <span style="flex: none; width: 34px; height: 34px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 4px">KB</span>
+          <div style="flex: 1; min-width: 0; border: 1px solid #DCDDE0; border-radius: 16px; padding: 4px 6px 6px 14px; box-shadow: 0 2px 4px 0 #112a3b1a">
+            <label for="comment-full" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Commentaire</label>
+            <textarea id="comment-full" rows="2" placeholder="Ajoutez un commentaire ou @mentionnez un collègue" style="width: 100%; box-sizing: border-box; border: none; outline: none; resize: none; font-size: 15px; line-height: 22px; padding: 8px 0; color: #121212; background: transparent"></textarea>
+            <div style="display: flex; align-items: center; gap: 2px">
+              <button type="button" aria-label="Joindre un fichier" class="hov" style="width: 34px; height: 34px; border: none; background: none; border-radius: 100px; color: #575757; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+              <button type="button" aria-label="Mentionner" class="hov" style="width: 34px; height: 34px; border: none; background: none; border-radius: 100px; color: #575757; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg></button>
+              <button type="button" style="margin-left: auto; height: 36px; padding: 0 20px; border: none; border-radius: 100px; background: #D10553; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">Envoyer</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Right: details -->
+      <aside aria-label="Détails de la tâche" style="flex: 1 1 300px; max-width: 380px; display: flex; flex-direction: column; gap: 16px">
+        <div style="border: 1px solid #ECEDEF; border-radius: 20px; padding: 8px 8px 12px; box-shadow: 0 2px 4px 0 #112a3b1a">
+          <div style="padding: 10px 10px 6px; font-size: 12px; font-weight: 700; color: #575757; letter-spacing: 0.04em">DÉTAILS</div>
+
+          <div style="padding: 6px 10px 10px"><div style="font-size: 12px; font-weight: 700; color: #575757; margin-bottom: 4px">Responsable</div>
+            <button type="button" class="hov" style="width: 100%; height: 40px; border: none; background: none; border-radius: 10px; padding: 0 6px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #121212; cursor: pointer"><span style="width: 28px; height: 28px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span>kamel boughaleb<span style="margin-left: auto; font-size: 12px; font-weight: 600; color: #575757; display: flex; align-items: center; gap: 5px"><span style="width: 8px; height: 8px; border-radius: 100px; background: #FF9100"></span>En attente</span></button>
+          </div>
+
+          <div style="padding: 6px 10px 10px"><div style="font-size: 12px; font-weight: 700; color: #575757; margin-bottom: 4px">Dates</div>
+            <button type="button" class="hov" style="width: 100%; height: 40px; border: none; background: none; border-radius: 10px; padding: 0 6px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #121212; cursor: pointer"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D10553" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>20 oct. → <span style="color: #D10553">Hier</span><span style="margin-left: auto; font-size: 11px; font-weight: 700; color: #D10553; background: #FEE5F2; padding: 2px 8px; border-radius: 100px">En retard</span></button>
+          </div>
+
+          <div style="padding: 6px 10px 10px"><div style="font-size: 12px; font-weight: 700; color: #575757; margin-bottom: 6px">Section</div>
+            <button type="button" style="height: 32px; border: none; border-radius: 100px; background: #D6F0F7; color: #214258; font-weight: 700; font-size: 13px; padding: 0 12px; display: flex; align-items: center; gap: 6px; cursor: pointer"><span style="width: 8px; height: 8px; border-radius: 100px; background: #289DC9"></span>En cours<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          </div>
+
+          <div style="padding: 6px 10px 10px"><div style="font-size: 12px; font-weight: 700; color: #575757; margin-bottom: 6px">Priorité</div>
+            <div role="radiogroup" aria-label="Priorité" style="display: flex; gap: 6px; flex-wrap: wrap">
+              <sc-for list="{{ priorities }}" as="p" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{ p.checked }}" onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding: 6px 10px 10px"><div style="font-size: 12px; font-weight: 700; color: #575757; margin-bottom: 4px">Projet</div>
+            <a href="Main.dc.html" class="hov" style="height: 40px; border-radius: 10px; padding: 0 6px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #121212; text-decoration: none"><span style="width: 12px; height: 12px; border-radius: 3px; background: #44AF01"></span>Test projet</a>
+          </div>
+
+          <div style="padding: 6px 10px 4px"><div style="font-size: 12px; font-weight: 700; color: #575757; margin-bottom: 4px">Dépendances</div>
+            <button type="button" class="hov" style="height: 40px; border: none; background: none; border-radius: 10px; padding: 0 6px; font-size: 14px; font-weight: 600; color: #575757; cursor: pointer">+ Ajouter des dépendances</button>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #ECEDEF; border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+          <div style="font-size: 12px; font-weight: 700; color: #575757; letter-spacing: 0.04em">COLLABORATEURS</div>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="width: 30px; height: 30px; border-radius: 100px; background: #D6F0F7; color: #214258; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">KB</span>
+            <button type="button" aria-label="Ajouter un collaborateur" class="hov" style="width: 30px; height: 30px; border: 1.5px dashed #8A8B8E; background: none; border-radius: 100px; color: #575757; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
+          <div style="font-size: 12px; color: #575757; line-height: 18px">Créée le 20 oct. par kamel boughaleb<br>Modifiée le 30 oct. à 09:09</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      done: false,
+      priority: 'basse',
+      tab: 'all',
+      subs: [
+        { id: 1, label: 'Récupérer le logo Imprim’Vert en SVG', due: '24 oct.', done: true },
+        { id: 2, label: 'Intégrer l’encart dans le pied de page', due: '29 oct.', done: false },
+        { id: 3, label: 'Vérifier l’affichage mobile', due: '1 nov.', done: false }
+      ]
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const done = s.done;
+    const subDone = s.subs.filter((x) => x.done).length;
+    const subTotal = s.subs.length;
+    const prioDefs = [
+      { id: 'basse', label: 'Basse', on: 'background: #D6F0F7; color: #214258; border-color: #289DC9' },
+      { id: 'moyenne', label: 'Moyenne', on: 'background: #FFF1DE; color: #8A4B00; border-color: #FF9100' },
+      { id: 'haute', label: 'Haute', on: 'background: #FEE5F2; color: #D10553; border-color: #FF489C' }
+    ];
+    const base = 'height: 32px; padding: 0 14px; border-radius: 100px; border: 2px solid #ECEDEF; background: #FFFFFF; color: #575757; font-weight: 700; font-size: 13px; cursor: pointer; ';
+    const priorities = prioDefs.map((p) => ({
+      label: p.label,
+      checked: s.priority === p.id ? 'true' : 'false',
+      style: base + (s.priority === p.id ? p.on : ''),
+      pick: () => this.setState({ priority: p.id })
+    }));
+    const tabs = [['comments', 'Commentaires'], ['all', 'Tout'], ['history', 'Historique']].map(([id, label]) => ({
+      label,
+      selected: s.tab === id ? 'true' : 'false',
+      style: 'height: 30px; padding: 0 14px; border: none; border-radius: 100px; font-size: 13px; font-weight: 700; cursor: pointer; ' + (s.tab === id ? 'background: #FFFFFF; color: #121212; box-shadow: 0 2px 4px 0 #112a3b1a' : 'background: transparent; color: #575757'),
+      pick: () => this.setState({ tab: id })
+    }));
+    const log = [
+      { type: 'event', who: 'kamel boughaleb', text: 'a créé cette tâche', when: '20 oct.' },
+      { type: 'comment', who: 'kamel boughaleb', text: 'Le label doit être identique à celui du site Flexi, même taille et même lien.', when: '28 oct. à 14:20' },
+      { type: 'event', who: 'kamel boughaleb', text: 'a changé la section en « En cours »', when: '28 oct. à 16:12' },
+      { type: 'event', who: 'kamel boughaleb', text: 'a joint « Facture [1065150].pdf »', when: '30 oct. à 09:09' },
+      { type: 'event', who: 'kamel boughaleb', text: 'a joint « image00007.jpeg »', when: '30 oct. à 09:09' }
+    ];
+    if (done) log.push({ type: 'event', who: 'kamel boughaleb', text: 'a marqué cette tâche comme terminée', when: 'à l’instant' });
+    const activity = log
+      .filter((a) => s.tab === 'all' || (s.tab === 'comments' ? a.type === 'comment' : a.type === 'event'))
+      .map((a) => ({ ...a, isComment: a.type === 'comment', isEvent: a.type === 'event' }));
+    const subtasks = s.subs.map((x) => ({
+      label: x.label, due: x.due,
+      ariaLabel: (x.done ? 'Rouvrir : ' : 'Terminer : ') + x.label,
+      checkStyle: 'flex: none; width: 22px; height: 22px; padding: 0; border-radius: 100px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-sizing: border-box; ' + (x.done ? 'background: #44AF01; border: 1.5px solid #44AF01; color: #FFFFFF' : 'background: #FFFFFF; border: 1.5px solid #8A8B8E; color: transparent'),
+      textStyle: 'flex: 1; min-width: 0; font-size: 15px; font-weight: 600; ' + (x.done ? 'color: #575757; text-decoration: line-through' : 'color: #121212'),
+      toggle: () => this.setState({ subs: s.subs.map((y) => (y.id === x.id ? { ...y, done: !y.done } : y)) })
+    }));
+    return {
+      done, priorities, tabs, activity, subtasks, subDone, subTotal,
+      doneLabel: done ? 'Terminée' : 'Marquer comme terminée',
+      doneBtnStyle: 'height: 38px; padding: 0 16px; border-radius: 100px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; ' + (done ? 'border: 2px solid #44AF01; background: #EAF6E0; color: #2E6B00' : 'border: 2px solid #DCDDE0; background: #FFFFFF; color: #343434'),
+      titleStyle: 'margin: 0; font-size: 35px; line-height: 1.3; font-weight: 700; ' + (done ? 'color: #575757' : 'color: #121212'),
+      progressStyle: 'height: 100%; border-radius: 100px; background: #44AF01; width: ' + Math.round((subDone / subTotal) * 100) + '%',
+      toggleDone: () => this.setState({ done: !s.done })
+    };
+  }
+}
+</script>
+</body>
+</html>

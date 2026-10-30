@@ -1,33 +1,44 @@
 <script setup lang="ts">
-import { dateRange, isOverdue } from '@/lib/labels';
+import { dueLabel, isOverdue } from '@/lib/labels';
 import type { Task } from '@/types';
-import { ListTree, MessageSquare, Paperclip } from 'lucide-vue-next';
+import { ListChecks, MessageCircle, Paperclip } from 'lucide-vue-next';
 import PriorityBadge from './PriorityBadge.vue';
 import TaskCheck from './TaskCheck.vue';
 import UserAvatar from './UserAvatar.vue';
 
-defineProps<{ task: Task; canEdit: boolean }>();
+defineProps<{ task: Task; canEdit: boolean; selected?: boolean }>();
 defineEmits<{ open: [id: number] }>();
 </script>
 
 <template>
     <div
-        class="cursor-pointer rounded-lg border bg-card p-3 shadow-sm transition hover:border-neutral-300 hover:shadow dark:hover:border-neutral-600"
+        role="button"
+        tabindex="0"
+        :aria-current="selected ? 'true' : undefined"
+        class="cursor-pointer rounded-task border-2 bg-card px-3.5 py-3 shadow-soft transition-shadow hover:shadow-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        :class="selected ? 'border-brand' : 'border-transparent'"
         @click="$emit('open', task.id)"
+        @keydown.enter.self="$emit('open', task.id)"
     >
-        <div class="flex items-start gap-2">
-            <TaskCheck class="mt-0.5" :task-id="task.id" :completed="task.completed" :disabled="!canEdit" />
-            <span class="flex-1 text-sm" :class="{ 'text-muted-foreground line-through': task.completed }">{{ task.title }}</span>
+        <div class="flex items-start gap-2.5">
+            <TaskCheck class="mt-px" :task-id="task.id" :completed="task.completed" :disabled="!canEdit" />
+            <span class="flex-1 text-sm font-semibold leading-5" :class="{ 'text-ink-soft line-through': task.completed }">{{ task.title }}</span>
         </div>
-        <div class="mt-2 flex flex-wrap items-center gap-2 pl-6 text-xs text-muted-foreground">
+        <div class="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs font-medium text-ink-soft">
             <PriorityBadge :priority="task.priority" />
-            <span v-if="task.start_date || task.due_date" :class="{ 'font-medium text-rose-600': isOverdue(task.due_date, task.completed) }">
-                {{ dateRange(task.start_date, task.due_date) }}
+            <span v-if="task.due_date" :class="{ 'font-bold text-brand-active': isOverdue(task.due_date, task.completed) }">
+                {{ dueLabel(task.due_date) }}
             </span>
-            <span v-if="task.subtasks_count" class="flex items-center gap-0.5"><ListTree class="size-3" />{{ task.subtasks_count }}</span>
-            <span v-if="task.comments_count" class="flex items-center gap-0.5"><MessageSquare class="size-3" />{{ task.comments_count }}</span>
-            <span v-if="task.attachments_count" class="flex items-center gap-0.5"><Paperclip class="size-3" />{{ task.attachments_count }}</span>
-            <UserAvatar class="ml-auto" :user="task.assignee" />
+            <span v-if="task.comments_count" class="flex items-center gap-1" :title="`${task.comments_count} commentaire(s)`">
+                <MessageCircle class="size-3.5" />{{ task.comments_count }}
+            </span>
+            <span v-if="task.subtasks_count" class="flex items-center gap-1" title="Sous-tâches terminées">
+                <ListChecks class="size-3.5" />{{ task.subtasks_done_count ?? 0 }}/{{ task.subtasks_count }}
+            </span>
+            <span v-if="task.attachments_count" class="flex items-center gap-1" :title="`${task.attachments_count} pièce(s) jointe(s)`">
+                <Paperclip class="size-3.5" />{{ task.attachments_count }}
+            </span>
+            <UserAvatar v-if="task.assignee" class="ml-auto" :user="task.assignee" size="xs" />
         </div>
     </div>
 </template>

@@ -25,7 +25,7 @@ defineProps<{ tasks: (Task & { project: { id: number; name: string; color: strin
                     </span>
                     <span
                         class="w-28 text-right text-xs"
-                        :class="isOverdue(t.due_date, t.completed) ? 'font-medium text-rose-600' : 'text-muted-foreground'"
+                        :class="isOverdue(t.due_date, t.completed) ? 'font-bold text-brand-active' : 'text-muted-foreground'"
                     >
                         {{ dateRange(t.start_date, t.due_date) }}
                     </span>

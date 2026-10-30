@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Connexion — Flexi Projets</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;family=Rock+Salt&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF;font-family:"Quicksand",sans-serif;color:#121212}
+a{color:#215D7D}a:hover{color:#214258}
+button,input{font-family:inherit}
+.field:focus-within{border-color:#289DC9;box-shadow:0 0 0 3px #D6F0F7}
+.ghost:hover{background:#F6F7F9}
+.cta:hover{background:#F0126D}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 900px; background: #FFFFFF; font-family: 'Quicksand', sans-serif; color: #121212">
+
+  <!-- Left: brand panel -->
+  <section aria-label="Présentation" style="flex: 1 1 520px; min-width: 0; margin: 12px; border-radius: 28px; background: #FEE5F2; padding: 48px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 32px; position: relative; overflow: hidden">
+    <div aria-hidden="true" style="position: absolute; right: -120px; top: -120px; width: 380px; height: 380px; border-radius: 100px 100px 100px 260px; background: #FFCAE6"></div>
+    <div aria-hidden="true" style="position: absolute; left: -90px; bottom: -110px; width: 300px; height: 300px; border-radius: 100px; background: #D6F0F7"></div>
+
+    <div style="display: flex; align-items: center; gap: 12px; position: relative">
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: #FF489C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 24px; box-shadow: 6px 10px 10px 0 #112a3b33">F</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-weight: 700; font-size: 18px">Flexi Projets</span>
+        <span style="font-size: 13px; color: #575757">Flexilivre</span>
+      </div>
+    </div>
+
+    <div style="position: relative; margin-top: auto; display: flex; flex-direction: column; gap: 14px; max-width: 520px">
+      <span style="font-family: 'Rock Salt', cursive; font-size: 20px; line-height: 30px; color: #D10553">Vos projets, bien rangés</span>
+      <h1 style="margin: 0; font-size: 35px; line-height: 1.3; font-weight: 700; color: #121212">Tous les projets Flexilivre, au même endroit.</h1>
+      <ul style="list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; font-size: 16px; line-height: 24px; color: #343434">
+        <li style="display: flex; gap: 10px; align-items: center"><span style="flex: none; width: 26px; height: 26px; border-radius: 100px; background: #FFFFFF; color: #D10553; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>Kanban, liste, calendrier et planning</li>
+        <li style="display: flex; gap: 10px; align-items: center"><span style="flex: none; width: 26px; height: 26px; border-radius: 100px; background: #FFFFFF; color: #D10553; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>Règles automatiques « quand… alors… »</li>
+        <li style="display: flex; gap: 10px; align-items: center"><span style="flex: none; width: 26px; height: 26px; border-radius: 100px; background: #FFFFFF; color: #D10553; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>Collaborateurs, commentaires et notifications</li>
+        <li style="display: flex; gap: 10px; align-items: center"><span style="flex: none; width: 26px; height: 26px; border-radius: 100px; background: #FFFFFF; color: #D10553; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>Dates de début et de fin pour chaque tâche</li>
+      </ul>
+    </div>
+
+    <!-- Product preview -->
+    <div aria-hidden="true" style="position: relative; background: #FFFFFF; border-radius: 20px; padding: 14px; box-shadow: 6px 10px 10px 0 #112a3b33; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 620px">
+      <div style="background: #F6F7F9; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 12px; font-weight: 700">À faire <span style="color: #575757">2</span></span>
+        <div style="background: #FFFFFF; border-radius: 10px; padding: 10px; box-shadow: 0 2px 4px 0 #112a3b1a; display: flex; flex-direction: column; gap: 8px"><span style="display: flex; gap: 6px; align-items: center"><span style="width: 10px; height: 10px; border-radius: 100px; border: 1.5px solid #8A8B8E"></span><span style="height: 6px; flex: 1; border-radius: 100px; background: #ECEDEF"></span></span><span style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 100px; background: #FEE5F2; color: #D10553">Haute</span><span style="width: 16px; height: 16px; border-radius: 100px; background: #D6F0F7"></span></span></div>
+        <div style="background: #FFFFFF; border-radius: 10px; padding: 10px; box-shadow: 0 2px 4px 0 #112a3b1a; display: flex; flex-direction: column; gap: 8px"><span style="display: flex; gap: 6px; align-items: center"><span style="width: 10px; height: 10px; border-radius: 100px; border: 1.5px solid #8A8B8E"></span><span style="height: 6px; width: 70%; border-radius: 100px; background: #ECEDEF"></span></span><span style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 100px; background: #FFF1DE; color: #8A4B00">Moyenne</span><span style="width: 16px; height: 16px; border-radius: 100px; background: #D6F0F7"></span></span></div>
+      </div>
+      <div style="background: #F6F7F9; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 12px; font-weight: 700">En cours <span style="color: #575757">1</span></span>
+        <div style="background: #FFFFFF; border-radius: 10px; padding: 10px; border: 2px solid #FF489C; display: flex; flex-direction: column; gap: 8px"><span style="display: flex; gap: 6px; align-items: center"><span style="width: 10px; height: 10px; border-radius: 100px; border: 1.5px solid #8A8B8E"></span><span style="height: 6px; flex: 1; border-radius: 100px; background: #ECEDEF"></span></span><span style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 100px; background: #D6F0F7; color: #214258">Basse</span><span style="width: 16px; height: 16px; border-radius: 100px; background: #D6F0F7"></span></span></div>
+      </div>
+      <div style="background: #F6F7F9; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 12px; font-weight: 700">Terminé <span style="color: #575757">1</span></span>
+        <div style="background: #FFFFFF; border-radius: 10px; padding: 10px; box-shadow: 0 2px 4px 0 #112a3b1a; display: flex; flex-direction: column; gap: 8px"><span style="display: flex; gap: 6px; align-items: center"><span style="width: 10px; height: 10px; border-radius: 100px; background: #44AF01"></span><span style="height: 6px; width: 60%; border-radius: 100px; background: #ECEDEF"></span></span><span style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 100px; background: #EAF6E0; color: #2E6B00">Terminée</span><span style="width: 16px; height: 16px; border-radius: 100px; background: #D6F0F7"></span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right: form -->
+  <main style="flex: 1 1 480px; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 48px 24px; box-sizing: border-box">
+    <div style="width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 22px">
+      <div>
+        <h2 style="margin: 0; font-size: 32px; line-height: 1.3; font-weight: 700">Bon retour parmi nous</h2>
+        <p style="margin: 6px 0 0; font-size: 16px; line-height: 24px; color: #575757">Connectez-vous pour retrouver vos projets et vos tâches.</p>
+      </div>
+
+      <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: #FEE5F2; color: #D10553; font-size: 14px; font-weight: 700; line-height: 21px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>E-mail ou mot de passe incorrect. Vérifiez vos informations et réessayez.</div>
+      </sc-if>
+
+      <button type="button" class="ghost" style="height: 52px; border: 2px solid #DCDDE0; background: #FFFFFF; border-radius: 100px; font-size: 16px; font-weight: 700; color: #121212; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer"><span aria-hidden="true" style="width: 22px; height: 22px; border-radius: 100px; border: 2px solid #DCDDE0; box-sizing: border-box; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: #575757">G</span>Continuer avec Google</button>
+
+      <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: #575757; letter-spacing: 0.04em"><span style="flex: 1; height: 1px; background: #ECEDEF"></span>OU AVEC VOTRE E-MAIL<span style="flex: 1; height: 1px; background: #ECEDEF"></span></div>
+
+      <form style="display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="login-email" style="font-size: 14px; font-weight: 700">Adresse e-mail</label>
+          <div class="field" style="{{ fieldStyle }}">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8B8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>
+            <input id="login-email" type="email" autocomplete="email" value="kb@flexilivre.com" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 16px; color: #121212">
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <label for="login-pass" style="font-size: 14px; font-weight: 700">Mot de passe</label>
+            <a href="#" style="font-size: 14px; font-weight: 700; color: #215D7D">Mot de passe oublié ?</a>
+          </div>
+          <div class="field" style="{{ fieldStyle }}">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8B8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <input id="login-pass" type="{{ passType }}" autocomplete="current-password" value="motdepasse" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 16px; color: #121212">
+            <button type="button" onClick="{{ togglePass }}" aria-label="{{ passLabel }}" aria-pressed="{{ passPressed }}" style="flex: none; width: 40px; height: 40px; margin-right: -8px; border: none; background: none; border-radius: 100px; color: #575757; display: flex; align-items: center; justify-content: center; cursor: pointer">
+              <sc-if value="{{ showPass }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-3 3.6M6.4 7.5A16 16 0 0 0 2.5 12S6 18 12 18a9.6 9.6 0 0 0 4.2-1M9.9 10a3 3 0 0 0 4.1 4.1"/></svg></sc-if>
+              <sc-if value="{{ hidePass }}" hint-placeholder-val="{{ true }}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 6 12 6s9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="3"/></svg></sc-if>
+            </button>
+          </div>
+        </div>
+
+        <label style="display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; cursor: pointer; min-height: 32px">
+          <input type="checkbox" style="width: 20px; height: 20px; accent-color: #D10553; margin: 0">Se souvenir de moi
+        </label>
+
+        <a href="Main.dc.html" class="cta" style="{{ ctaStyle }}">{{ ctaLabel }}</a>
+      </form>
+
+      <p style="margin: 6px 0 0; text-align: center; font-size: 14px; line-height: 21px; color: #575757">Pas encore de compte ? L'accès se fait sur invitation d'un administrateur.</p>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"etat":{"editor":"enum","options":["normal","erreur","chargement"],"default":"normal"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { showPass: false };
+  }
+  renderVals() {
+    const etat = this.props.etat ?? 'normal';
+    const err = etat === 'erreur';
+    const loading = etat === 'chargement';
+    const show = this.state.showPass;
+    return {
+      isError: err,
+      showPass: show,
+      hidePass: !show,
+      passType: show ? 'text' : 'password',
+      passLabel: show ? 'Masquer le mot de passe' : 'Afficher le mot de passe',
+      passPressed: show ? 'true' : 'false',
+      togglePass: () => this.setState({ showPass: !show }),
+      fieldStyle: 'height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-radius: 14px; background: #FFFFFF; box-sizing: border-box; border: 2px solid ' + (err ? '#D10553' : '#DCDDE0'),
+      ctaLabel: loading ? 'Connexion…' : 'Se connecter',
+      ctaStyle: 'height: 52px; margin-top: 4px; border-radius: 100px; font-size: 18px; font-weight: 700; color: #FFFFFF; text-decoration: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px 0 #112a3b1a; background: ' + (loading ? '#F0126D; opacity: 0.85; cursor: progress' : '#FF489C')
+    };
+  }
+}
+</script>
+</body>
+</html>

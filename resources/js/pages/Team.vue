@@ -42,16 +42,10 @@ const pendingCount = computed(() => props.users.filter((u) => u.pending).length)
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2 text-sm font-medium">
                             <span class="truncate">{{ u.name }}</span>
-                            <span
-                                v-if="u.is_admin"
-                                class="rounded bg-orange-100 px-1.5 py-0.5 text-[11px] font-medium text-orange-700 dark:bg-orange-950 dark:text-orange-300"
-                            >
+                            <span v-if="u.is_admin" class="rounded-full bg-brand-tint px-2 py-0.5 text-xs font-bold text-brand-active">
                                 Administrateur
                             </span>
-                            <span
-                                v-if="u.pending"
-                                class="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                            >
+                            <span v-if="u.pending" class="rounded-full bg-warning-tint px-2 py-0.5 text-xs font-bold text-warning-text">
                                 Invitation en attente
                             </span>
                         </div>
@@ -59,7 +53,7 @@ const pendingCount = computed(() => props.users.filter((u) => u.pending).length)
                     </div>
                     <template v-if="me.is_admin && u.pending">
                         <Button variant="ghost" size="sm" @click="resend(u)">Renvoyer</Button>
-                        <Button variant="ghost" size="sm" class="text-rose-600" @click="cancel(u)">Annuler</Button>
+                        <Button variant="ghost" size="sm" class="text-brand-active" @click="cancel(u)">Annuler</Button>
                     </template>
                     <Button v-else-if="me.is_admin && u.id !== me.id" variant="ghost" size="sm" @click="setAdmin(u, !u.is_admin)">
                         {{ u.is_admin ? 'Retirer admin' : 'Rendre admin' }}
