@@ -8,7 +8,6 @@ use App\Notifications\ProjectNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule as ValidationRule;
 
 class MemberController extends Controller
@@ -26,8 +25,8 @@ class MemberController extends Controller
         $user = User::firstOrCreate(['email' => $email], ['name' => $data['name'] ?: strstr($email, '@', true)]);
 
         if ($user->wasRecentlyCreated) {
-            // Nouveau compte : la personne choisit son mot de passe via le lien reçu (ou se connecte avec Google).
-            Password::sendResetLink(['email' => $email]);
+            // Nouveau compte : la personne reçoit un lien pour créer son compte (photo, mot de passe ou Google).
+            $user->invite($request->user(), $project);
         }
 
         $project->members()->syncWithoutDetaching([$user->id => ['role' => $data['role']]]);

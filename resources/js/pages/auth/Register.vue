@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AvatarPicker from '@/components/AvatarPicker.vue';
 import GoogleButton from '@/components/GoogleButton.vue';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
@@ -14,6 +15,7 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
+    photo: null as File | null,
 });
 
 const submit = () => {
@@ -34,6 +36,12 @@ const submit = () => {
 
         <form @submit.prevent="submit" class="flex flex-col gap-6">
             <div class="grid gap-6">
+                <div class="grid gap-2">
+                    <Label>Photo</Label>
+                    <AvatarPicker v-model="form.photo" :user="{ id: 0, name: form.name || form.email, color: '#f97316' }" />
+                    <InputError :message="form.errors.photo" />
+                </div>
+
                 <div class="grid gap-2">
                     <Label for="name">Nom</Label>
                     <Input id="name" type="text" required autofocus tabindex="1" autocomplete="name" v-model="form.name" placeholder="Prénom Nom" />

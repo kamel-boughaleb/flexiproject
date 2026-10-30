@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MemberController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RuleController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TeamController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +20,8 @@ Route::redirect('/', '/dashboard')->name('home');
 Route::middleware('guest')->group(function () {
     Route::get('auth/google', [GoogleController::class, 'redirect'])->name('google.redirect');
     Route::get('auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
+    Route::get('invitation/{token}', [InvitationController::class, 'show'])->name('invitations.show');
+    Route::post('invitation/{token}', [InvitationController::class, 'store'])->name('invitations.accept');
 });
 
 Route::middleware('auth')->group(function () {
@@ -25,6 +29,12 @@ Route::middleware('auth')->group(function () {
     Route::get('my-tasks', MyTasksController::class)->name('my-tasks');
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read', [NotificationController::class, 'markAllRead'])->name('notifications.read');
+
+    Route::get('team', [TeamController::class, 'index'])->name('team.index');
+    Route::post('team', [TeamController::class, 'store'])->name('team.store');
+    Route::post('team/{user}/resend', [TeamController::class, 'resend'])->name('team.resend');
+    Route::delete('team/{user}', [TeamController::class, 'destroy'])->name('team.destroy');
+    Route::get('users/{user}/photo', [TeamController::class, 'photo'])->name('users.photo');
 
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::get('projects/{project}', fn (Project $project) => to_route('projects.view', [$project, 'board']))->name('projects.show');

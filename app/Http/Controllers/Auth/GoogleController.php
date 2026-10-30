@@ -51,7 +51,7 @@ class GoogleController extends Controller
         $user->fill([
             'name' => $user->name ?: $google->getName(),
             'google_id' => $google->getId(),
-            // Ne remplace pas une photo déjà choisie par le collaborateur.
+            // Ne remplace ni une photo envoyée par le collaborateur, ni un avatar déjà choisi.
             'avatar' => $user->avatar ?: $google->getAvatar(),
         ]);
         $user->email_verified_at ??= now();

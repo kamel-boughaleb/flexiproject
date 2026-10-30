@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\InvitationNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -27,7 +27,8 @@ class MemberTest extends TestCase
 
         $sophie = User::where('email', 'sophie@flexilivre.com')->firstOrFail();
         $this->assertSame('editor', $sophie->roleIn($project));
-        Notification::assertSentTo($sophie, ResetPassword::class);
+        Notification::assertSentTo($sophie, InvitationNotification::class, fn ($n) => $n->project->is($project));
+        $this->assertTrue($sophie->isPending());
     }
 
     public function test_removing_a_member_unassigns_their_tasks(): void
