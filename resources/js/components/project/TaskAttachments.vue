@@ -1,33 +1,14 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import { fileSize } from '@/lib/files';
+import { FILE_ICONS as ICONS, FILE_TILES as TILES, fileSize } from '@/lib/files';
 import { shortDate } from '@/lib/labels';
-import type { Attachment, AttachmentKind, SharedData } from '@/types';
+import type { Attachment, SharedData } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { FileCode, FileIcon, FileText, Film, Image, Music, Plus, Trash2 } from 'lucide-vue-next';
+import { Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import AttachmentViewer from './AttachmentViewer.vue';
 
 const props = defineProps<{ taskId: number; attachments: Attachment[]; canEdit: boolean; canManage: boolean }>();
-
-// Vignette de chaque type de fichier : fond et couleur de la marque.
-const TILES: Record<AttachmentKind, string> = {
-    image: 'bg-info-tint text-info-active',
-    video: 'bg-info-tint text-info-active',
-    audio: 'bg-warning-tint text-warning-text',
-    pdf: 'bg-brand-tint text-brand-active',
-    text: 'bg-success-tint text-success-text',
-    other: 'bg-app-hover text-ink-soft',
-};
-
-const ICONS: Record<AttachmentKind, typeof FileIcon> = {
-    image: Image,
-    video: Film,
-    audio: Music,
-    pdf: FileText,
-    text: FileCode,
-    other: FileIcon,
-};
 
 const userId = computed(() => usePage<SharedData>().props.auth.user.id);
 const canDelete = (a: Attachment) => props.canManage || (props.canEdit && a.user_id === userId.value);

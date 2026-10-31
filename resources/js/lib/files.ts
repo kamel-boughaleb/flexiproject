@@ -1,3 +1,25 @@
+import type { AttachmentKind } from '@/types';
+import { FileCode, FileIcon, FileText, Film, Image, Music } from 'lucide-vue-next';
+
+/** Vignette de chaque type de fichier : fond et couleur de la marque. */
+export const FILE_TILES: Record<AttachmentKind, string> = {
+    image: 'bg-info-tint text-info-active',
+    video: 'bg-info-tint text-info-active',
+    audio: 'bg-warning-tint text-warning-text',
+    pdf: 'bg-brand-tint text-brand-active',
+    text: 'bg-success-tint text-success-text',
+    other: 'bg-app-hover text-ink-soft',
+};
+
+export const FILE_ICONS: Record<AttachmentKind, typeof FileIcon> = {
+    image: Image,
+    video: Film,
+    audio: Music,
+    pdf: FileText,
+    text: FileCode,
+    other: FileIcon,
+};
+
 /** Taille lisible : 1,2 Mo, 340 Ko… */
 export function fileSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} o`;

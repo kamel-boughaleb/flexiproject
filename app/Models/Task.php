@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Task extends Model
 {
@@ -71,6 +72,20 @@ class Task extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(Attachment::class)->latest('id');
+    }
+
+    /** Dernière image jointe : couverture de la carte sur le tableau. */
+    public function coverImage(): HasOne
+    {
+        return $this->hasOne(Attachment::class)->ofMany(['id' => 'max'], fn ($q) => $q
+            ->where('mime', 'like', 'image/%')
+            ->where('mime', 'not like', 'image/svg%'));
+    }
+
+    /** Dernière pièce jointe, quel qu'en soit le type (couverture à défaut d'image). */
+    public function latestAttachment(): HasOne
+    {
+        return $this->hasOne(Attachment::class)->latestOfMany('id');
     }
 
     public function activities(): HasMany

@@ -64,6 +64,59 @@ class AttachmentController extends Controller
             ->setContentDisposition('inline', $attachment->name, $this->asciiName($attachment->name));
     }
 
+    /**
+     * Vignette JPEG (600 px de large au plus) d'une image, pour la couverture
+     * des cartes. Créée au premier affichage puis conservée ; si l'image ne
+     * peut pas être réduite, l'original est renvoyé.
+     */
+    public function thumbnail(Attachment $attachment): BinaryFileResponse
+    {
+        Gate::authorize('view', $attachment->task->project);
+        abort_unless($attachment->kind === 'image', 404);
+        $disk = Storage::disk('local');
+        abort_unless($disk->exists($attachment->path), 404);
+
+        $thumb = Attachment::thumbnailPathFor($attachment->path);
+        if (! $disk->exists($thumb)) {
+            $this->makeThumbnail($disk->path($attachment->path), $thumb);
+        }
+        $file = $disk->exists($thumb) ? $disk->path($thumb) : $disk->path($attachment->path);
+        $type = $disk->exists($thumb) ? 'image/jpeg' : ($attachment->mime ?: 'application/octet-stream');
+
+        return response()->file($file, [
+            'Content-Type' => $type,
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => 'sandbox',
+            'Cache-Control' => 'private, max-age=86400',
+        ]);
+    }
+
+    private function makeThumbnail(string $source, string $target): void
+    {
+        if (! function_exists('imagecreatefromstring')) {
+            return;
+        }
+        $size = @getimagesize($source);
+        // Au-delà de 40 mégapixels, la réduction demanderait trop de mémoire.
+        if (! $size || $size[0] * $size[1] > 40_000_000 || filesize($source) > 30 * 1024 * 1024) {
+            return;
+        }
+        $image = @imagecreatefromstring((string) file_get_contents($source));
+        if (! $image) {
+            return;
+        }
+        $width = min(600, imagesx($image));
+        $height = max(1, (int) round(imagesy($image) * $width / imagesx($image)));
+        $thumb = imagecreatetruecolor($width, $height);
+        // Fond blanc pour les images transparentes (PNG, GIF, WebP).
+        imagefill($thumb, 0, 0, imagecolorallocate($thumb, 255, 255, 255));
+        imagecopyresampled($thumb, $image, 0, 0, 0, 0, $width, $height, imagesx($image), imagesy($image));
+
+        ob_start();
+        imagejpeg($thumb, null, 82);
+        Storage::disk('local')->put($target, (string) ob_get_clean());
+    }
+
     public function download(Attachment $attachment): StreamedResponse
     {
         Gate::authorize('view', $attachment->task->project);
