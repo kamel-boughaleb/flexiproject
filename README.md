@@ -114,6 +114,27 @@ créés ; sinon ils se connectent avec Google ou sont invités depuis la page É
 principale), les liens Google Drive/Dropbox ne sont pas copiés, une tâche présente dans plusieurs projets
 Asana est copiée dans chacun.
 
+## Gérer les utilisateurs en ligne de commande
+
+Pratique pour créer des comptes de test sans passer par une invitation par e-mail. Rôles : `admin`,
+`editor` (éditeur) ou `viewer` (lecteur), comme dans les projets ; `admin` rend aussi administrateur de la
+plateforme (page Équipe, invitations). Les projets se désignent par leur nom exact ou leur numéro
+(`users:list --projects`).
+
+```bash
+php artisan users:list --projects                                  # utilisateurs, rôles et projets
+php artisan users:add test@flexilivre.com --password=motdepasse    # éditeur, sans projet
+php artisan users:add lecteur@flexilivre.com --role=viewer --project="Catalogue 2027" --project=3
+php artisan users:add chef@flexilivre.com --name="Chef" --role=admin --all-projects   # mot de passe demandé
+php artisan users:update test@flexilivre.com --role=viewer          # change son rôle dans tous ses projets
+php artisan users:update test@flexilivre.com --role=editor --project=3 --remove-project=5
+php artisan users:update test@flexilivre.com --ask-password         # nouveau mot de passe (saisie masquée)
+php artisan users:remove test@flexilivre.com lecteur@flexilivre.com # demande confirmation (--force pour l'éviter)
+```
+
+Une suppression efface aussi les commentaires de l'utilisateur ; ses projets passent au premier
+administrateur (ou à `--transfer-to=email`). Le dernier administrateur ne peut être ni supprimé ni rétrogradé.
+
 ## Développement
 
 ```bash
