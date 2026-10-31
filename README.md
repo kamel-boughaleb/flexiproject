@@ -88,6 +88,32 @@ GOOGLE_ALLOWED_DOMAINS=flexilivre.com
 
 puis `php artisan config:clear`. Le bouton « Continuer avec Google » est toujours affiché sur les pages de connexion et d'inscription ; tant que les clés ne sont pas renseignées, il renvoie vers la page de connexion avec un message explicatif. Un compte Google dont l'adresse correspond à un compte existant s'y rattache automatiquement.
 
+## Import depuis Asana
+
+La commande `asana:import` récupère tout un espace de travail Asana : collaborateurs (rapprochés par e-mail,
+créés sinon), projets avec leurs membres, sections, tâches et sous-tâches (assigné, dates, description,
+priorité, statut), commentaires et pièces jointes. Elle peut être relancée sans risque : ce qui a déjà été
+importé est mis à jour, rien n'est dupliqué. Aucun e-mail de notification n'est envoyé pendant l'import.
+
+1. **Jeton Asana** : dans Asana, photo de profil › *Paramètres* › *Applications* › *Gérer les applications
+   de développement* (ou https://app.asana.com/0/my-apps) › *Créer un jeton d'accès personnel*. Collez-le dans
+   `.env` (`ASANA_TOKEN=…`) ou laissez la commande le demander.
+2. **Test en local** :
+   ```bash
+   php artisan migrate
+   php artisan data:reset      # efface les données de test (projets, tâches, règles, collaborateurs non admin)
+   php artisan asana:import
+   ```
+3. **Production**, une fois l'import validé : `bash scripts/import-asana-prod.sh` sauvegarde la base et les
+   fichiers dans `storage/backups/`, applique les migrations puis lance l'import (ajoutez `--reset` pour
+   effacer d'abord des données de test).
+
+Options utiles : `--project=<id>` (un projet seulement), `--invite` (invitation par e-mail aux collaborateurs
+créés ; sinon ils se connectent avec Google ou sont invités depuis la page Équipe), `--without-attachments`,
+`--without-comments`. Limites : un seul niveau de sous-tâches (les plus profondes sont rattachées à la tâche
+principale), les liens Google Drive/Dropbox ne sont pas copiés, une tâche présente dans plusieurs projets
+Asana est copiée dans chacun.
+
 ## Développement
 
 ```bash

@@ -35,6 +35,11 @@ return [
         ],
     ],
 
+    // Jeton d'accès personnel Asana, pour la commande asana:import (facultatif : demandé sinon).
+    'asana' => [
+        'token' => env('ASANA_TOKEN'),
+    ],
+
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
