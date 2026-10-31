@@ -24,7 +24,7 @@ class RuleController extends Controller
             'rules' => Rule::global()->oldest('id')->get(),
             // Noms de sections proposés : ceux utilisés dans les projets (« À faire », « En cours », « Terminé »…).
             'sectionNames' => Section::query()->distinct()->orderBy('name')->pluck('name'),
-            'users' => User::whereNull('invitation_token')->orderBy('name')->get(['id', 'name']),
+            'users' => User::active()->whereNull('invitation_token')->orderBy('name')->get(['id', 'name']),
             'triggers' => Rule::TRIGGERS,
             'actions' => Rule::ACTIONS,
         ]);

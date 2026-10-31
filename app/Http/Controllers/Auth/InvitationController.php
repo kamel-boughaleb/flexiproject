@@ -63,6 +63,9 @@ class InvitationController extends Controller
     {
         $user = User::findByInvitationToken($token);
 
+        if ($user && ! $user->isActive()) {
+            return to_route('login')->withErrors(['account' => User::INACTIVE_MESSAGE]);
+        }
         if (! $user || ! $user->isPending()) {
             return to_route('login')->with('status', 'Cette invitation a déjà été utilisée. Connectez-vous avec votre compte.');
         }

@@ -96,6 +96,7 @@ const field =
                                 <span v-if="m.pending" class="rounded-full bg-warning-tint px-2 py-0.5 text-xs text-warning-text"
                                     >Invitation en attente</span
                                 >
+                                <span v-if="m.deactivated" class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Désactivé</span>
                             </div>
                             <div class="truncate text-[13px] text-ink-soft">{{ m.email }}</div>
                         </div>

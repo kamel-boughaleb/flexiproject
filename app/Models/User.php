@@ -3,8 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\AccountReactivated;
 use App\Notifications\InvitationNotification;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -58,6 +60,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'invited_at' => 'datetime',
+            'deactivated_at' => 'datetime',
+            'removed_at' => 'datetime',
             'is_admin' => 'boolean',
             'password' => 'hashed',
             'notification_preferences' => 'array',
@@ -65,6 +69,8 @@ class User extends Authenticatable
     }
 
     public const INVITATION_DAYS = 14;
+
+    public const INACTIVE_MESSAGE = 'Ce compte a été désactivé. Contactez un administrateur pour le réactiver.';
 
     public const COLORS = ['#f97316', '#6366f1', '#10b981', '#ec4899', '#0ea5e9', '#eab308', '#8b5cf6', '#14b8a6'];
 
@@ -98,6 +104,58 @@ class User extends Authenticatable
     public function assignedTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'assignee_id');
+    }
+
+    /** Compte utilisable : ni désactivé ni supprimé de l'équipe. */
+    public function isActive(): bool
+    {
+        return $this->deactivated_at === null;
+    }
+
+    public function isRemoved(): bool
+    {
+        return $this->removed_at !== null;
+    }
+
+    /** Collaborateurs actifs (peuvent se connecter et recevoir des notifications). */
+    public function scopeActive(Builder $query): void
+    {
+        $query->whereNull('deactivated_at');
+    }
+
+    /** Collaborateurs affichés dans l'équipe (actifs ou désactivés, mais pas supprimés). */
+    public function scopeInTeam(Builder $query): void
+    {
+        $query->whereNull('removed_at');
+    }
+
+    /**
+     * Désactive le compte : il reste dans ses projets et tâches, mais ne peut plus se connecter
+     * ni recevoir de notification. Il reste affiché dans la page Équipe.
+     */
+    public function deactivate(): void
+    {
+        $this->forceFill(['deactivated_at' => $this->deactivated_at ?? now(), 'removed_at' => null, 'remember_token' => null])->save();
+    }
+
+    /** Supprime le compte de l'équipe : comme une désactivation, mais masqué de la page Équipe. */
+    public function removeFromTeam(): void
+    {
+        $this->forceFill(['deactivated_at' => $this->deactivated_at ?? now(), 'removed_at' => now(), 'remember_token' => null])->save();
+    }
+
+    /**
+     * Réactive le compte : connexion, notifications et tout l'historique retrouvés.
+     * Avec $by, la personne est prévenue par e-mail (nouvelle invitation si elle n'avait jamais créé son compte).
+     */
+    public function reactivate(?User $by = null): void
+    {
+        $wasActive = $this->isActive();
+        $this->forceFill(['deactivated_at' => null, 'removed_at' => null])->save();
+
+        if ($by && ! $wasActive) {
+            $this->isPending() ? $this->invite($by) : $this->notify(new AccountReactivated($by));
+        }
     }
 
     /** Invitation envoyée mais pas encore acceptée (ni mot de passe ni compte Google). */

@@ -93,14 +93,50 @@ class UserCommandsTest extends TestCase
         $this->assertTrue(User::where('email', 'seul@flexilivre.com')->value('is_admin'));
     }
 
-    public function test_remove_deletes_user_and_transfers_owned_projects(): void
+    public function test_remove_keeps_history_and_add_reactivates(): void
+    {
+        User::factory()->admin()->create();
+        $project = Project::factory()->create();
+        $user = User::factory()->create(['email' => 'ancien@flexilivre.com']);
+        $project->members()->attach($user, ['role' => 'editor']);
+
+        $this->artisan('users:remove', ['email' => [$user->email]])
+            ->expectsConfirmation('Confirmer la suppression ?', 'yes')
+            ->assertSuccessful();
+
+        $user->refresh();
+        $this->assertTrue($user->isRemoved());
+        $this->assertFalse($user->isActive());
+        $this->assertSame('editor', $user->roleIn($project));
+
+        $this->artisan('users:add', ['email' => 'ancien@flexilivre.com'])->assertSuccessful();
+        $user->refresh();
+        $this->assertTrue($user->isActive());
+        $this->assertFalse($user->isRemoved());
+        $this->post('/login', ['email' => 'ancien@flexilivre.com', 'password' => 'password']);
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_remove_with_deactivate_option_keeps_user_in_team(): void
+    {
+        User::factory()->admin()->create();
+        $user = User::factory()->create();
+
+        $this->artisan('users:remove', ['email' => [$user->email], '--deactivate' => true, '--force' => true])->assertSuccessful();
+
+        $user->refresh();
+        $this->assertFalse($user->isActive());
+        $this->assertFalse($user->isRemoved());
+    }
+
+    public function test_purge_deletes_user_and_transfers_owned_projects(): void
     {
         $admin = User::factory()->admin()->create();
         $project = Project::factory()->create();
         $owner = $project->owner;
 
-        $this->artisan('users:remove', ['email' => [$owner->email]])
-            ->expectsConfirmation('Confirmer la suppression ?', 'yes')
+        $this->artisan('users:remove', ['email' => [$owner->email], '--purge' => true])
+            ->expectsConfirmation('Confirmer la suppression définitive ?', 'yes')
             ->assertSuccessful();
 
         $this->assertModelMissing($owner);
@@ -118,6 +154,7 @@ class UserCommandsTest extends TestCase
             ->assertSuccessful();
 
         $this->assertModelExists($user);
+        $this->assertTrue($user->fresh()->isActive());
     }
 
     public function test_list_shows_users_and_projects(): void

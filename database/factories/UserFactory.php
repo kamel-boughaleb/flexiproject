@@ -39,6 +39,18 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => ['is_admin' => true]);
     }
 
+    /** Compte désactivé (encore affiché dans l'équipe). */
+    public function deactivated(): static
+    {
+        return $this->state(fn (array $attributes) => ['deactivated_at' => now()]);
+    }
+
+    /** Compte supprimé de l'équipe (désactivé et masqué). */
+    public function removed(): static
+    {
+        return $this->state(fn (array $attributes) => ['deactivated_at' => now(), 'removed_at' => now()]);
+    }
+
     /**
      * Indicate that the model's email address should be unverified.
      */

@@ -53,6 +53,10 @@ class GoogleController extends Controller
             return to_route('login')->withErrors(['google' => 'Aucun compte n\'est associé à cette adresse. Demandez une invitation à un administrateur.']);
         }
 
+        if (! $user->isActive()) {
+            return to_route('login')->withErrors(['google' => User::INACTIVE_MESSAGE]);
+        }
+
         $user->fill([
             'name' => $user->name ?: $google->getName(),
             'google_id' => $google->getId(),

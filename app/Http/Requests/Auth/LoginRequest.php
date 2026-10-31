@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -51,6 +52,14 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        if (! Auth::user()->isActive()) {
+            Auth::guard('web')->logout();
+
+            throw ValidationException::withMessages([
+                'email' => User::INACTIVE_MESSAGE,
+            ]);
+        }
     }
 
     /**
