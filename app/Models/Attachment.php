@@ -25,7 +25,10 @@ class Attachment extends Model
 
     protected static function booted(): void
     {
-        static::deleted(fn (Attachment $attachment) => Storage::disk('local')->delete($attachment->path));
+        static::deleted(fn (Attachment $attachment) => Storage::disk('local')->delete([
+            $attachment->path,
+            static::thumbnailPathFor($attachment->path),
+        ]));
     }
 
     /**
@@ -34,8 +37,14 @@ class Attachment extends Model
      */
     public static function deleteFilesOf(Builder|array $taskIds): void
     {
-        $paths = static::whereIn('task_id', $taskIds)->pluck('path')->all();
-        Storage::disk('local')->delete($paths);
+        $paths = static::whereIn('task_id', $taskIds)->pluck('path');
+        Storage::disk('local')->delete($paths->merge($paths->map(static::thumbnailPathFor(...)))->all());
+    }
+
+    /** Vignette réduite d'une image, générée à la demande pour les cartes du tableau. */
+    public static function thumbnailPathFor(string $path): string
+    {
+        return 'thumbnails/'.$path.'.jpg';
     }
 
     public function task(): BelongsTo

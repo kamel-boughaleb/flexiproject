@@ -52,8 +52,15 @@ class ProjectController extends Controller
                 ->whereNull('parent_id')
                 ->with('assignee:id,name,color,avatar')
                 ->withCount(['subtasks', 'subtasks as subtasks_done_count' => fn ($q) => $q->where('completed', true), 'comments', 'attachments'])
+                ->with(['coverImage:attachments.id,attachments.task_id,name,mime', 'latestAttachment:attachments.id,attachments.task_id,name,mime'])
                 ->orderBy('position')
-                ->get(),
+                ->get()
+                ->each(function (Task $task) {
+                    // Couverture de la carte : la dernière image, sinon le dernier fichier joint.
+                    $task->setRelation('cover', $task->coverImage ?? $task->latestAttachment)
+                        ->unsetRelation('coverImage')
+                        ->unsetRelation('latestAttachment');
+                }),
             'selectedTask' => fn () => $this->selectedTask($request, $project),
         ]);
     }

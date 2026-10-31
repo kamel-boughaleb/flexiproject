@@ -56,6 +56,12 @@ const Ziggy = {
             parameters: ['attachment'],
             bindings: { attachment: 'id' },
         },
+        'attachments.thumbnail': {
+            uri: 'attachments\/{attachment}\/thumbnail',
+            methods: ['GET', 'HEAD'],
+            parameters: ['attachment'],
+            bindings: { attachment: 'id' },
+        },
         'attachments.download': {
             uri: 'attachments\/{attachment}\/download',
             methods: ['GET', 'HEAD'],

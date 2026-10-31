@@ -104,7 +104,11 @@ export interface Task {
     subtasks_done_count?: number;
     comments_count?: number;
     attachments_count?: number;
+    /** Pièce jointe affichée en couverture de la carte (dernière image, sinon dernier fichier). */
+    cover?: TaskCover | null;
 }
+
+export type TaskCover = Pick<Attachment, 'id' | 'name' | 'kind' | 'extension'>;
 
 export interface Comment {
     id: number;
