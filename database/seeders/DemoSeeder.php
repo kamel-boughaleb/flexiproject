@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Project;
+use App\Models\Rule;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -74,10 +75,9 @@ class DemoSeeder extends Seeder
         }
         $covers->comments()->create(['user_id' => $kamel->id, 'body' => 'Super début ! On garde la typo manuscrite pour le titre.']);
 
-        $project->rules()->createMany([
-            ['name' => 'Prévenir Kamel quand une tâche passe en validation', 'trigger' => 'task_moved', 'trigger_section_id' => $review->id, 'actions' => [['type' => 'notify_user', 'user_id' => $kamel->id, 'text' => 'À valider']]],
-            ['name' => 'Ranger les tâches terminées', 'trigger' => 'task_completed', 'actions' => [['type' => 'move_to_section', 'section_id' => $done->id]]],
-        ]);
+        // Règles globales (communes à tous les projets), désignant les sections par leur nom.
+        Rule::create(['name' => 'Prévenir Kamel quand une tâche passe en validation', 'trigger' => 'task_moved', 'trigger_section_name' => $review->name, 'actions' => [['type' => 'notify_user', 'user_id' => $kamel->id, 'text' => 'À valider']]]);
+        Rule::create(['name' => 'Ranger les tâches terminées', 'trigger' => 'task_completed', 'actions' => [['type' => 'move_to_section', 'section_name' => $done->name]]]);
 
         $other = Project::create([
             'name' => "Refonte de l'éditeur en ligne",

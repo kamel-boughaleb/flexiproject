@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import ToggleSwitch from '@/components/design/ToggleSwitch.vue';
 import InputError from '@/components/InputError.vue';
-import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ACTIONS, PRIORITIES, TRIGGERS } from '@/lib/labels';
@@ -16,13 +15,10 @@ import { computed, nextTick, ref } from 'vue';
  */
 const props = defineProps<{
     rules: Rule[];
-    projectRules: Rule[];
-    sectionLabels: Record<number, string>;
     sectionNames: string[];
     users: { id: number; name: string }[];
     triggers: string[];
     actions: string[];
-    canManage: boolean;
 }>();
 
 const form = useForm<{ name: string; trigger: string; trigger_section_name: string; actions: RuleAction[] }>({
@@ -34,7 +30,7 @@ const form = useForm<{ name: string; trigger: string; trigger_section_name: stri
 const creating = ref(false);
 const formCard = ref<HTMLElement>();
 const submit = () =>
-    form.post(route('rules.global.store'), {
+    form.post(route('rules.store'), {
         preserveScroll: true,
         onSuccess: () => {
             form.reset();
@@ -100,7 +96,6 @@ const userName = (id?: number) => props.users.find((u) => u.id === id)?.name ?? 
 function describe(a: RuleAction) {
     let text = ACTIONS[a.type] ?? a.type;
     if (a.section_name) text += ` « ${a.section_name} »`;
-    else if (a.section_id) text += ` « ${props.sectionLabels[a.section_id] ?? '?'} »`;
     if (a.user_id) text += ` ${userName(a.user_id)}`;
     if (a.priority) text += ` ${PRIORITIES[a.priority].label.toLowerCase()}`;
     if (a.days !== undefined) text = text.replace('+ n', `+ ${a.days}`);
@@ -114,8 +109,6 @@ const whenLabel = (rule: Rule) => {
     const section = rule.trigger_section_name ?? rule.trigger_section?.name;
     return TRIGGERS[rule.trigger] + (section ? ` « ${section} »` : '');
 };
-/** Une règle de projet se modifie par un administrateur ou un éditeur du projet (le serveur vérifie). */
-const canChange = (rule: Rule) => props.canManage || rule.project_id !== null;
 const destroy = (rule: Rule) =>
     confirm(`Supprimer la règle « ${rule.name} » ?`) && router.delete(route('rules.destroy', rule.id), { preserveScroll: true });
 </script>
@@ -131,14 +124,13 @@ const destroy = (rule: Rule) =>
                         Automatisez les gestes répétitifs : quand quelque chose se passe, Flexi Projets s'occupe du reste. Ces règles s'appliquent à
                         tous les projets et à tous les collaborateurs.
                     </p>
-                    <p v-if="!canManage" class="mt-2 text-[13px] font-semibold text-ink-soft">Seuls les administrateurs peuvent les modifier.</p>
                 </div>
-                <Button v-if="canManage" class="h-11" @click="startCreating"><Plus /> Créer une règle</Button>
+                <Button class="h-11" @click="startCreating"><Plus /> Créer une règle</Button>
             </div>
 
             <section aria-labelledby="rules-title">
                 <h3 id="rules-title" class="mb-3 text-[15px] font-bold">
-                    Règles globales <span class="font-semibold text-ink-soft">· {{ activeCount }} active(s) sur {{ rules.length }}</span>
+                    Règles <span class="font-semibold text-ink-soft">· {{ activeCount }} active(s) sur {{ rules.length }}</span>
                 </h3>
                 <ul class="space-y-3">
                     <li
@@ -152,21 +144,18 @@ const destroy = (rule: Rule) =>
                                 ><Zap class="size-5"
                             /></span>
                             <span class="min-w-0 flex-1 text-base font-bold">{{ rule.name }}</span>
-                            <template v-if="canManage">
-                                <button
-                                    class="flex size-10 items-center justify-center rounded-icon text-ink-soft hover:bg-app-hover hover:text-brand-active"
-                                    :aria-label="`Supprimer la règle ${rule.name}`"
-                                    @click="destroy(rule)"
-                                >
-                                    <Trash2 class="size-[18px]" />
-                                </button>
-                                <ToggleSwitch
-                                    :model-value="rule.enabled"
-                                    :label="`Activer la règle ${rule.name}`"
-                                    @update:model-value="(v) => toggle(rule, v)"
-                                />
-                            </template>
-                            <span v-else class="text-xs font-bold text-ink-soft">{{ rule.enabled ? 'Active' : 'Inactive' }}</span>
+                            <button
+                                class="flex size-10 items-center justify-center rounded-icon text-ink-soft hover:bg-app-hover hover:text-brand-active"
+                                :aria-label="`Supprimer la règle ${rule.name}`"
+                                @click="destroy(rule)"
+                            >
+                                <Trash2 class="size-[18px]" />
+                            </button>
+                            <ToggleSwitch
+                                :model-value="rule.enabled"
+                                :label="`Activer la règle ${rule.name}`"
+                                @update:model-value="(v) => toggle(rule, v)"
+                            />
                         </div>
                         <div class="mt-3 flex flex-wrap items-center gap-2 md:pl-[52px]">
                             <span class="text-xs font-bold tracking-[.04em] text-ink-soft">QUAND</span>
@@ -185,12 +174,12 @@ const destroy = (rule: Rule) =>
                         v-if="!rules.length"
                         class="rounded-card border-2 border-dashed border-app-border-strong p-8 text-center text-sm font-semibold text-ink-soft"
                     >
-                        Aucune règle globale pour l'instant.<template v-if="canManage"> Partez d'un modèle ci-dessous ou créez la vôtre.</template>
+                        Aucune règle globale pour l'instant. Partez d'un modèle ci-dessous ou créez la vôtre.
                     </li>
                 </ul>
             </section>
 
-            <div v-if="canManage && creating" ref="formCard">
+            <div v-if="creating" ref="formCard">
                 <form class="space-y-4 rounded-card border border-app-border p-5 shadow-soft" @submit.prevent="submit">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-bold">Nouvelle règle</h3>
@@ -303,54 +292,7 @@ const destroy = (rule: Rule) =>
                 </form>
             </div>
 
-            <section v-if="projectRules.length" aria-labelledby="project-rules-title">
-                <h3 id="project-rules-title" class="mb-1 text-[15px] font-bold">Règles propres à un projet</h3>
-                <p class="mb-3 text-[13px] text-ink-soft">Créées avant les règles globales, elles restent actives dans leur projet.</p>
-                <ul class="space-y-3">
-                    <li
-                        v-for="rule in projectRules"
-                        :key="rule.id"
-                        class="rounded-card border border-app-border bg-background p-4 shadow-soft transition-opacity md:p-5"
-                        :class="{ 'opacity-70': !rule.enabled }"
-                    >
-                        <div class="flex items-center gap-3">
-                            <ProjectAvatar v-if="rule.project" :project="rule.project" size="lg" />
-                            <span class="min-w-0 flex-1">
-                                <span class="block text-base font-bold">{{ rule.name }}</span>
-                                <span class="block text-xs font-semibold text-ink-soft">{{ rule.project?.name }}</span>
-                            </span>
-                            <template v-if="canChange(rule)">
-                                <button
-                                    class="flex size-10 items-center justify-center rounded-icon text-ink-soft hover:bg-app-hover hover:text-brand-active"
-                                    :aria-label="`Supprimer la règle ${rule.name}`"
-                                    @click="destroy(rule)"
-                                >
-                                    <Trash2 class="size-[18px]" />
-                                </button>
-                                <ToggleSwitch
-                                    :model-value="rule.enabled"
-                                    :label="`Activer la règle ${rule.name}`"
-                                    @update:model-value="(v) => toggle(rule, v)"
-                                />
-                            </template>
-                        </div>
-                        <div class="mt-3 flex flex-wrap items-center gap-2 md:pl-[56px]">
-                            <span class="text-xs font-bold tracking-[.04em] text-ink-soft">QUAND</span>
-                            <span class="rounded-full bg-info-tint px-3 py-1 text-[13px] font-bold text-info-deep">{{ whenLabel(rule) }}</span>
-                            <ArrowRight class="size-4 text-ink-soft" aria-hidden="true" />
-                            <span class="text-xs font-bold tracking-[.04em] text-ink-soft">ALORS</span>
-                            <span
-                                v-for="(a, i) in rule.actions"
-                                :key="i"
-                                class="rounded-full bg-brand-tint px-3 py-1 text-[13px] font-bold text-brand-active"
-                                >{{ describe(a) }}</span
-                            >
-                        </div>
-                    </li>
-                </ul>
-            </section>
-
-            <section v-if="canManage" aria-labelledby="templates-title">
+            <section aria-labelledby="templates-title">
                 <h3 id="templates-title" class="mb-3 text-[15px] font-bold">Modèles suggérés</h3>
                 <div class="grid gap-3 md:grid-cols-3">
                     <button

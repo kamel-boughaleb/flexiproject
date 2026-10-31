@@ -34,7 +34,7 @@ const field =
 
 <template>
     <ProjectLayout :project="project" :members="members" title="Collaborateurs" :can-edit="can.edit">
-        <div class="ml-auto max-w-[920px] space-y-8 px-4 py-6 md:px-8 md:py-8">
+        <div class="max-w-[920px] space-y-8 px-4 py-6 md:px-8 md:py-8">
             <div>
                 <h2 class="text-[28px] font-bold leading-tight">Collaborateurs</h2>
                 <p class="mt-1 text-[15px] text-ink-soft">Invitez votre équipe pour assigner des tâches, commenter et suivre l'avancement.</p>
