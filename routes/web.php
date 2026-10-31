@@ -11,6 +11,7 @@ use App\Http\Controllers\MyTasksController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RuleController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
@@ -29,6 +30,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('my-tasks', MyTasksController::class)->name('my-tasks');
+    Route::get('search', SearchController::class)->name('search');
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read', [NotificationController::class, 'markAllRead'])->name('notifications.read');
 
