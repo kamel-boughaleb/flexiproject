@@ -75,8 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('projects/{project}/members/{user}', [MemberController::class, 'destroy'])->name('members.destroy');
 
     Route::get('rules', [RuleController::class, 'index'])->name('rules.index');
-    Route::post('rules', [RuleController::class, 'storeGlobal'])->name('rules.global.store');
-    Route::post('projects/{project}/rules', [RuleController::class, 'store'])->name('rules.store');
+    Route::post('rules', [RuleController::class, 'store'])->name('rules.store');
     Route::patch('rules/{rule}', [RuleController::class, 'update'])->name('rules.update');
     Route::delete('rules/{rule}', [RuleController::class, 'destroy'])->name('rules.destroy');
 });

@@ -74,13 +74,13 @@ class RuleTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->actingAs($project->owner)->post("/projects/{$project->id}/rules", [
+        $this->actingAs($project->owner)->post('/rules', [
             'name' => 'Mauvaise règle',
             'trigger' => 'task_created',
             'actions' => [['type' => 'move_to_section']],
-        ])->assertSessionHasErrors('actions.0.section_id');
+        ])->assertSessionHasErrors('actions.0.section_name');
 
-        $this->actingAs($project->owner)->post("/projects/{$project->id}/rules", [
+        $this->actingAs($project->owner)->post('/rules', [
             'name' => 'Échéance auto',
             'trigger' => 'task_created',
             'actions' => [['type' => 'set_due_in_days', 'days' => 7]],
@@ -105,23 +105,25 @@ class RuleTest extends TestCase
         $this->assertTrue($task->fresh()->completed);
     }
 
-    public function test_only_admins_manage_global_rules(): void
+    public function test_any_team_member_manages_rules(): void
     {
-        $user = User::factory()->create();
-        $admin = User::factory()->create(['is_admin' => true]);
+        $member = User::factory()->create();
         $payload = ['name' => 'Ranger', 'trigger' => 'task_completed', 'actions' => [['type' => 'move_to_section', 'section_name' => 'Terminé']]];
 
-        $this->actingAs($user)->get('/rules')->assertOk();
-        $this->actingAs($user)->post('/rules', $payload)->assertForbidden();
-        $this->actingAs($user)->delete('/rules/'.Rule::global()->value('id'))->assertForbidden();
-
-        $this->actingAs($admin)->post('/rules', $payload)->assertSessionHasNoErrors();
-        $this->assertSame([['type' => 'move_to_section', 'section_name' => 'Terminé']], Rule::global()->latest('id')->first()->actions);
+        $this->actingAs($member)->get('/rules')->assertOk();
+        $this->actingAs($member)->post('/rules', $payload)->assertSessionHasNoErrors();
+        $rule = Rule::global()->latest('id')->first();
+        $this->assertSame([['type' => 'move_to_section', 'section_name' => 'Terminé']], $rule->actions);
 
         $project = Project::factory()->create();
         $task = Task::factory()->in($project)->create();
         $this->actingAs($project->owner)->post("/tasks/{$task->id}/toggle");
         $this->assertSame('Terminé', $task->fresh()->section->name);
+
+        $this->actingAs($member)->patch("/rules/{$rule->id}", ['enabled' => false])->assertRedirect();
+        $this->assertFalse($rule->fresh()->enabled);
+        $this->actingAs($member)->delete("/rules/{$rule->id}")->assertRedirect();
+        $this->assertModelMissing($rule);
     }
 
     public function test_global_assign_rule_skips_people_outside_the_project(): void

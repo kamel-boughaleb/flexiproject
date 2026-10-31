@@ -58,7 +58,7 @@ const card = 'grid gap-5 rounded-card border border-app-border p-5 md:grid-cols-
 
 <template>
     <ProjectLayout :project="project" :members="members" title="Paramètres" :can-edit="can.edit">
-        <form class="ml-auto max-w-[920px] space-y-5 px-4 py-6 md:px-8 md:py-8" @submit.prevent="submit">
+        <form class="max-w-[920px] space-y-5 px-4 py-6 md:px-8 md:py-8" @submit.prevent="submit">
             <section :class="card" aria-labelledby="general-title">
                 <div>
                     <h2 id="general-title" class="text-lg font-bold">Général</h2>

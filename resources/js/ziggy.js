@@ -82,7 +82,6 @@ const Ziggy = {
             parameters: ['project', 'user'],
             bindings: { project: 'id', user: 'id' },
         },
-        'rules.store': { uri: 'projects\/{project}\/rules', methods: ['POST'], parameters: ['project'], bindings: { project: 'id' } },
         'rules.update': { uri: 'rules\/{rule}', methods: ['PATCH'], parameters: ['rule'], bindings: { rule: 'id' } },
         'rules.destroy': { uri: 'rules\/{rule}', methods: ['DELETE'], parameters: ['rule'], bindings: { rule: 'id' } },
         'profile.edit': { uri: 'settings\/profile', methods: ['GET', 'HEAD'] },
