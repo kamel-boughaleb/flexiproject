@@ -38,6 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::post('team', [TeamController::class, 'store'])->name('team.store');
     Route::post('team/{user}/resend', [TeamController::class, 'resend'])->name('team.resend');
     Route::delete('team/{user}', [TeamController::class, 'destroy'])->name('team.destroy');
+    Route::post('team/{user}/deactivate', [TeamController::class, 'deactivate'])->name('team.deactivate');
+    Route::post('team/{user}/reactivate', [TeamController::class, 'reactivate'])->name('team.reactivate');
     Route::patch('team/{user}/admin', [TeamController::class, 'admin'])->name('team.admin');
     Route::get('users/{user}/photo', [TeamController::class, 'photo'])->name('users.photo');
 

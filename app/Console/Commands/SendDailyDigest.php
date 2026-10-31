@@ -26,7 +26,7 @@ class SendDailyDigest extends Command
         $inAWeek = Carbon::now(self::TIMEZONE)->addDays(7)->toDateString();
         $sent = 0;
 
-        $users = User::whereHas('assignedTasks', fn ($q) => $this->open($q))->get();
+        $users = User::active()->whereHas('assignedTasks', fn ($q) => $this->open($q))->get();
         foreach ($users as $user) {
             if (! $user->wantsEmail('daily_digest')) {
                 continue;

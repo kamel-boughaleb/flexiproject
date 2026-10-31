@@ -15,6 +15,8 @@ defineProps<{
 
 const page = usePage();
 const googleError = computed(() => (page.props.errors as Record<string, string>).google);
+// Compte désactivé : affiché après une déconnexion forcée ou un lien d'invitation refusé.
+const accountError = computed(() => (page.props.errors as Record<string, string>).account);
 
 const form = useForm({
     email: '',
@@ -22,7 +24,7 @@ const form = useForm({
     remember: false,
 });
 const showPassword = ref(false);
-const failed = computed(() => !!(form.errors.email || form.errors.password));
+const failed = computed(() => !!(form.errors.email || form.errors.password || accountError.value));
 
 const submit = () => {
     form.post(route('login'), {
@@ -45,7 +47,7 @@ const field = (error: boolean) => [
         </div>
         <div v-if="failed" role="alert" class="flex items-start gap-2.5 rounded-2xl bg-brand-tint px-4 py-3 text-sm font-bold text-brand-active">
             <CircleAlert class="mt-px size-[18px] shrink-0" />
-            {{ form.errors.email || form.errors.password }}
+            {{ form.errors.email || form.errors.password || accountError }}
         </div>
 
         <GoogleButton />

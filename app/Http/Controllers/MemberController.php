@@ -31,6 +31,12 @@ class MemberController extends Controller
             }
             $user = User::create(['email' => $email, 'name' => $data['name'] ?: strstr($email, '@', true)]);
             $user->invite($request->user(), $project);
+        } elseif (! $user->isActive()) {
+            // Compte désactivé ou supprimé de l'équipe : seul un administrateur peut le réactiver.
+            if ($request->user()->cannot('invite')) {
+                return back()->withErrors(['email' => 'Le compte de cette personne est désactivé. Demandez à un administrateur de le réactiver.']);
+            }
+            $user->reactivate($request->user());
         }
 
         $project->members()->syncWithoutDetaching([$user->id => ['role' => $data['role']]]);

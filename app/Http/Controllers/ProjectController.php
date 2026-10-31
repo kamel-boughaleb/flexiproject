@@ -73,7 +73,7 @@ class ProjectController extends Controller
             ...$this->shared($request, $project),
             'roles' => Project::ROLES,
             // Collaborateurs de l'équipe pas encore membres du projet, proposés à l'ajout.
-            'directory' => User::whereNotIn('id', $project->members()->select('users.id'))
+            'directory' => User::active()->whereNotIn('id', $project->members()->select('users.id'))
                 ->orderBy('name')->get(['id', 'name', 'email']),
         ]);
     }
@@ -147,8 +147,13 @@ class ProjectController extends Controller
         return [
             'project' => $project->summary(['description', 'start_date', 'end_date']),
             'members' => $project->members()->orderBy('project_user.created_at')
-                ->get(['users.id', 'name', 'email', 'color', 'avatar', 'password', 'google_id', 'invitation_token'])
-                ->map(fn ($m) => [...$m->only(['id', 'name', 'email', 'color', 'avatar']), 'role' => $m->pivot->role, 'pending' => $m->isPending()]),
+                ->get(['users.id', 'name', 'email', 'color', 'avatar', 'password', 'google_id', 'invitation_token', 'deactivated_at'])
+                ->map(fn ($m) => [
+                    ...$m->only(['id', 'name', 'email', 'color', 'avatar']),
+                    'role' => $m->pivot->role,
+                    'pending' => $m->isPending(),
+                    'deactivated' => ! $m->isActive(),
+                ]),
             'can' => [
                 'edit' => $user->can('edit', $project),
                 'manage' => $user->can('manage', $project),

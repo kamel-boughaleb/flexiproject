@@ -23,6 +23,11 @@ class ListUsers extends Command
             $u->name,
             $u->is_admin ? 'oui' : '',
             match (true) {
+                $u->isRemoved() => 'supprimé de l\'équipe',
+                ! $u->isActive() => 'désactivé',
+                default => 'actif',
+            },
+            match (true) {
                 $u->isPending() => 'invitation en attente',
                 $u->password === null && $u->google_id !== null => 'Google',
                 default => 'mot de passe'.($u->google_id ? ' + Google' : ''),
@@ -30,7 +35,7 @@ class ListUsers extends Command
             $u->projects->map(fn (Project $p) => "{$p->name} ({$p->pivot->role})")->implode(', '),
         ]);
 
-        $this->table(['#', 'E-mail', 'Nom', 'Admin', 'Connexion', 'Projets (rôle)'], $rows);
+        $this->table(['#', 'E-mail', 'Nom', 'Admin', 'Statut', 'Connexion', 'Projets (rôle)'], $rows);
 
         if ($this->option('projects')) {
             $this->table(['#', 'Projet', 'Membres'],

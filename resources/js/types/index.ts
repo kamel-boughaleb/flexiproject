@@ -58,6 +58,7 @@ export interface Member extends MiniUser {
     email: string;
     role: 'admin' | 'editor' | 'viewer';
     pending?: boolean;
+    deactivated?: boolean;
 }
 
 /** Avatar d'un projet : image envoyée, sinon emoji, sinon pastille de couleur avec l'initiale. */
