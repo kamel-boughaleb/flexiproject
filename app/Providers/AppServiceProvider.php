@@ -23,5 +23,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Seuls les administrateurs de la plateforme invitent de nouveaux collaborateurs.
         Gate::define('invite', fn (User $user) => $user->is_admin);
+        // Règles globales (communes à tous les projets) : réservées aux administrateurs.
+        Gate::define('manage-rules', fn (User $user) => $user->is_admin);
     }
 }

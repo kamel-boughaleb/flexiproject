@@ -12,7 +12,7 @@ import { PRIORITIES, dueLabel, isOverdue, sectionColor } from '@/lib/labels';
 import type { Priority, Section, SharedData, Task } from '@/types';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { ArrowUpDown, ChevronDown, ListChecks, ListFilter, MessageCircle, Rows3, Search } from 'lucide-vue-next';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import PriorityBadge from './PriorityBadge.vue';
 import TaskCheck from './TaskCheck.vue';
 import UserAvatar from './UserAvatar.vue';
@@ -95,24 +95,13 @@ function addSection() {
     newSection.post(route('sections.store', props.projectId), { preserveScroll: true, onSuccess: () => newSection.reset() });
 }
 
-// Bouton « Ajouter une tâche » de l'en-tête du projet : focus sur la saisie du premier groupe.
-const root = ref<HTMLElement>();
-async function addFromHeader() {
-    groupBy.value = 'section';
-    collapsed.value = {};
-    await nextTick();
-    root.value?.querySelector<HTMLInputElement>('[data-add-task]')?.focus();
-}
-onMounted(() => window.addEventListener('flexi:add-task', addFromHeader));
-onBeforeUnmount(() => window.removeEventListener('flexi:add-task', addFromHeader));
-
 const tool = 'flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-app-strong hover:bg-app-hover data-[state=open]:bg-app-hover';
 const cols = 'md:grid md:grid-cols-[minmax(0,1fr)_170px_110px_110px_100px_70px] md:items-center md:gap-3';
 const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.value].filter(Boolean).length);
 </script>
 
 <template>
-    <div ref="root" class="min-h-full">
+    <div class="min-h-full">
         <div class="flex flex-wrap items-center gap-2 border-b border-app-border px-4 py-3 md:px-7">
             <label class="relative mr-auto w-full sm:w-[270px]">
                 <span class="sr-only">Rechercher une tâche</span>

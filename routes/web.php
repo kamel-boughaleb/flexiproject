@@ -41,7 +41,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::get('projects/{project}', fn (Project $project) => to_route('projects.view', [$project, 'board']))->name('projects.show');
-    Route::get('projects/{project}/rules', [ProjectController::class, 'rules'])->name('projects.rules');
+    Route::get('projects/{project}/rules', fn (Project $project) => to_route('rules.index'))->name('projects.rules');
+    Route::get('projects/{project}/avatar', [ProjectController::class, 'avatar'])->name('projects.avatar');
     Route::get('projects/{project}/members', [ProjectController::class, 'members'])->name('projects.members');
     Route::get('projects/{project}/settings', [ProjectController::class, 'settings'])->name('projects.settings');
     Route::get('projects/{project}/{view}', [ProjectController::class, 'show'])->whereIn('view', ProjectController::VIEWS)->name('projects.view');
@@ -70,6 +71,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('projects/{project}/members/{user}', [MemberController::class, 'update'])->name('members.update');
     Route::delete('projects/{project}/members/{user}', [MemberController::class, 'destroy'])->name('members.destroy');
 
+    Route::get('rules', [RuleController::class, 'index'])->name('rules.index');
+    Route::post('rules', [RuleController::class, 'storeGlobal'])->name('rules.global.store');
     Route::post('projects/{project}/rules', [RuleController::class, 'store'])->name('rules.store');
     Route::patch('rules/{rule}', [RuleController::class, 'update'])->name('rules.update');
     Route::delete('rules/{rule}', [RuleController::class, 'destroy'])->name('rules.destroy');

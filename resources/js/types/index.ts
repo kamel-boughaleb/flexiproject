@@ -45,11 +45,7 @@ export interface User {
 
 export type BreadcrumbItemType = BreadcrumbItem;
 
-export interface SidebarProject {
-    id: number;
-    name: string;
-    color: string;
-}
+export type SidebarProject = ProjectBadge;
 
 export interface MiniUser {
     id: number;
@@ -64,11 +60,17 @@ export interface Member extends MiniUser {
     pending?: boolean;
 }
 
-export interface Project {
+/** Avatar d'un projet : image envoyée, sinon emoji, sinon pastille de couleur avec l'initiale. */
+export interface ProjectBadge {
     id: number;
     name: string;
-    description: string | null;
     color: string;
+    icon?: string | null;
+    image?: string | null;
+}
+
+export interface Project extends ProjectBadge {
+    description: string | null;
     start_date: string | null;
     end_date: string | null;
 }
@@ -149,6 +151,7 @@ export interface ProjectPageProps {
 export interface RuleAction {
     type: string;
     section_id?: number;
+    section_name?: string;
     user_id?: number;
     priority?: Priority;
     days?: number;
@@ -157,10 +160,13 @@ export interface RuleAction {
 
 export interface Rule {
     id: number;
+    project_id: number | null;
     name: string;
     enabled: boolean;
     trigger: string;
     trigger_section_id: number | null;
-    trigger_section: { id: number; name: string } | null;
+    trigger_section_name: string | null;
+    trigger_section?: { id: number; name: string } | null;
+    project?: ProjectBadge | null;
     actions: RuleAction[];
 }

@@ -8,7 +8,7 @@ defineProps<{
 }>();
 
 const features = [
-    'Kanban, liste, calendrier et planning',
+    'Tableau, liste, calendrier et planning',
     'Règles automatiques « quand… alors… »',
     'Collaborateurs, commentaires et notifications',
     'Dates de début et de fin pour chaque tâche',

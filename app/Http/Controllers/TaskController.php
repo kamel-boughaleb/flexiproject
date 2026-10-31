@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Exists;
 
@@ -71,7 +72,8 @@ class TaskController extends Controller
         $task->save();
 
         $actor = $request->user();
-        $project->log("a modifié la tâche « {$task->title} »", $actor, $task);
+        $changes = $this->notifier->describe($task, $before, $changed);
+        $project->log(Str::limit("a modifié « {$task->title} » : ".implode(', ', $changes), 250), $actor, $task);
 
         // Les personnes nouvellement mentionnées dans la description reçoivent un avis de mention.
         $mentioned = [];
@@ -83,7 +85,7 @@ class TaskController extends Controller
         // Le nouveau responsable reçoit l'avis d'assignation, l'ancien et les autres participants l'avis de modification.
         $reassigned = in_array('assignee_id', $changed, true);
         $this->notifier->updated(
-            $task, $this->notifier->describe($task, $before, $changed), $actor,
+            $task, $changes, $actor,
             also: $reassigned ? [$before['assignee_id']] : [],
             except: [...($reassigned ? [$task->assignee_id] : []), ...$mentioned],
         );

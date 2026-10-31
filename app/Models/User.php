@@ -156,7 +156,7 @@ class User extends Authenticatable
     }
 
     /** Recadre l'image au centre et la réduit à 256 px pour garder des avatars légers. */
-    private static function squareJpeg(UploadedFile $file): string
+    public static function squareJpeg(UploadedFile $file): string
     {
         $source = function_exists('imagecreatefromstring') ? @imagecreatefromstring($file->get()) : false;
         if (! $source) {

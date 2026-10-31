@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,7 +15,7 @@ class Rule extends Model
         'set_due_in_days', 'notify_assignee', 'notify_user', 'add_comment',
     ];
 
-    protected $fillable = ['project_id', 'name', 'enabled', 'trigger', 'trigger_section_id', 'actions'];
+    protected $fillable = ['project_id', 'name', 'enabled', 'trigger', 'trigger_section_id', 'trigger_section_name', 'actions'];
 
     protected function casts(): array
     {
@@ -22,6 +23,17 @@ class Rule extends Model
             'enabled' => 'boolean',
             'actions' => 'array',
         ];
+    }
+
+    /** Règles globales (sans projet) : elles s'appliquent à tous les projets. */
+    public function scopeGlobal(Builder $query): void
+    {
+        $query->whereNull('project_id');
+    }
+
+    public function isGlobal(): bool
+    {
+        return $this->project_id === null;
     }
 
     public function project(): BelongsTo

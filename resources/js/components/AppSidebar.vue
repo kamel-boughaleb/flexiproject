@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
 import {
     Sidebar,
@@ -18,25 +19,20 @@ import {
 } from '@/components/ui/sidebar';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Bell, CheckSquare, Home, Plus, Users } from 'lucide-vue-next';
+import { CheckSquare, Plus } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
 const page = usePage<SharedData>();
 const path = computed(() => page.url.split('?')[0]);
 
-const mainNavItems = computed(() => [
-    { title: 'Accueil', href: route('dashboard'), icon: Home },
-    { title: 'Mes tâches', href: route('my-tasks'), icon: CheckSquare },
-    { title: 'Notifications', href: route('notifications.index'), icon: Bell, badge: page.props.unreadNotifications },
-    { title: 'Équipe', href: route('team.index'), icon: Users },
-]);
+// Accueil = logo ; Notifications, Équipe et Règles sont dans le menu de l'avatar (en haut à droite).
+const mainNavItems = computed(() => [{ title: 'Mes tâches', href: route('my-tasks'), icon: CheckSquare, badge: 0 }]);
 const isActive = (href: string) => path.value === new URL(href).pathname;
 
 // Tiroir mobile : sous-liens du projet ouvert et profil en bas (maquette « M-Menu »).
 const { isMobile } = useSidebar();
 const projectLinks = (id: number) => [
-    { title: 'Règles', href: route('projects.rules', id) },
     { title: 'Collaborateurs', href: route('projects.members', id) },
     { title: 'Paramètres', href: route('projects.settings', id) },
 ];
@@ -79,7 +75,7 @@ const projectLinks = (id: number) => [
                     <SidebarMenuItem v-for="p in page.props.sidebarProjects" :key="p.id">
                         <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
                             <Link :href="route('projects.show', p.id)">
-                                <span class="size-2.5 shrink-0 rounded-[3px]" :style="{ backgroundColor: p.color }" />
+                                <ProjectAvatar :project="p" size="xs" />
                                 <span class="truncate">{{ p.name }}</span>
                             </Link>
                         </SidebarMenuButton>

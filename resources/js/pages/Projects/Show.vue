@@ -20,7 +20,7 @@ const props = defineProps<
     }
 >();
 
-const TITLES = { board: 'Kanban', list: 'Liste', calendar: 'Calendrier', timeline: 'Planning' };
+const TITLES = { board: 'Tableau', list: 'Liste', calendar: 'Calendrier', timeline: 'Planning' };
 
 /** Ouvre la fiche d'une tâche en ne rechargeant que ses données (l'URL reste partageable). */
 function openTask(id: number | null) {

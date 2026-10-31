@@ -75,7 +75,6 @@ class DemoSeeder extends Seeder
         $covers->comments()->create(['user_id' => $kamel->id, 'body' => 'Super début ! On garde la typo manuscrite pour le titre.']);
 
         $project->rules()->createMany([
-            ['name' => 'Clôturer les tâches arrivées dans « Terminé »', 'trigger' => 'task_moved', 'trigger_section_id' => $done->id, 'actions' => [['type' => 'set_completed']]],
             ['name' => 'Prévenir Kamel quand une tâche passe en validation', 'trigger' => 'task_moved', 'trigger_section_id' => $review->id, 'actions' => [['type' => 'notify_user', 'user_id' => $kamel->id, 'text' => 'À valider']]],
             ['name' => 'Ranger les tâches terminées', 'trigger' => 'task_completed', 'actions' => [['type' => 'move_to_section', 'section_id' => $done->id]]],
         ]);

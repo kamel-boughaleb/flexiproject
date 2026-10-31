@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import InviteDialog from '@/components/InviteDialog.vue';
+import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
+import ProjectAvatarField from '@/components/project/ProjectAvatarField.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -20,8 +22,8 @@ defineProps<{
 
 const user = usePage<SharedData>().props.auth.user;
 const creating = ref(new URLSearchParams(window.location.search).has('new'));
-const form = useForm({ name: '', description: '', color: '#f97316', start_date: '', end_date: '' });
-const submit = () => form.post(route('projects.store'));
+const form = useForm({ name: '', description: '', color: '#f97316', icon: '', image: null as File | null, start_date: '', end_date: '' });
+const submit = () => form.post(route('projects.store'), { forceFormData: true });
 const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ? Math.round((p.tasks_done / p.tasks_total) * 100) : 0);
 </script>
 
@@ -43,7 +45,7 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
             <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <Link v-for="p in projects" :key="p.id" :href="route('projects.show', p.id)" class="rounded-xl border p-4 transition hover:shadow-md">
                     <div class="flex items-center gap-2">
-                        <span class="size-3 rounded" :style="{ backgroundColor: p.color }" />
+                        <ProjectAvatar :project="p" size="md" />
                         <h2 class="font-semibold">{{ p.name }}</h2>
                     </div>
                     <p v-if="p.description" class="mt-1 line-clamp-2 text-sm text-muted-foreground">{{ p.description }}</p>
@@ -71,7 +73,7 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
         </div>
 
         <Dialog v-model:open="creating">
-            <DialogContent>
+            <DialogContent class="max-h-[90vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>Nouveau projet</DialogTitle></DialogHeader>
                 <form class="space-y-4" @submit.prevent="submit">
                     <div class="grid gap-2">
@@ -93,6 +95,11 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
                             <Input id="end" v-model="form.end_date" type="date" />
                             <InputError :message="form.errors.end_date" />
                         </div>
+                    </div>
+                    <div class="grid gap-2">
+                        <Label>Avatar</Label>
+                        <ProjectAvatarField v-model:icon="form.icon" v-model:image="form.image" :name="form.name" :color="form.color" />
+                        <InputError :message="form.errors.image" />
                     </div>
                     <div class="flex gap-2">
                         <button

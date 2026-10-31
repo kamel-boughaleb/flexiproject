@@ -100,4 +100,22 @@ class TaskTest extends TestCase
             ->post("/tasks/{$task->id}/move", ['section_id' => $other->sections()->first()->id, 'index' => 0])
             ->assertSessionHasErrors('section_id');
     }
+
+    public function test_repeated_edits_do_not_flood_the_history(): void
+    {
+        $project = Project::factory()->create();
+        $task = Task::factory()->in($project)->create();
+        $owner = $project->owner;
+
+        // La description est enregistrée au fil de la saisie : une seule ligne d'historique.
+        foreach (['<p>Un</p>', '<p>Un deux</p>', '<p>Un deux trois</p>'] as $html) {
+            $this->actingAs($owner)->patch("/tasks/{$task->id}", ['description' => $html]);
+        }
+        $this->actingAs($owner)->patch("/tasks/{$task->id}", ['priority' => 'high']);
+
+        $messages = $task->activities()->pluck('message')->all();
+        $this->assertCount(2, $messages);
+        $this->assertStringContainsString('Priorité : aucune → haute', $messages[0]);
+        $this->assertStringContainsString('description mise à jour', $messages[1]);
+    }
 }
