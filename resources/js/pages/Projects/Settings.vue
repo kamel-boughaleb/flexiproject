@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import ProjectAvatarField from '@/components/project/ProjectAvatarField.vue';
 import { Button } from '@/components/ui/button';
 import ProjectLayout from '@/layouts/ProjectLayout.vue';
 import { dateTime, sectionColor } from '@/lib/labels';
@@ -14,10 +15,25 @@ const form = useForm({
     name: props.project.name,
     description: props.project.description ?? '',
     color: props.project.color,
+    icon: props.project.icon ?? '',
+    image: null as File | null,
+    remove_image: false,
     start_date: props.project.start_date?.slice(0, 10) ?? '',
     end_date: props.project.end_date?.slice(0, 10) ?? '',
 });
-const submit = () => form.patch(route('projects.update', props.project.id), { preserveScroll: true, onSuccess: () => form.defaults() });
+// Envoi en multipart (image) : PATCH simulé par _method, comme l'attend Laravel.
+const submit = () =>
+    form
+        .transform((data) => ({ ...data, _method: 'patch' }))
+        .post(route('projects.update', props.project.id), {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                form.image = null;
+                form.remove_image = false;
+                form.defaults();
+            },
+        });
 const destroy = () =>
     confirm(`Supprimer définitivement « ${props.project.name} » et toutes ses tâches ?`) &&
     router.delete(route('projects.destroy', props.project.id));
@@ -42,11 +58,11 @@ const card = 'grid gap-5 rounded-card border border-app-border p-5 md:grid-cols-
 
 <template>
     <ProjectLayout :project="project" :members="members" title="Paramètres" :can-edit="can.edit">
-        <form class="mx-auto max-w-[920px] space-y-5 px-4 py-6 md:px-8 md:py-8" @submit.prevent="submit">
+        <form class="ml-auto max-w-[920px] space-y-5 px-4 py-6 md:px-8 md:py-8" @submit.prevent="submit">
             <section :class="card" aria-labelledby="general-title">
                 <div>
                     <h2 id="general-title" class="text-lg font-bold">Général</h2>
-                    <p class="mt-1 text-[13px] text-ink-soft">Nom, couleur et dates du projet.</p>
+                    <p class="mt-1 text-[13px] text-ink-soft">Nom, avatar, couleur et dates du projet.</p>
                 </div>
                 <fieldset :disabled="!can.manage" class="space-y-4">
                     <label class="block">
@@ -54,6 +70,19 @@ const card = 'grid gap-5 rounded-card border border-app-border p-5 md:grid-cols-
                         <input v-model="form.name" required :class="field" />
                         <InputError :message="form.errors.name" />
                     </label>
+                    <div>
+                        <span class="mb-1.5 block text-sm font-bold">Avatar</span>
+                        <ProjectAvatarField
+                            v-model:icon="form.icon"
+                            v-model:image="form.image"
+                            v-model:remove-image="form.remove_image"
+                            :name="form.name"
+                            :color="form.color"
+                            :current-image="project.image"
+                            :disabled="!can.manage"
+                        />
+                        <InputError :message="form.errors.image" />
+                    </div>
                     <label class="block">
                         <span class="mb-1.5 block text-sm font-bold">Description</span>
                         <textarea v-model="form.description" rows="3" placeholder="À quoi sert ce projet ?" :class="[field, 'h-auto py-2.5']" />
@@ -95,7 +124,7 @@ const card = 'grid gap-5 rounded-card border border-app-border p-5 md:grid-cols-
                 <div>
                     <h2 id="sections-title" class="text-lg font-bold">Sections</h2>
                     <p class="mt-1 text-[13px] text-ink-soft">
-                        Les colonnes du Kanban, dans l'ordre du projet. Double-cliquez sur un nom pour le modifier.
+                        Les colonnes du tableau, dans l'ordre du projet. Double-cliquez sur un nom pour le modifier.
                     </p>
                 </div>
                 <div class="space-y-2">

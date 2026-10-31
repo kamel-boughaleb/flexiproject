@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -12,7 +14,7 @@ class ProjectTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_creating_a_project_sets_up_sections_admin_and_default_rule(): void
+    public function test_creating_a_project_sets_up_sections_and_admin(): void
     {
         $user = User::factory()->create();
 
@@ -25,7 +27,8 @@ class ProjectTest extends TestCase
         $project = Project::firstOrFail();
         $this->assertSame('admin', $user->roleIn($project));
         $this->assertSame(['À faire', 'En cours', 'Terminé'], $project->sections()->pluck('name')->all());
-        $this->assertSame(1, $project->rules()->count());
+        // La clôture des tâches arrivées dans « Terminé » est une règle globale, plus une règle par projet.
+        $this->assertSame(0, $project->rules()->count());
         $this->assertSame('2026-12-15', $project->end_date->toDateString());
     }
 
@@ -45,7 +48,8 @@ class ProjectTest extends TestCase
             $this->actingAs($owner)->get("/projects/{$project->id}/{$view}")
                 ->assertInertia(fn (Assert $page) => $page->component('Projects/Show')->where('view', $view)->has('sections', 3));
         }
-        foreach (['rules' => 'Projects/Rules', 'members' => 'Projects/Members', 'settings' => 'Projects/Settings'] as $path => $component) {
+        $this->actingAs($owner)->get("/projects/{$project->id}/rules")->assertRedirect('/rules');
+        foreach (['members' => 'Projects/Members', 'settings' => 'Projects/Settings'] as $path => $component) {
             $this->actingAs($owner)->get("/projects/{$project->id}/{$path}")->assertInertia(fn (Assert $page) => $page->component($component));
         }
     }
@@ -66,5 +70,26 @@ class ProjectTest extends TestCase
         $this->actingAs($editor)->patch("/projects/{$project->id}", ['name' => 'Nouveau nom'])->assertForbidden();
         $this->actingAs($project->owner)->patch("/projects/{$project->id}", ['name' => 'Nouveau nom'])->assertRedirect();
         $this->assertSame('Nouveau nom', $project->fresh()->name);
+    }
+
+    public function test_a_project_can_have_an_emoji_or_an_image_as_avatar(): void
+    {
+        Storage::fake('local');
+        $project = Project::factory()->create();
+        $owner = $project->owner;
+
+        $this->actingAs($owner)->patch("/projects/{$project->id}", ['name' => $project->name, 'icon' => '📘'])->assertRedirect();
+        $this->assertSame('📘', $project->fresh()->icon);
+
+        $this->actingAs($owner)->post("/projects/{$project->id}", [
+            '_method' => 'patch', 'name' => $project->name, 'image' => UploadedFile::fake()->image('cover.png', 300, 200),
+        ])->assertRedirect();
+        $project->refresh();
+        Storage::disk('local')->assertExists($project->image_path);
+        $this->actingAs($owner)->get($project->image)->assertOk();
+        $this->actingAs(User::factory()->create())->get($project->image)->assertForbidden();
+
+        $this->actingAs($owner)->patch("/projects/{$project->id}", ['name' => $project->name, 'remove_image' => true])->assertRedirect();
+        $this->assertNull($project->fresh()->image_path);
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
-use App\Models\Rule;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +12,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProjectController extends Controller
 {
@@ -28,18 +28,13 @@ class ProjectController extends Controller
             foreach (Project::DEFAULT_SECTIONS as $i => $name) {
                 $project->sections()->create(['name' => $name, 'position' => $i + 1]);
             }
-            // Règle d'exemple : une tâche déposée dans « Terminé » est clôturée.
-            $done = $project->sections()->where('name', 'Terminé')->first();
-            $project->rules()->create([
-                'name' => 'Clôturer les tâches arrivées dans « Terminé »',
-                'trigger' => 'task_moved',
-                'trigger_section_id' => $done->id,
-                'actions' => [['type' => 'set_completed']],
-            ]);
             $project->log("a créé le projet « {$project->name} »", $request->user());
 
             return $project;
         });
+        if ($request->hasFile('image')) {
+            $project->setImage($request->file('image'));
+        }
 
         return to_route('projects.view', [$project, 'board']);
     }
@@ -60,19 +55,6 @@ class ProjectController extends Controller
                 ->orderBy('position')
                 ->get(),
             'selectedTask' => fn () => $this->selectedTask($request, $project),
-        ]);
-    }
-
-    public function rules(Request $request, Project $project): Response
-    {
-        Gate::authorize('view', $project);
-
-        return Inertia::render('Projects/Rules', [
-            ...$this->shared($request, $project),
-            'sections' => $project->sections()->get(['id', 'name']),
-            'rules' => $project->rules()->with('triggerSection:id,name')->oldest()->get(),
-            'triggers' => Rule::TRIGGERS,
-            'actions' => Rule::ACTIONS,
         ]);
     }
 
@@ -105,6 +87,11 @@ class ProjectController extends Controller
     {
         Gate::authorize('manage', $project);
         $project->update($this->validated($request));
+        if ($request->hasFile('image')) {
+            $project->setImage($request->file('image'));
+        } elseif ($request->boolean('remove_image')) {
+            $project->removeImage();
+        }
         $project->log('a modifié les informations du projet', $request->user());
 
         return back();
@@ -119,12 +106,27 @@ class ProjectController extends Controller
         return to_route('dashboard');
     }
 
+    /** Image du projet (réservée à ses membres). */
+    public function avatar(Project $project): StreamedResponse
+    {
+        Gate::authorize('view', $project);
+        abort_unless($project->image_path && Storage::disk('local')->exists($project->image_path), 404);
+
+        return Storage::disk('local')->response($project->image_path, null, ['Cache-Control' => 'private, max-age=604800']);
+    }
+
     private function validated(Request $request): array
     {
+        $request->validate([
+            'image' => ['nullable', 'image', 'max:5120'],
+            'remove_image' => ['nullable', 'boolean'],
+        ]);
+
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'color' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'icon' => ['nullable', 'string', 'max:16'],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
         ]);
@@ -136,7 +138,7 @@ class ProjectController extends Controller
         $user = $request->user();
 
         return [
-            'project' => $project->only(['id', 'name', 'description', 'color', 'start_date', 'end_date']),
+            'project' => $project->summary(['description', 'start_date', 'end_date']),
             'members' => $project->members()->orderBy('project_user.created_at')
                 ->get(['users.id', 'name', 'email', 'color', 'avatar', 'password', 'google_id', 'invitation_token'])
                 ->map(fn ($m) => [...$m->only(['id', 'name', 'email', 'color', 'avatar']), 'role' => $m->pivot->role, 'pending' => $m->isPending()]),

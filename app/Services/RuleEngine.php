@@ -18,13 +18,15 @@ class RuleEngine
 
     public function fire(string $trigger, Task $task, User $actor, ?int $sectionId = null): void
     {
-        $rules = Rule::where('project_id', $task->project_id)
+        // Règles du projet et règles globales (communes à tous les projets).
+        $rules = Rule::where(fn ($q) => $q->where('project_id', $task->project_id)->orWhereNull('project_id'))
             ->where('enabled', true)
             ->where('trigger', $trigger)
+            ->orderBy('id')
             ->get();
 
         foreach ($rules as $rule) {
-            if ($trigger === 'task_moved' && $rule->trigger_section_id && $rule->trigger_section_id !== $sectionId) {
+            if ($trigger === 'task_moved' && ! $this->matchesSection($rule, $task, $sectionId)) {
                 continue;
             }
 
@@ -36,11 +38,33 @@ class RuleEngine
         }
     }
 
+    /** Section déclenchante : par identifiant (règle de projet) ou par nom (règle globale). */
+    private function matchesSection(Rule $rule, Task $task, ?int $sectionId): bool
+    {
+        if ($rule->trigger_section_id) {
+            return $rule->trigger_section_id === $sectionId;
+        }
+        if ($rule->trigger_section_name) {
+            $name = Section::where('project_id', $task->project_id)->whereKey($sectionId)->value('name');
+
+            return $name !== null && self::sameName($name, $rule->trigger_section_name);
+        }
+
+        return true;
+    }
+
+    private static function sameName(string $a, string $b): bool
+    {
+        return mb_strtolower(trim($a)) === mb_strtolower(trim($b));
+    }
+
     private function apply(Task $task, array $action, User $actor): void
     {
         switch ($action['type'] ?? null) {
             case 'move_to_section':
-                $section = Section::where('project_id', $task->project_id)->find($action['section_id'] ?? null);
+                $section = isset($action['section_name'])
+                    ? Section::where('project_id', $task->project_id)->get()->first(fn ($s) => self::sameName($s->name, $action['section_name']))
+                    : Section::where('project_id', $task->project_id)->find($action['section_id'] ?? null);
                 if ($section) {
                     $task->moveToEndOf($section);
                 }
@@ -52,6 +76,10 @@ class RuleEngine
                 $task->markCompleted(false);
                 break;
             case 'assign_to':
+                // Une règle globale peut viser quelqu'un qui n'est pas membre du projet : on ne l'assigne pas.
+                if (! $task->project->members()->whereKey($action['user_id'] ?? 0)->exists()) {
+                    break;
+                }
                 $task->update(['assignee_id' => $action['user_id'] ?? null]);
                 if ($task->wasChanged('assignee_id')) {
                     $this->notifier->assigned($task->load('assignee'), $actor);

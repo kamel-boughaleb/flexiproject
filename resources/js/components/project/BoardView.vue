@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import SegmentedControl from '@/components/design/SegmentedControl.vue';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { Section, Task } from '@/types';
 import { router, useForm } from '@inertiajs/vue3';
-import { Plus, X } from 'lucide-vue-next';
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
 import draggable from 'vuedraggable';
 import TaskCard from './TaskCard.vue';
 
@@ -48,26 +51,6 @@ function addTask(sectionId: number) {
     newTask.post(route('tasks.store', props.projectId), { preserveScroll: true, preserveState: true, onSuccess: () => newTask.reset('title') });
 }
 
-// Bouton « Ajouter une tâche » de l'en-tête du projet : saisie rapide dans la première colonne.
-const board = ref<HTMLElement>();
-async function addFromHeader() {
-    if (!props.canEdit || !props.sections.length) return;
-    board.value?.scrollTo({ left: 0, behavior: 'smooth' });
-    addingIn.value = null;
-    await nextTick();
-    startAdding(props.sections[0].id);
-}
-onMounted(() => {
-    window.addEventListener('flexi:add-task', addFromHeader);
-    const url = new URL(window.location.href);
-    if (url.searchParams.has('add')) {
-        url.searchParams.delete('add');
-        window.history.replaceState(window.history.state, '', url);
-        addFromHeader();
-    }
-});
-onBeforeUnmount(() => window.removeEventListener('flexi:add-task', addFromHeader));
-
 const newSection = useForm({ name: '' });
 function addSection() {
     newSection.post(route('sections.store', props.projectId), { preserveScroll: true, onSuccess: () => newSection.reset() });
@@ -78,9 +61,17 @@ function renameSection(section: Section, name: string) {
     renaming.value = null;
     if (name.trim() && name !== section.name) router.patch(route('sections.update', section.id), { name }, { preserveScroll: true });
 }
-function deleteSection(section: Section) {
-    if (confirm(`Supprimer la section « ${section.name} » et toutes ses tâches ?`))
-        router.delete(route('sections.destroy', section.id), { preserveScroll: true });
+
+// Suppression d'une section : confirmée dans une fenêtre, avec le nombre de tâches perdues.
+const deleting = ref<Section | null>(null);
+const deleteOpen = ref(false);
+function askDelete(section: Section) {
+    deleting.value = section;
+    deleteOpen.value = true;
+}
+function confirmDelete() {
+    if (!deleting.value) return;
+    router.delete(route('sections.destroy', deleting.value.id), { preserveScroll: true, onFinish: () => (deleteOpen.value = false) });
 }
 </script>
 
@@ -94,7 +85,7 @@ function deleteSection(section: Section) {
                 :options="sections.map((s) => ({ value: s.id, label: s.name, count: columns[s.id]?.length ?? 0 }))"
             />
         </div>
-        <div ref="board" class="flex min-h-0 flex-1 items-start gap-3.5 overflow-x-auto p-4 md:p-7">
+        <div class="flex min-h-0 flex-1 items-start gap-3.5 overflow-x-auto p-4 md:p-7">
             <section
                 v-for="section in sections"
                 :key="section.id"
@@ -122,14 +113,27 @@ function deleteSection(section: Section) {
                         {{ section.name }}
                         <span class="ml-1 text-sm font-semibold text-ink-soft">{{ columns[section.id]?.length ?? 0 }}</span>
                     </h3>
-                    <button
-                        v-if="canEdit && sections.length > 1"
-                        class="rounded-icon p-1 text-ink-soft opacity-0 hover:bg-background hover:text-brand-active focus-visible:opacity-100 group-hover:opacity-100"
-                        :aria-label="`Supprimer la section ${section.name}`"
-                        @click="deleteSection(section)"
-                    >
-                        <X class="size-4" />
-                    </button>
+                    <DropdownMenu v-if="canEdit">
+                        <DropdownMenuTrigger
+                            class="flex size-8 items-center justify-center rounded-icon text-ink-soft hover:bg-background hover:text-ink data-[state=open]:bg-background data-[state=open]:text-ink"
+                            :aria-label="`Actions de la section ${section.name}`"
+                        >
+                            <Ellipsis class="size-[18px]" />
+                        </DropdownMenuTrigger>
+                        <!-- Pas de retour du focus sur le bouton : il fermerait aussitôt le champ « Renommer ». -->
+                        <DropdownMenuContent align="end" class="w-44 rounded-2xl p-1.5" @close-auto-focus.prevent>
+                            <DropdownMenuItem class="rounded-icon font-semibold" @select="renaming = section.id">
+                                <Pencil class="size-4" /> Renommer
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                v-if="sections.length > 1"
+                                class="rounded-icon font-semibold text-destructive focus:bg-destructive/10 focus:text-destructive"
+                                @select="askDelete(section)"
+                            >
+                                <Trash2 class="size-4" /> Supprimer
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 <draggable
@@ -178,5 +182,23 @@ function deleteSection(section: Section) {
                 />
             </form>
         </div>
+
+        <Dialog v-model:open="deleteOpen">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Supprimer la section « {{ deleting?.name }} » ?</DialogTitle>
+                    <DialogDescription>
+                        <template v-if="deleting && columns[deleting.id]?.length">
+                            Ses {{ columns[deleting.id].length }} tâche(s) seront aussi supprimées.
+                        </template>
+                        Cette action est définitive.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="deleteOpen = false">Annuler</Button>
+                    <Button variant="destructive" @click="confirmDelete">Supprimer</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
 </template>

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Project;
+use App\Models\Rule;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -87,5 +88,50 @@ class RuleTest extends TestCase
 
         $this->actingAs($project->owner)->post("/projects/{$project->id}/tasks", ['title' => 'Nouvelle']);
         $this->assertSame(now()->addDays(7)->toDateString(), Task::firstOrFail()->due_date->toDateString());
+    }
+
+    public function test_global_rules_apply_to_every_project_by_section_name(): void
+    {
+        $rule = Rule::global()->firstOrFail();
+        $this->assertSame('Terminé', $rule->trigger_section_name);
+        $project = Project::factory()->create();
+        [, $doing, $done] = $project->sections()->get();
+        $task = Task::factory()->in($project)->create();
+
+        $this->actingAs($project->owner)->post("/tasks/{$task->id}/move", ['section_id' => $doing->id, 'index' => 0]);
+        $this->assertFalse($task->fresh()->completed);
+
+        $this->actingAs($project->owner)->post("/tasks/{$task->id}/move", ['section_id' => $done->id, 'index' => 0]);
+        $this->assertTrue($task->fresh()->completed);
+    }
+
+    public function test_only_admins_manage_global_rules(): void
+    {
+        $user = User::factory()->create();
+        $admin = User::factory()->create(['is_admin' => true]);
+        $payload = ['name' => 'Ranger', 'trigger' => 'task_completed', 'actions' => [['type' => 'move_to_section', 'section_name' => 'Terminé']]];
+
+        $this->actingAs($user)->get('/rules')->assertOk();
+        $this->actingAs($user)->post('/rules', $payload)->assertForbidden();
+        $this->actingAs($user)->delete('/rules/'.Rule::global()->value('id'))->assertForbidden();
+
+        $this->actingAs($admin)->post('/rules', $payload)->assertSessionHasNoErrors();
+        $this->assertSame([['type' => 'move_to_section', 'section_name' => 'Terminé']], Rule::global()->latest('id')->first()->actions);
+
+        $project = Project::factory()->create();
+        $task = Task::factory()->in($project)->create();
+        $this->actingAs($project->owner)->post("/tasks/{$task->id}/toggle");
+        $this->assertSame('Terminé', $task->fresh()->section->name);
+    }
+
+    public function test_global_assign_rule_skips_people_outside_the_project(): void
+    {
+        $outsider = User::factory()->create();
+        Rule::create(['name' => 'Assigner', 'trigger' => 'task_created', 'actions' => [['type' => 'assign_to', 'user_id' => $outsider->id]]]);
+        $project = Project::factory()->create();
+
+        $this->actingAs($project->owner)->post("/projects/{$project->id}/tasks", ['title' => 'Nouvelle']);
+
+        $this->assertNull(Task::firstOrFail()->assignee_id);
     }
 }
