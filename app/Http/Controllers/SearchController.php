@@ -73,9 +73,7 @@ class SearchController extends Controller
             ->limit(self::PROJECT_LIMIT)
             ->get()
             ->map(fn (Project $p) => [
-                'id' => $p->id,
-                'name' => $p->name,
-                'color' => $p->color,
+                ...$p->summary(),
                 'archived' => $p->archived,
                 'tasks_total' => $p->tasks_total,
                 'tasks_done' => $p->tasks_done,

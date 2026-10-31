@@ -1,14 +1,17 @@
 <script setup lang="ts">
+import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
 import type { MiniUser } from '@/types';
 import { router } from '@inertiajs/vue3';
-import { Check, CornerDownRight, FolderKanban, Loader2, Search, X } from 'lucide-vue-next';
+import { Check, CornerDownRight, Loader2, Search, X } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 interface ProjectResult {
     id: number;
     name: string;
     color: string;
+    icon?: string | null;
+    image?: string | null;
     archived: boolean;
     tasks_total: number;
     tasks_done: number;
@@ -228,9 +231,7 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                     @mouseenter="active = indexOf(item)"
                     @click="go(item)"
                 >
-                    <span class="flex size-8 shrink-0 items-center justify-center rounded-lg" :style="{ backgroundColor: item.data.color }">
-                        <FolderKanban class="size-4 text-white" />
-                    </span>
+                    <ProjectAvatar :project="item.data" size="md" />
                     <span class="min-w-0 flex-1">
                         <span class="block truncate text-[15px] font-semibold text-ink">
                             <template v-for="(part, i) in highlight(item.data.name)" :key="i"
