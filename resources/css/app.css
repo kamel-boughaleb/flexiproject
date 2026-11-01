@@ -110,7 +110,7 @@
         @apply text-base font-semibold;
     }
     .rich-text a {
-        @apply font-semibold text-info-active underline underline-offset-2;
+        @apply cursor-pointer font-semibold text-info-active underline underline-offset-2;
     }
     .rich-text ul:not([data-type='taskList']) {
         @apply list-disc pl-5;
