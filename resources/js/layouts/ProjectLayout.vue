@@ -1,22 +1,19 @@
 <script setup lang="ts">
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import UserMenu from '@/components/UserMenu.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dateRange } from '@/lib/labels';
 import type { Member, Project, ProjectPageProps, SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { CircleCheck, Ellipsis, RotateCcw, Trash2 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { CircleCheck } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 const props = defineProps<{ project: Project; members: Member[]; title: string; canEdit?: boolean }>();
 const page = usePage<SharedData & Partial<ProjectPageProps>>();
 
-// Menu « … » du projet (administrateurs) : terminer / rouvrir, supprimer.
+// Bouton « Terminer » (administrateurs) ; sur un projet terminé, il le rouvre. La suppression est dans Paramètres.
 const canManage = computed(() => !!page.props.can?.manage);
 const done = computed(() => !!props.project.completed_at);
 const toggleDone = () =>
@@ -24,14 +21,6 @@ const toggleDone = () =>
         method: done.value ? 'delete' : 'post',
         preserveScroll: true,
     });
-const deleteOpen = ref(false);
-const deleting = ref(false);
-const destroy = () =>
-    router.delete(route('projects.destroy', props.project.id), {
-        onStart: () => (deleting.value = true),
-        onFinish: () => (deleting.value = false),
-    });
-
 const tabs = computed(() => [
     { label: 'Tableau', href: route('projects.view', [props.project.id, 'board']) },
     { label: 'Liste', href: route('projects.view', [props.project.id, 'list']) },
@@ -56,27 +45,17 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                     <SidebarTrigger class="-ml-1 md:hidden" />
                     <ProjectAvatar :project="project" size="md" />
                     <h1 class="truncate text-xl font-bold leading-tight md:text-2xl">{{ project.name }}</h1>
-                    <DropdownMenu v-if="canManage">
-                        <DropdownMenuTrigger
-                            class="flex size-8 shrink-0 items-center justify-center rounded-icon text-ink-soft hover:bg-app-hover hover:text-ink data-[state=open]:bg-app-hover data-[state=open]:text-ink"
-                            aria-label="Actions du projet"
-                            title="Actions du projet"
-                        >
-                            <Ellipsis class="size-5" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" class="w-52 rounded-2xl p-1.5">
-                            <DropdownMenuItem class="rounded-icon font-semibold" @select="toggleDone">
-                                <template v-if="done"><RotateCcw class="size-4" /> Rouvrir le projet</template>
-                                <template v-else><CircleCheck class="size-4" /> Terminer</template>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                class="rounded-icon font-semibold text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                @select="deleteOpen = true"
-                            >
-                                <Trash2 class="size-4" /> Supprimer
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <button
+                        v-if="canManage"
+                        type="button"
+                        class="flex size-8 shrink-0 items-center justify-center rounded-icon transition-colors"
+                        :class="done ? 'text-success hover:bg-app-hover' : 'text-ink-soft hover:bg-success-tint hover:text-success'"
+                        :aria-label="done ? 'Rouvrir le projet' : 'Terminer le projet'"
+                        :title="done ? 'Rouvrir le projet' : 'Terminer le projet'"
+                        @click="toggleDone"
+                    >
+                        <CircleCheck class="size-5" />
+                    </button>
                     <span
                         v-if="done"
                         class="inline-flex shrink-0 items-center gap-1 rounded-full bg-success-tint px-2.5 py-0.5 text-xs font-bold text-success-text"
@@ -132,20 +111,5 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                 <slot name="aside" />
             </div>
         </div>
-
-        <Dialog v-model:open="deleteOpen">
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Supprimer le projet « {{ project.name }} » ?</DialogTitle>
-                    <DialogDescription
-                        >Toutes ses tâches, commentaires et pièces jointes seront supprimés. Cette action est définitive.</DialogDescription
-                    >
-                </DialogHeader>
-                <DialogFooter class="gap-2">
-                    <Button variant="outline" @click="deleteOpen = false">Annuler</Button>
-                    <Button variant="destructive" :disabled="deleting" @click="destroy">Supprimer</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
     </AppLayout>
 </template>
