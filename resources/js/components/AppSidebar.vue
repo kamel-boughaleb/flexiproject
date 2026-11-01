@@ -18,10 +18,11 @@ import {
     SidebarMenuSubItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import { type ProjectStatus, type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
+import { type ProjectStatus, type SharedData, type SidebarProject } from '@/types';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { CheckSquare, ListFilter, Plus } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import draggable from 'vuedraggable';
 import AppLogo from './AppLogo.vue';
 
 const page = usePage<SharedData>();
@@ -60,7 +61,21 @@ function toggleStatus(status: ProjectStatus, on: boolean) {
     filter.value = on ? [...filter.value, status] : filter.value.filter((s) => s !== status);
 }
 const isFiltered = computed(() => filter.value.length !== DEFAULT_FILTER.length || !DEFAULT_FILTER.every((s) => filter.value.includes(s)));
-const projects = computed(() => page.props.sidebarProjects.filter((p) => filter.value.includes(p.status ?? 'active')));
+
+// Ordre des projets : glisser-déposer un projet enregistre sa nouvelle place (propre à chaque utilisateur).
+// Copie locale pour que le projet reste à sa place pendant l'enregistrement ; resynchronisée à chaque réponse.
+const projects = ref<SidebarProject[]>([]);
+watch(
+    [() => page.props.sidebarProjects, filter],
+    () => {
+        projects.value = page.props.sidebarProjects.filter((p) => filter.value.includes(p.status ?? 'active'));
+    },
+    { immediate: true },
+);
+function reorder(list: SidebarProject[]) {
+    projects.value = list;
+    router.post(route('projects.reorder'), { ids: list.map((p) => p.id) }, { preserveScroll: true, preserveState: true, only: ['sidebarProjects'] });
+}
 
 // Tiroir mobile : sous-liens du projet ouvert et profil en bas (maquette « M-Menu »).
 const { isMobile } = useSidebar();
@@ -132,21 +147,38 @@ const projectLinks = (id: number) => [
                     <li v-if="!projects.length" class="px-2 py-1.5 text-xs text-ink-soft group-data-[collapsible=icon]:hidden">
                         Aucun projet pour ce filtre.
                     </li>
-                    <SidebarMenuItem v-for="p in projects" :key="p.id">
-                        <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
-                            <Link :href="route('projects.show', p.id)">
-                                <ProjectAvatar :project="p" size="xs" />
-                                <span class="truncate">{{ p.name }}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                        <SidebarMenuSub v-if="isMobile && path.startsWith(`/projects/${p.id}/`)">
-                            <SidebarMenuSubItem v-for="l in projectLinks(p.id)" :key="l.title">
-                                <SidebarMenuSubButton as-child :is-active="isActive(l.href)">
-                                    <Link :href="l.href" class="font-semibold">{{ l.title }}</Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        </SidebarMenuSub>
-                    </SidebarMenuItem>
+                </SidebarMenu>
+                <draggable
+                    :model-value="projects"
+                    tag="ul"
+                    item-key="id"
+                    data-sidebar="menu"
+                    class="flex w-full min-w-0 flex-col gap-1"
+                    :animation="150"
+                    :delay="250"
+                    :delay-on-touch-only="true"
+                    ghost-class="opacity-40"
+                    @update:model-value="reorder"
+                >
+                    <template #item="{ element: p }">
+                        <SidebarMenuItem>
+                            <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
+                                <Link :href="route('projects.show', p.id)">
+                                    <ProjectAvatar :project="p" size="xs" />
+                                    <span class="truncate">{{ p.name }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                            <SidebarMenuSub v-if="isMobile && path.startsWith(`/projects/${p.id}/`)">
+                                <SidebarMenuSubItem v-for="l in projectLinks(p.id)" :key="l.title">
+                                    <SidebarMenuSubButton as-child :is-active="isActive(l.href)">
+                                        <Link :href="l.href" class="font-semibold">{{ l.title }}</Link>
+                                    </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                            </SidebarMenuSub>
+                        </SidebarMenuItem>
+                    </template>
+                </draggable>
+                <SidebarMenu class="mt-1">
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child tooltip="Nouveau projet">
                             <Link :href="`${route('dashboard')}?new=1`" class="text-ink-soft">

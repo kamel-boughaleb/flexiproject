@@ -93,7 +93,20 @@ class User extends Authenticatable
 
     public function projects(): BelongsToMany
     {
-        return $this->belongsToMany(Project::class)->withPivot('role')->withTimestamps();
+        return $this->belongsToMany(Project::class)->withPivot('role', 'sidebar_position')->withTimestamps();
+    }
+
+    /**
+     * Projets dans l'ordre du menu de gauche : d'abord ceux jamais placés par l'utilisateur
+     * (les nouveaux, du plus récent au plus ancien), puis l'ordre choisi par glisser-déposer.
+     */
+    public function sidebarProjects(): BelongsToMany
+    {
+        return $this->projects()
+            ->orderByRaw('project_user.sidebar_position is null desc')
+            ->orderBy('project_user.sidebar_position')
+            ->orderByDesc('projects.created_at')
+            ->orderByDesc('projects.id');
     }
 
     public function inviter(): BelongsTo
