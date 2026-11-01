@@ -147,7 +147,7 @@ const iconBtn =
         :class="
             full
                 ? 'absolute inset-0 z-30'
-                : 'fixed inset-0 z-40 md:static md:z-auto md:w-[min(640px,58%)] md:shrink-0 md:border-l md:border-app-border md:shadow-[-6px_0_16px_-8px_#112a3b26]'
+                : 'fixed inset-0 z-40 md:absolute md:inset-y-0 md:left-auto md:right-0 md:z-30 md:w-[min(640px,58%)] md:border-l md:border-app-border md:shadow-[-12px_0_24px_-12px_#112a3b40]'
         "
     >
         <!-- Barre d'outils -->

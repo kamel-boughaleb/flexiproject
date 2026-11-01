@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
         ->where('name', '[A-Za-z0-9]+\.(png|jpg|gif|webp)')->name('editor-images.show');
 
     Route::post('projects/{project}/sections', [SectionController::class, 'store'])->name('sections.store');
+    Route::post('projects/{project}/sections/reorder', [SectionController::class, 'reorder'])->name('sections.reorder');
     Route::patch('sections/{section}', [SectionController::class, 'update'])->name('sections.update');
     Route::delete('sections/{section}', [SectionController::class, 'destroy'])->name('sections.destroy');
 
