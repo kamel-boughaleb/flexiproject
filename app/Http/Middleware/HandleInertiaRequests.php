@@ -43,9 +43,10 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
             ],
-            // Barre latérale : projets de l'utilisateur et notifications non lues.
-            'sidebarProjects' => fn () => $user?->projects()->where('archived', false)
-                ->orderBy('projects.created_at')->get(['projects.id', 'name', 'color', 'icon', 'image_path']),
+            // Barre latérale : projets de l'utilisateur (avec leur statut, filtrable) et notifications non lues.
+            'sidebarProjects' => fn () => $user?->projects()
+                ->orderBy('projects.created_at')->get(['projects.id', 'name', 'color', 'icon', 'image_path', 'start_date', 'completed_at'])
+                ->map(fn ($p) => $p->summary()),
             'unreadNotifications' => fn () => $user?->unreadNotifications()->count() ?? 0,
             'flash' => [
                 'error' => fn () => $request->session()->get('error'),

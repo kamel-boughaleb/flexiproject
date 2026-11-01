@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +23,7 @@ class Project extends Model
 
     public const DEFAULT_SECTIONS = ['À faire', 'En cours', 'Terminé'];
 
-    protected $fillable = ['name', 'description', 'color', 'icon', 'start_date', 'end_date', 'archived', 'owner_id'];
+    protected $fillable = ['name', 'description', 'color', 'icon', 'start_date', 'end_date', 'owner_id'];
 
     protected $hidden = ['image_path'];
 
@@ -41,8 +42,31 @@ class Project extends Model
         return [
             'start_date' => 'date:Y-m-d',
             'end_date' => 'date:Y-m-d',
-            'archived' => 'boolean',
+            'completed_at' => 'datetime',
         ];
+    }
+
+    /** Projets pas encore terminés (en cours ou non commencés). */
+    public function scopeOpen(Builder $query): void
+    {
+        $query->whereNull('projects.completed_at');
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->completed_at !== null;
+    }
+
+    /**
+     * Statut affiché : terminé (done), non commencé (upcoming, date de début à venir) ou en cours (active).
+     */
+    public function status(): string
+    {
+        if ($this->completed_at) {
+            return 'done';
+        }
+
+        return $this->start_date && $this->start_date->isAfter(today()) ? 'upcoming' : 'active';
     }
 
     public function owner(): BelongsTo
@@ -84,7 +108,7 @@ class Project extends Model
     /** Champs d'affichage du projet (nom, couleur, avatar) pour l'en-tête des pages du projet. */
     public function summary(array $extra = []): array
     {
-        return $this->only(['id', 'name', 'color', 'icon', 'image', ...$extra]);
+        return [...$this->only(['id', 'name', 'color', 'icon', 'image', ...$extra]), 'status' => $this->status()];
     }
 
     /** Adresse de l'image, ajoutée à chaque projet envoyé à l'interface (charger image_path avec les colonnes). */

@@ -16,7 +16,7 @@ defineEmits<{ open: [id: number] }>();
         role="button"
         tabindex="0"
         :aria-current="selected ? 'true' : undefined"
-        class="cursor-pointer overflow-hidden rounded-task border-2 bg-card px-3.5 py-3 shadow-soft transition-shadow hover:shadow-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        class="shrink-0 cursor-pointer overflow-hidden rounded-task border-2 bg-card px-3.5 py-3 shadow-soft transition-shadow hover:shadow-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         :class="selected ? 'border-brand' : 'border-transparent'"
         @click="$emit('open', task.id)"
         @keydown.enter.self="$emit('open', task.id)"

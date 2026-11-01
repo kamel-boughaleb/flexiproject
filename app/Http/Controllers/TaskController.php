@@ -22,6 +22,7 @@ class TaskController extends Controller
     public function store(Request $request, Project $project): RedirectResponse
     {
         Gate::authorize('edit', $project);
+        abort_if($project->isCompleted(), 403, 'Ce projet est terminé : on ne peut plus y ajouter de tâches.');
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:60000'],
