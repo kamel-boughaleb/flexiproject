@@ -9,6 +9,8 @@ use App\Models\User;
  * Droits par rôle dans un projet :
  * lecteur (viewer) consulte et commente, éditeur (editor) modifie les tâches et règles,
  * administrateur (admin) gère aussi le projet et ses collaborateurs.
+ * Un administrateur de la plateforme a les droits d'admin sur tous les projets dont il est membre
+ * (ex. projets importés d'Asana, où seul le propriétaire Asana devient admin).
  */
 class ProjectPolicy
 {
@@ -17,6 +19,9 @@ class ProjectPolicy
     private function has(User $user, Project $project, string $role): bool
     {
         $current = $user->roleIn($project);
+        if ($current !== null && $user->is_admin) {
+            $current = 'admin';
+        }
 
         return $current !== null && self::RANK[$current] >= self::RANK[$role];
     }

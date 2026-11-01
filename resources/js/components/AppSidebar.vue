@@ -60,10 +60,7 @@ function toggleStatus(status: ProjectStatus, on: boolean) {
     filter.value = on ? [...filter.value, status] : filter.value.filter((s) => s !== status);
 }
 const isFiltered = computed(() => filter.value.length !== DEFAULT_FILTER.length || !DEFAULT_FILTER.every((s) => filter.value.includes(s)));
-// Le projet ouvert reste visible, même si le filtre l'exclut.
-const projects = computed(() =>
-    page.props.sidebarProjects.filter((p) => filter.value.includes(p.status ?? 'active') || path.value.startsWith(`/projects/${p.id}/`)),
-);
+const projects = computed(() => page.props.sidebarProjects.filter((p) => filter.value.includes(p.status ?? 'active')));
 
 // Tiroir mobile : sous-liens du projet ouvert et profil en bas (maquette « M-Menu »).
 const { isMobile } = useSidebar();
