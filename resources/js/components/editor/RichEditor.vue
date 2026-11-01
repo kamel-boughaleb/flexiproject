@@ -7,6 +7,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { openRichLink } from '@/lib/links';
 import type { MiniUser } from '@/types';
 import { Extension } from '@tiptap/core';
 import Highlight from '@tiptap/extension-highlight';
@@ -112,6 +113,8 @@ const editor = useEditor({
         attributes: { class: 'rich-text min-h-[var(--editor-min-height)] px-3.5 py-2.5 outline-none' },
         handlePaste: (_view, event) => uploadFrom(event.clipboardData?.files),
         handleDrop: (_view, event) => uploadFrom((event as DragEvent).dataTransfer?.files),
+        // Un clic sur un lien l'ouvre dans un nouvel onglet (sauf pendant une sélection de texte).
+        handleClick: (view, _pos, event) => view.state.selection.empty && openRichLink(event),
     },
     onCreate: ({ editor: created }) => (committed = created.isEmpty ? '' : created.getHTML()),
     onUpdate: () => emit('update:modelValue', html()),
