@@ -32,6 +32,23 @@ class ProjectTest extends TestCase
         $this->assertSame('2026-12-15', $project->end_date->toDateString());
     }
 
+    public function test_sections_can_be_reordered(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)->post('/projects', ['name' => 'Catalogue']);
+        $project = Project::firstOrFail();
+        [$todo, $doing, $done] = $project->sections()->pluck('id')->all();
+
+        $this->post("/projects/{$project->id}/sections/reorder", ['ids' => [$done, $todo, $doing]])->assertRedirect();
+        $this->assertSame(['Terminé', 'À faire', 'En cours'], $project->sections()->pluck('name')->all());
+
+        // Une liste incomplète ou une section d'un autre projet est refusée.
+        $this->post("/projects/{$project->id}/sections/reorder", ['ids' => [$todo, $doing]])->assertSessionHasErrors('ids');
+        $this->post("/projects/{$project->id}/sections/reorder", ['ids' => [$todo, $doing, 9999]])->assertSessionHasErrors('ids.2');
+        $this->actingAs(User::factory()->create())
+            ->post("/projects/{$project->id}/sections/reorder", ['ids' => [$todo, $doing, $done]])->assertForbidden();
+    }
+
     public function test_end_date_cannot_be_before_start_date(): void
     {
         $this->actingAs(User::factory()->create())

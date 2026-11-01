@@ -8,11 +8,13 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useSectionEditing, vFocusSelect } from '@/composables/useSectionEditing';
 import { PRIORITIES, dueLabel, isOverdue, sectionColor } from '@/lib/labels';
 import type { Priority, Section, SharedData, Task } from '@/types';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { ArrowUpDown, ChevronDown, ListChecks, ListFilter, MessageCircle, Rows3, Search } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import draggable from 'vuedraggable';
 import PriorityBadge from './PriorityBadge.vue';
 import TaskCheck from './TaskCheck.vue';
 import UserAvatar from './UserAvatar.vue';
@@ -50,12 +52,21 @@ const filtered = computed(() => {
     return [...list].sort(by);
 });
 
-const groups = computed(() => {
+// Sections : clic sur le titre pour renommer, glisser le titre pour changer l'ordre.
+const { ordered, reorder, renaming, rename } = useSectionEditing(
+    () => props.projectId,
+    () => props.sections,
+);
+
+type Group = { key: string; name: string; color: string | null; section: Section | null; sectionId: number | null; tasks: Task[] };
+
+const groups = computed<Group[]>(() => {
     if (groupBy.value === 'section')
-        return props.sections.map((s, i) => ({
+        return ordered.value.map((s, i) => ({
             key: `s${s.id}`,
             name: s.name,
             color: sectionColor(i),
+            section: s,
             sectionId: s.id,
             tasks: filtered.value.filter((t) => t.section_id === s.id),
         }));
@@ -64,6 +75,7 @@ const groups = computed(() => {
             key: `p${p}`,
             name: p === 'none' ? 'Sans priorité' : PRIORITIES[p].label,
             color: null,
+            section: null,
             sectionId: null,
             tasks: filtered.value.filter((t) => t.priority === p),
         }));
@@ -72,9 +84,16 @@ const groups = computed(() => {
         filtered.value.forEach((t) => people.set(t.assignee_id, t.assignee?.name ?? 'Sans responsable'));
         return [...people.entries()]
             .sort(([a], [b]) => (a === null ? 1 : b === null ? -1 : 0))
-            .map(([id, name]) => ({ key: `a${id}`, name, color: null, sectionId: null, tasks: filtered.value.filter((t) => t.assignee_id === id) }));
+            .map(([id, name]) => ({
+                key: `a${id}`,
+                name,
+                color: null,
+                section: null,
+                sectionId: null,
+                tasks: filtered.value.filter((t) => t.assignee_id === id),
+            }));
     }
-    return [{ key: 'all', name: 'Toutes les tâches', color: null, sectionId: null, tasks: filtered.value }];
+    return [{ key: 'all', name: 'Toutes les tâches', color: null, section: null, sectionId: null, tasks: filtered.value }];
 });
 
 const collapsed = ref<Record<string, boolean>>({});
@@ -167,80 +186,127 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                 ><span role="columnheader">Priorité</span><span role="columnheader">Sous-tâches</span><span role="columnheader">Activité</span>
             </div>
 
-            <section v-for="group in groups" :key="group.key" role="rowgroup" class="mt-3">
-                <button
-                    type="button"
-                    class="flex w-full items-center gap-2 rounded-icon px-2 py-2 text-left hover:bg-app-hover"
-                    :aria-expanded="!collapsed[group.key]"
-                    @click="collapsed[group.key] = !collapsed[group.key]"
-                >
-                    <ChevronDown class="size-4 transition-transform" :class="{ '-rotate-90': collapsed[group.key] }" />
-                    <span v-if="group.color" class="size-2 rounded-full" :style="{ backgroundColor: group.color }" />
-                    <span class="text-base font-bold">{{ group.name }}</span>
-                    <span class="text-xs font-semibold text-ink-soft">{{ group.tasks.length }}</span>
-                </button>
-                <template v-if="!collapsed[group.key]">
-                    <div
-                        v-for="task in group.tasks"
-                        :key="task.id"
-                        role="row"
-                        :class="[cols, task.id === selectedId ? 'bg-brand-wash' : 'hover:bg-app-surface']"
-                        class="flex cursor-pointer items-center gap-3 border-b border-app-border py-2 pl-2 pr-2 text-sm"
-                        @click="emit('open', task.id)"
-                    >
-                        <span role="cell" class="flex min-w-0 flex-1 items-center gap-3">
-                            <span class="flex size-11 shrink-0 items-center justify-center md:size-6"
-                                ><TaskCheck :task-id="task.id" :completed="task.completed" :disabled="!canEdit"
-                            /></span>
-                            <span class="min-w-0">
-                                <span class="block truncate font-semibold" :class="{ 'text-ink-soft line-through': task.completed }">{{
-                                    task.title
-                                }}</span>
-                                <!-- Mobile : méta sous le nom -->
-                                <span class="flex flex-wrap items-center gap-x-2 text-xs font-medium text-ink-soft md:hidden">
-                                    <span v-if="task.due_date" :class="{ 'font-bold text-brand-active': isOverdue(task.due_date, task.completed) }">{{
-                                        dueLabel(task.due_date)
-                                    }}</span>
-                                    <PriorityBadge :priority="task.priority" />
-                                    <span v-if="task.comments_count" class="flex items-center gap-0.5"
-                                        ><MessageCircle class="size-3" />{{ task.comments_count }}</span
+            <draggable
+                :model-value="groups"
+                group="sections"
+                item-key="key"
+                handle="[data-section-handle]"
+                :disabled="!canEdit || groupBy !== 'section' || renaming !== null"
+                :animation="150"
+                ghost-class="opacity-40"
+                @update:model-value="(list: Group[]) => reorder(list.map((g) => g.section!))"
+            >
+                <template #item="{ element: group }">
+                    <section role="rowgroup" class="mt-3">
+                        <div class="flex w-full items-center gap-2 rounded-icon px-2 py-1.5">
+                            <button
+                                type="button"
+                                class="-m-1 flex items-center gap-2 rounded-icon p-1 hover:bg-app-hover"
+                                :aria-expanded="!collapsed[group.key]"
+                                :aria-label="`${collapsed[group.key] ? 'Déplier' : 'Replier'} ${group.name}`"
+                                @click="collapsed[group.key] = !collapsed[group.key]"
+                            >
+                                <ChevronDown class="size-4 transition-transform" :class="{ '-rotate-90': collapsed[group.key] }" />
+                                <span v-if="group.color" class="size-2 rounded-full" :style="{ backgroundColor: group.color }" />
+                            </button>
+                            <input
+                                v-if="group.section && renaming === group.section.id"
+                                v-focus-select
+                                :value="group.name"
+                                aria-label="Nom de la section"
+                                maxlength="100"
+                                class="h-8 w-72 max-w-full rounded-field border-2 border-info bg-background px-2 text-base font-bold outline-none"
+                                @keydown.enter.prevent="rename(group.section, ($event.target as HTMLInputElement).value)"
+                                @keydown.esc="renaming = null"
+                                @blur="rename(group.section, ($event.target as HTMLInputElement).value)"
+                            />
+                            <span
+                                v-else-if="group.section && canEdit"
+                                data-section-handle
+                                role="button"
+                                tabindex="0"
+                                title="Cliquer pour renommer, glisser pour déplacer"
+                                class="cursor-grab rounded-icon px-1.5 py-0.5 text-base font-bold hover:bg-app-hover active:cursor-grabbing"
+                                @click="renaming = group.section.id"
+                                @keydown.enter.prevent="renaming = group.section.id"
+                                >{{ group.name }}</span
+                            >
+                            <button
+                                v-else
+                                type="button"
+                                class="rounded-icon px-1.5 py-0.5 text-base font-bold hover:bg-app-hover"
+                                @click="collapsed[group.key] = !collapsed[group.key]"
+                            >
+                                {{ group.name }}
+                            </button>
+                            <span class="text-xs font-semibold text-ink-soft">{{ group.tasks.length }}</span>
+                        </div>
+                        <template v-if="!collapsed[group.key]">
+                            <div
+                                v-for="task in group.tasks"
+                                :key="task.id"
+                                role="row"
+                                :class="[cols, task.id === selectedId ? 'bg-brand-wash' : 'hover:bg-app-surface']"
+                                class="flex cursor-pointer items-center gap-3 border-b border-app-border py-2 pl-2 pr-2 text-sm"
+                                @click="emit('open', task.id)"
+                            >
+                                <span role="cell" class="flex min-w-0 flex-1 items-center gap-3">
+                                    <span class="flex size-11 shrink-0 items-center justify-center md:size-6"
+                                        ><TaskCheck :task-id="task.id" :completed="task.completed" :disabled="!canEdit"
+                                    /></span>
+                                    <span class="min-w-0">
+                                        <span class="block truncate font-semibold" :class="{ 'text-ink-soft line-through': task.completed }">{{
+                                            task.title
+                                        }}</span>
+                                        <!-- Mobile : méta sous le nom -->
+                                        <span class="flex flex-wrap items-center gap-x-2 text-xs font-medium text-ink-soft md:hidden">
+                                            <span
+                                                v-if="task.due_date"
+                                                :class="{ 'font-bold text-brand-active': isOverdue(task.due_date, task.completed) }"
+                                                >{{ dueLabel(task.due_date) }}</span
+                                            >
+                                            <PriorityBadge :priority="task.priority" />
+                                            <span v-if="task.comments_count" class="flex items-center gap-0.5"
+                                                ><MessageCircle class="size-3" />{{ task.comments_count }}</span
+                                            >
+                                        </span>
+                                    </span>
+                                </span>
+                                <span role="cell" class="hidden min-w-0 items-center gap-2 md:flex">
+                                    <template v-if="task.assignee"
+                                        ><UserAvatar :user="task.assignee" size="xs" /><span class="truncate font-bold">{{
+                                            task.assignee.name
+                                        }}</span></template
                                     >
                                 </span>
-                            </span>
-                        </span>
-                        <span role="cell" class="hidden min-w-0 items-center gap-2 md:flex">
-                            <template v-if="task.assignee"
-                                ><UserAvatar :user="task.assignee" size="xs" /><span class="truncate font-bold">{{
-                                    task.assignee.name
-                                }}</span></template
-                            >
-                        </span>
-                        <span
-                            role="cell"
-                            class="hidden font-semibold md:block"
-                            :class="isOverdue(task.due_date, task.completed) ? 'font-bold text-brand-active' : 'text-app-strong'"
-                            >{{ dueLabel(task.due_date) }}</span
-                        >
-                        <span role="cell" class="hidden md:block"><PriorityBadge :priority="task.priority" /></span>
-                        <span role="cell" class="hidden items-center gap-1 text-xs font-bold text-ink-soft md:flex">
-                            <template v-if="task.subtasks_count"
-                                ><ListChecks class="size-3.5" />{{ task.subtasks_done_count ?? 0 }}/{{ task.subtasks_count }}</template
-                            >
-                        </span>
-                        <span role="cell" class="hidden items-center gap-1 text-xs font-bold text-ink-soft md:flex">
-                            <template v-if="task.comments_count"><MessageCircle class="size-3.5" />{{ task.comments_count }}</template>
-                        </span>
-                    </div>
-                    <input
-                        v-if="canAdd && group.sectionId"
-                        data-add-task
-                        aria-label="Ajouter une tâche"
-                        placeholder="Ajouter une tâche…"
-                        class="h-11 w-full border-b border-app-border bg-transparent pl-14 text-sm font-semibold outline-none placeholder:text-ink-soft focus:bg-app-surface md:pl-11"
-                        @keydown.enter.prevent="add(group.sectionId, $event)"
-                    />
+                                <span
+                                    role="cell"
+                                    class="hidden font-semibold md:block"
+                                    :class="isOverdue(task.due_date, task.completed) ? 'font-bold text-brand-active' : 'text-app-strong'"
+                                    >{{ dueLabel(task.due_date) }}</span
+                                >
+                                <span role="cell" class="hidden md:block"><PriorityBadge :priority="task.priority" /></span>
+                                <span role="cell" class="hidden items-center gap-1 text-xs font-bold text-ink-soft md:flex">
+                                    <template v-if="task.subtasks_count"
+                                        ><ListChecks class="size-3.5" />{{ task.subtasks_done_count ?? 0 }}/{{ task.subtasks_count }}</template
+                                    >
+                                </span>
+                                <span role="cell" class="hidden items-center gap-1 text-xs font-bold text-ink-soft md:flex">
+                                    <template v-if="task.comments_count"><MessageCircle class="size-3.5" />{{ task.comments_count }}</template>
+                                </span>
+                            </div>
+                            <input
+                                v-if="canAdd && group.sectionId"
+                                data-add-task
+                                aria-label="Ajouter une tâche"
+                                placeholder="Ajouter une tâche…"
+                                class="h-11 w-full border-b border-app-border bg-transparent pl-14 text-sm font-semibold outline-none placeholder:text-ink-soft focus:bg-app-surface md:pl-11"
+                                @keydown.enter.prevent="add(group.sectionId, $event)"
+                            />
+                        </template>
+                    </section>
                 </template>
-            </section>
+            </draggable>
 
             <template v-if="canEdit && groupBy === 'section'">
                 <form v-if="addingSection" class="mt-5" @submit.prevent="addSection">
