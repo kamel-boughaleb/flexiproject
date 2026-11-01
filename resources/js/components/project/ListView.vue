@@ -19,7 +19,7 @@ import PriorityBadge from './PriorityBadge.vue';
 import TaskCheck from './TaskCheck.vue';
 import UserAvatar from './UserAvatar.vue';
 
-const props = defineProps<{ projectId: number; sections: Section[]; tasks: Task[]; canEdit: boolean; selectedId?: number | null }>();
+const props = defineProps<{ projectId: number; sections: Section[]; tasks: Task[]; canEdit: boolean; canAdd: boolean; selectedId?: number | null }>();
 const emit = defineEmits<{ open: [id: number] }>();
 const me = usePage<SharedData>().props.auth.user;
 
@@ -296,7 +296,7 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                                 </span>
                             </div>
                             <input
-                                v-if="canEdit && group.sectionId"
+                                v-if="canAdd && group.sectionId"
                                 data-add-task
                                 aria-label="Ajouter une tâche"
                                 placeholder="Ajouter une tâche…"

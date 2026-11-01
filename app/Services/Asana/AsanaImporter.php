@@ -24,7 +24,7 @@ class AsanaImporter
 {
     private const USER_FIELDS = 'name,email,photo.image_128x128';
 
-    private const PROJECT_FIELDS = 'name,notes,color,start_on,due_on,due_date,archived,created_at,owner.name,owner.email,members.name,members.email';
+    private const PROJECT_FIELDS = 'name,notes,color,start_on,due_on,due_date,archived,completed,completed_at,created_at,owner.name,owner.email,members.name,members.email';
 
     private const TASK_FIELDS = 'name,html_notes,notes,resource_subtype,assignee.name,assignee.email,start_on,due_on,due_at,completed,completed_at,created_at,num_subtasks,custom_fields.name,custom_fields.enum_value.name';
 
@@ -95,8 +95,11 @@ class AsanaImporter
             'color' => $this->color($data['color'] ?? null),
             'start_date' => $data['start_on'] ?? null,
             'end_date' => $data['due_on'] ?? $data['due_date'] ?? null,
-            'archived' => (bool) ($data['archived'] ?? false),
         ]);
+        // Projet archivé ou terminé dans Asana : terminé ici. Un projet terminé localement le reste.
+        if (! $project->completed_at && (($data['archived'] ?? false) || ($data['completed'] ?? false))) {
+            $project->completed_at = $this->date($data['completed_at'] ?? null) ?? now();
+        }
         if ($isNew) {
             $project->owner_id = $owner->id;
             $project->created_at = $this->date($data['created_at'] ?? null) ?? now();

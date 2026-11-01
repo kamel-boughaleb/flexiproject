@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
     Sidebar,
     SidebarContent,
@@ -17,10 +18,10 @@ import {
     SidebarMenuSubItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import { type SharedData } from '@/types';
+import { type ProjectStatus, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { CheckSquare, Plus } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { CheckSquare, ListFilter, Plus } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 import AppLogo from './AppLogo.vue';
 
 const page = usePage<SharedData>();
@@ -29,6 +30,40 @@ const path = computed(() => page.url.split('?')[0]);
 // Accueil = logo ; Notifications, Équipe et Règles sont dans le menu de l'avatar (en haut à droite).
 const mainNavItems = computed(() => [{ title: 'Mes tâches', href: route('my-tasks'), icon: CheckSquare, badge: 0 }]);
 const isActive = (href: string) => path.value === new URL(href).pathname;
+
+// Filtre des projets par statut : par défaut, seuls les projets non terminés. Choix mémorisé sur cet appareil.
+const STATUSES: { value: ProjectStatus; label: string }[] = [
+    { value: 'active', label: 'En cours' },
+    { value: 'done', label: 'Terminés' },
+    { value: 'upcoming', label: 'Non commencés' },
+];
+const DEFAULT_FILTER: ProjectStatus[] = ['active', 'upcoming'];
+const FILTER_KEY = 'sidebar-project-filter';
+function loadFilter(): ProjectStatus[] {
+    try {
+        const saved = JSON.parse(localStorage.getItem(FILTER_KEY) ?? 'null');
+        if (Array.isArray(saved)) return saved.filter((s) => STATUSES.some((o) => o.value === s));
+    } catch {
+        // Stockage indisponible : filtre par défaut.
+    }
+    return [...DEFAULT_FILTER];
+}
+const filter = ref<ProjectStatus[]>(loadFilter());
+watch(filter, (value) => {
+    try {
+        localStorage.setItem(FILTER_KEY, JSON.stringify(value));
+    } catch {
+        // Sans stockage, le filtre vaut pour la session.
+    }
+});
+function toggleStatus(status: ProjectStatus, on: boolean) {
+    filter.value = on ? [...filter.value, status] : filter.value.filter((s) => s !== status);
+}
+const isFiltered = computed(() => filter.value.length !== DEFAULT_FILTER.length || !DEFAULT_FILTER.every((s) => filter.value.includes(s)));
+// Le projet ouvert reste visible, même si le filtre l'exclut.
+const projects = computed(() =>
+    page.props.sidebarProjects.filter((p) => filter.value.includes(p.status ?? 'active') || path.value.startsWith(`/projects/${p.id}/`)),
+);
 
 // Tiroir mobile : sous-liens du projet ouvert et profil en bas (maquette « M-Menu »).
 const { isMobile } = useSidebar();
@@ -70,9 +105,37 @@ const projectLinks = (id: number) => [
             </SidebarGroup>
 
             <SidebarGroup class="px-2 pt-5">
-                <SidebarGroupLabel>Projets</SidebarGroupLabel>
+                <SidebarGroupLabel class="gap-1">
+                    Projets
+                    <DropdownMenu>
+                        <DropdownMenuTrigger
+                            class="flex size-6 items-center justify-center rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
+                            :class="isFiltered ? 'text-brand-active' : 'text-sidebar-foreground/70'"
+                            aria-label="Filtrer les projets"
+                            title="Filtrer les projets"
+                        >
+                            <ListFilter class="size-3.5" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" class="w-48 rounded-2xl p-1.5">
+                            <DropdownMenuLabel class="text-xs font-semibold text-ink-soft">Afficher les projets</DropdownMenuLabel>
+                            <DropdownMenuCheckboxItem
+                                v-for="s in STATUSES"
+                                :key="s.value"
+                                :checked="filter.includes(s.value)"
+                                class="rounded-icon font-semibold"
+                                @update:checked="toggleStatus(s.value, $event)"
+                                @select.prevent
+                            >
+                                {{ s.label }}
+                            </DropdownMenuCheckboxItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </SidebarGroupLabel>
                 <SidebarMenu>
-                    <SidebarMenuItem v-for="p in page.props.sidebarProjects" :key="p.id">
+                    <li v-if="!projects.length" class="px-2 py-1.5 text-xs text-ink-soft group-data-[collapsible=icon]:hidden">
+                        Aucun projet pour ce filtre.
+                    </li>
+                    <SidebarMenuItem v-for="p in projects" :key="p.id">
                         <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
                             <Link :href="route('projects.show', p.id)">
                                 <ProjectAvatar :project="p" size="xs" />

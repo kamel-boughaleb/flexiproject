@@ -5,15 +5,13 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import ProjectAvatar from './ProjectAvatar.vue';
 
 /**
- * Avatar d'un projet : une image envoyée, ou un emoji choisi dans la liste.
- * Sans l'un ni l'autre, l'initiale du projet sur sa couleur.
+ * Avatar d'un projet : une image envoyée, sinon l'initiale du projet sur sa couleur.
+ * (Les emojis déjà choisis auparavant restent affichés jusqu'à ce qu'on les retire.)
  */
 const props = defineProps<{ name: string; color: string; currentImage?: string | null; disabled?: boolean }>();
 const icon = defineModel<string>('icon', { default: '' });
 const image = defineModel<File | null>('image', { default: null });
 const removeImage = defineModel<boolean>('removeImage', { default: false });
-
-const EMOJIS = ['📘', '📚', '📖', '✏️', '🎨', '📸', '🖨️', '📦', '🚀', '💡', '🎯', '📣', '🛒', '💻', '🎄', '⭐'];
 
 const input = ref<HTMLInputElement>();
 const preview = ref<string | null>(null);
@@ -26,6 +24,7 @@ onBeforeUnmount(() => preview.value && URL.revokeObjectURL(preview.value));
 
 const shownImage = computed(() => preview.value ?? (removeImage.value ? null : (props.currentImage ?? null)));
 const hasImage = computed(() => !!shownImage.value);
+const removable = computed(() => hasImage.value || !!icon.value);
 
 function pick(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0] ?? null;
@@ -33,14 +32,9 @@ function pick(e: Event) {
     image.value = file;
     removeImage.value = false;
 }
-function choose(emoji: string) {
-    icon.value = icon.value === emoji ? '' : emoji;
-    // Choisir un emoji remplace l'image.
-    image.value = null;
-    if (props.currentImage) removeImage.value = true;
-}
 function clearImage() {
     image.value = null;
+    icon.value = '';
     if (props.currentImage) removeImage.value = true;
 }
 </script>
@@ -62,25 +56,10 @@ function clearImage() {
                     <Button type="button" variant="outline" size="sm" :disabled="disabled" @click="input?.click()">
                         {{ hasImage ? "Changer l'image" : 'Ajouter une image' }}
                     </Button>
-                    <Button v-if="hasImage" type="button" variant="ghost" size="sm" :disabled="disabled" @click="clearImage">Retirer</Button>
+                    <Button v-if="removable" type="button" variant="ghost" size="sm" :disabled="disabled" @click="clearImage">Retirer</Button>
                 </div>
-                <p class="text-xs text-ink-soft">Une image, ou un emoji ci-dessous. Sinon, l'initiale du projet.</p>
+                <p class="text-xs text-ink-soft">Sans image, l'initiale du projet sur sa couleur.</p>
             </div>
-        </div>
-        <div class="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Emoji du projet">
-            <button
-                v-for="e in EMOJIS"
-                :key="e"
-                type="button"
-                role="radio"
-                :aria-checked="!hasImage && icon === e"
-                :disabled="disabled"
-                class="flex size-9 items-center justify-center rounded-icon text-lg transition hover:bg-app-hover"
-                :class="!hasImage && icon === e ? 'bg-app-hover ring-2 ring-ink' : ''"
-                @click="choose(e)"
-            >
-                {{ e }}
-            </button>
         </div>
         <input ref="input" type="file" accept="image/*" class="hidden" @change="pick" />
     </div>

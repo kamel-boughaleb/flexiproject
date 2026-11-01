@@ -12,7 +12,7 @@ interface ProjectResult {
     color: string;
     icon?: string | null;
     image?: string | null;
-    archived: boolean;
+    status: 'active' | 'upcoming' | 'done';
     tasks_total: number;
     tasks_done: number;
     members: MiniUser[];
@@ -243,7 +243,7 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                             {{ item.data.tasks_done }}/{{ item.data.tasks_total }} tâche{{ item.data.tasks_total > 1 ? 's' : '' }} terminée{{
                                 item.data.tasks_done > 1 ? 's' : ''
                             }}
-                            <template v-if="item.data.archived"> · Archivé</template>
+                            <template v-if="item.data.status === 'done'"> · Terminé</template>
                         </span>
                     </span>
                     <span class="flex shrink-0 -space-x-1.5">

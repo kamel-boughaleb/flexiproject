@@ -68,13 +68,12 @@ class SearchController extends Controller
                 'tasks as tasks_total' => fn ($q) => $q->whereNull('parent_id'),
                 'tasks as tasks_done' => fn ($q) => $q->whereNull('parent_id')->where('completed', true),
             ])
-            ->orderBy('archived')
+            ->orderByRaw('completed_at is not null')
             ->orderByDesc('updated_at')
             ->limit(self::PROJECT_LIMIT)
             ->get()
             ->map(fn (Project $p) => [
                 ...$p->summary(),
-                'archived' => $p->archived,
                 'tasks_total' => $p->tasks_total,
                 'tasks_done' => $p->tasks_done,
                 'members' => $p->members->take(self::PARTICIPANT_LIMIT)->map->only(['id', 'name', 'color', 'avatar'])->values(),

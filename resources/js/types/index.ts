@@ -68,12 +68,17 @@ export interface ProjectBadge {
     color: string;
     icon?: string | null;
     image?: string | null;
+    /** En cours, non commencé (date de début à venir) ou terminé. */
+    status?: ProjectStatus;
 }
+
+export type ProjectStatus = 'active' | 'upcoming' | 'done';
 
 export interface Project extends ProjectBadge {
     description: string | null;
     start_date: string | null;
     end_date: string | null;
+    completed_at?: string | null;
 }
 
 export interface Section {
@@ -150,7 +155,7 @@ export interface TaskDetail extends Task {
 export interface ProjectPageProps {
     project: Project;
     members: Member[];
-    can: { edit: boolean; manage: boolean };
+    can: { edit: boolean; add: boolean; manage: boolean };
 }
 
 export interface RuleAction {

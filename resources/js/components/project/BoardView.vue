@@ -11,7 +11,7 @@ import { ref, watch } from 'vue';
 import draggable from 'vuedraggable';
 import TaskCard from './TaskCard.vue';
 
-const props = defineProps<{ projectId: number; sections: Section[]; tasks: Task[]; canEdit: boolean; selectedId?: number | null }>();
+const props = defineProps<{ projectId: number; sections: Section[]; tasks: Task[]; canEdit: boolean; canAdd: boolean; selectedId?: number | null }>();
 const emit = defineEmits<{ open: [id: number] }>();
 
 // Copie locale des colonnes pour un glisser-déposer fluide ; resynchronisée à chaque réponse du serveur.
@@ -170,7 +170,7 @@ function confirmDelete() {
                             </template>
                         </draggable>
 
-                        <template v-if="canEdit">
+                        <template v-if="canAdd">
                             <form v-if="addingIn === section.id" class="m-3 mt-2" @submit.prevent="addTask(section.id)">
                                 <input
                                     v-focus

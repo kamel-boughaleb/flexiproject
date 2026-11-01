@@ -21,6 +21,7 @@ const props = defineProps<{
     members: Member[];
     sections: Section[];
     canEdit: boolean;
+    canAdd: boolean;
     canManage: boolean;
 }>();
 const emit = defineEmits<{ close: []; open: [id: number] }>();
@@ -338,7 +339,7 @@ const iconBtn =
                                 <span v-if="s.due_date" class="text-xs font-semibold text-ink-soft">{{ dateTime(s.due_date).split(' à')[0] }}</span>
                                 <UserAvatar v-if="s.assignee" :user="s.assignee" size="xs" />
                             </li>
-                            <li v-if="canEdit">
+                            <li v-if="canAdd">
                                 <form class="flex min-h-11 items-center gap-3 px-4" @submit.prevent="addSubtask">
                                     <Plus class="size-[18px] shrink-0 text-ink-soft" />
                                     <input

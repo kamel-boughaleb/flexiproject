@@ -12,7 +12,7 @@ class DashboardController extends Controller
     public function __invoke(Request $request): Response
     {
         $projects = $request->user()->projects()
-            ->where('archived', false)
+            ->open()
             ->with('members:id,name,color,avatar')
             ->withCount([
                 'tasks as tasks_total' => fn ($q) => $q->whereNull('parent_id'),

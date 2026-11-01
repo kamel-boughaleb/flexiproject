@@ -55,6 +55,7 @@ const quickAdd = ref(false);
             :sections="sections"
             :tasks="tasks"
             :can-edit="can.edit"
+            :can-add="can.add"
             :selected-id="selectedTask?.id"
             @open="openTask"
         />
@@ -64,6 +65,7 @@ const quickAdd = ref(false);
             :sections="sections"
             :tasks="tasks"
             :can-edit="can.edit"
+            :can-add="can.add"
             :selected-id="selectedTask?.id"
             @open="openTask"
         />
@@ -72,7 +74,7 @@ const quickAdd = ref(false);
 
         <!-- Mobile : bouton flottant d'ajout et feuille de création -->
         <button
-            v-if="can.edit && !selectedTask"
+            v-if="can.add && !selectedTask"
             type="button"
             aria-label="Ajouter une tâche"
             class="fixed bottom-[84px] right-4 z-20 flex size-14 items-center justify-center rounded-full bg-brand-active text-white shadow-product md:hidden"
@@ -80,7 +82,7 @@ const quickAdd = ref(false);
         >
             <Plus class="size-6" />
         </button>
-        <QuickAddSheet v-if="can.edit" v-model:open="quickAdd" :project-id="project.id" :sections="sections" :members="members" />
+        <QuickAddSheet v-if="can.add" v-model:open="quickAdd" :project-id="project.id" :sections="sections" :members="members" />
 
         <template #aside>
             <TaskPanel
@@ -91,6 +93,7 @@ const quickAdd = ref(false);
                 :members="members"
                 :sections="sections"
                 :can-edit="can.edit"
+                :can-add="can.add"
                 :can-manage="can.manage"
                 @close="openTask(null)"
                 @open="openTask"
