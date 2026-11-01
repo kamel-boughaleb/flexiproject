@@ -65,6 +65,6 @@ class SendDailyDigest extends Command
     private function open($query)
     {
         return $query->where('completed', false)
-            ->whereHas('project', fn ($q) => $q->where('archived', false));
+            ->whereHas('project', fn ($q) => $q->open());
     }
 }

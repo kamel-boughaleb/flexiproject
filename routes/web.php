@@ -52,6 +52,8 @@ Route::middleware('auth')->group(function () {
     Route::get('projects/{project}/{view}', [ProjectController::class, 'show'])->whereIn('view', ProjectController::VIEWS)->name('projects.view');
     Route::patch('projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
     Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+    Route::post('projects/{project}/complete', [ProjectController::class, 'complete'])->name('projects.complete');
+    Route::delete('projects/{project}/complete', [ProjectController::class, 'reopen'])->name('projects.reopen');
     Route::post('projects/{project}/images', [EditorImageController::class, 'store'])->name('editor-images.store');
     Route::get('projects/{project}/images/{name}', [EditorImageController::class, 'show'])
         ->where('name', '[A-Za-z0-9]+\.(png|jpg|gif|webp)')->name('editor-images.show');

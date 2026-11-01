@@ -104,6 +104,29 @@ class ProjectController extends Controller
         return back();
     }
 
+    /** Termine le projet : il sort de la liste des projets en cours et n'accepte plus de nouvelles tâches. */
+    public function complete(Request $request, Project $project): RedirectResponse
+    {
+        Gate::authorize('manage', $project);
+        if (! $project->isCompleted()) {
+            $project->forceFill(['completed_at' => now()])->save();
+            $project->log('a terminé le projet', $request->user());
+        }
+
+        return back();
+    }
+
+    public function reopen(Request $request, Project $project): RedirectResponse
+    {
+        Gate::authorize('manage', $project);
+        if ($project->isCompleted()) {
+            $project->forceFill(['completed_at' => null])->save();
+            $project->log('a rouvert le projet', $request->user());
+        }
+
+        return back();
+    }
+
     public function destroy(Project $project): RedirectResponse
     {
         Gate::authorize('manage', $project);
@@ -145,7 +168,7 @@ class ProjectController extends Controller
         $user = $request->user();
 
         return [
-            'project' => $project->summary(['description', 'start_date', 'end_date']),
+            'project' => $project->summary(['description', 'start_date', 'end_date', 'completed_at']),
             'members' => $project->members()->orderBy('project_user.created_at')
                 ->get(['users.id', 'name', 'email', 'color', 'avatar', 'password', 'google_id', 'invitation_token', 'deactivated_at'])
                 ->map(fn ($m) => [
@@ -156,6 +179,8 @@ class ProjectController extends Controller
                 ]),
             'can' => [
                 'edit' => $user->can('edit', $project),
+                // Plus de nouvelles tâches dans un projet terminé.
+                'add' => $user->can('edit', $project) && ! $project->isCompleted(),
                 'manage' => $user->can('manage', $project),
             ],
         ];
