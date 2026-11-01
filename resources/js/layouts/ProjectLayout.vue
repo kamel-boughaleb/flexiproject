@@ -90,7 +90,13 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                         {{ dateRange(project.start_date, project.end_date) }}
                     </span>
                     <div class="ml-auto flex shrink-0 items-center gap-2.5">
-                        <div v-if="others.length" class="hidden -space-x-1.5 border-r border-app-border pr-3 sm:flex">
+                        <Link
+                            v-if="others.length"
+                            :href="route('projects.members', project.id)"
+                            title="Voir les collaborateurs"
+                            aria-label="Voir les collaborateurs du projet"
+                            class="hidden -space-x-1.5 border-r border-app-border pr-3 transition-opacity hover:opacity-80 sm:flex"
+                        >
                             <span v-for="m in others.slice(0, 5)" :key="m.id" class="rounded-full ring-2 ring-background">
                                 <UserAvatar :user="m" size="md" />
                             </span>
@@ -100,7 +106,7 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                             >
                                 +{{ others.length - 5 }}
                             </span>
-                        </div>
+                        </Link>
                         <UserMenu />
                     </div>
                 </div>
