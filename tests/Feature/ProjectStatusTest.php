@@ -36,6 +36,21 @@ class ProjectStatusTest extends TestCase
         $this->assertFalse($project->fresh()->isCompleted());
     }
 
+    public function test_platform_admins_manage_projects_they_belong_to(): void
+    {
+        $project = Project::factory()->create();
+        $admin = User::factory()->create(['is_admin' => true]);
+        $project->members()->attach($admin, ['role' => 'editor']);
+
+        $this->actingAs($admin)->get("/projects/{$project->id}/board")->assertInertia(fn (Assert $page) => $page->where('can.manage', true));
+        $this->actingAs($admin)->post("/projects/{$project->id}/complete")->assertRedirect();
+        $this->assertTrue($project->fresh()->isCompleted());
+
+        // Sans être membre du projet, pas d'accès.
+        $other = Project::factory()->create();
+        $this->actingAs($admin)->post("/projects/{$other->id}/complete")->assertForbidden();
+    }
+
     public function test_no_task_can_be_added_to_a_completed_project(): void
     {
         $project = Project::factory()->create(['completed_at' => now()]);
