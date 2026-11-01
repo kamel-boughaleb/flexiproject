@@ -73,9 +73,10 @@ class ProjectStatusTest extends TestCase
         }
 
         $this->actingAs($user)->get('/dashboard')->assertInertia(fn (Assert $page) => $page
-            ->where('sidebarProjects.0.status', 'active')
+            // Les plus récents en tête.
+            ->where('sidebarProjects.0.status', 'done')
             ->where('sidebarProjects.1.status', 'upcoming')
-            ->where('sidebarProjects.2.status', 'done')
+            ->where('sidebarProjects.2.status', 'active')
             // Le tableau de bord ne montre que les projets non terminés.
             ->has('projects', 2));
     }

@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::get('users/{user}/photo', [TeamController::class, 'photo'])->name('users.photo');
 
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::post('projects/reorder', [ProjectController::class, 'reorder'])->name('projects.reorder');
     Route::get('projects/{project}', fn (Project $project) => to_route('projects.view', [$project, 'board']))->name('projects.show');
     Route::get('projects/{project}/rules', fn (Project $project) => to_route('rules.index'))->name('projects.rules');
     Route::get('projects/{project}/avatar', [ProjectController::class, 'avatar'])->name('projects.avatar');

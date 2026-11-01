@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -100,6 +101,35 @@ class ProjectController extends Controller
             $project->removeImage();
         }
         $project->log('a modifié les informations du projet', $request->user());
+
+        return back();
+    }
+
+    /**
+     * Nouvel ordre des projets dans le menu de gauche de l'utilisateur, après un glisser-déposer.
+     * Le menu peut n'afficher qu'une partie des projets (filtre par statut) : les projets reçus
+     * reprennent, dans le nouvel ordre, les places qu'ils occupaient ; les autres ne bougent pas.
+     */
+    public function reorder(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $current = $user->sidebarProjects()->pluck('projects.id')->all();
+        $ids = array_map('intval', $request->validate([
+            'ids' => ['required', 'array', 'max:'.count($current)],
+            'ids.*' => ['integer', 'distinct', Rule::in($current)],
+        ])['ids']);
+
+        $queue = $ids;
+        $order = [];
+        foreach ($current as $id) {
+            $order[] = in_array($id, $ids, true) ? array_shift($queue) : $id;
+        }
+
+        DB::transaction(function () use ($user, $order) {
+            foreach ($order as $i => $id) {
+                DB::table('project_user')->where('user_id', $user->id)->where('project_id', $id)->update(['sidebar_position' => $i + 1]);
+            }
+        });
 
         return back();
     }
