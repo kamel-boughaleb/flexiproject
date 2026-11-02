@@ -1,0 +1,71 @@
+# Pinned: the default would be this directory's name, "docker", shared by every other stack.
+name: flexiproject
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+    compress: "true"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+        CONTAINER_USER: ${CONTAINER_USER}
+    image: flexiproject-app
+    container_name: ${FLEXIPROJECT_HOSTNAME}
+    hostname: ${FLEXIPROJECT_HOSTNAME}
+    networks:
+      internal:
+        ipv4_address: ${INTERNAL_FLEXIPROJECT_APP_IP}
+    environment:
+      APP_ENV: ${FLEXIPROJECT_APP_ENV}
+      APP_DEBUG: ${FLEXIPROJECT_APP_DEBUG}
+      APP_URL: https://${FLEXIPROJECT_APP_DOMAIN}
+      DB_CONNECTION: mariadb
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${FLEXIPROJECT_MARIADB_DATABASE}
+      DB_USERNAME: ${FLEXIPROJECT_MARIADB_USER}
+      DB_PASSWORD: ${FLEXIPROJECT_MARIADB_PASSWORD}
+    volumes:
+      - ..:/app
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:lts
+    container_name: flexiproject_db
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      MARIADB_ROOT_PASSWORD: ${FLEXIPROJECT_MARIADB_ROOT_PASSWORD}
+      MARIADB_USER: ${FLEXIPROJECT_MARIADB_USER}
+      MARIADB_PASSWORD: ${FLEXIPROJECT_MARIADB_PASSWORD}
+      MARIADB_DATABASE: ${FLEXIPROJECT_MARIADB_DATABASE}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      internal:
+        ipv4_address: ${INTERNAL_FLEXIPROJECT_DB_IP}
+
+networks:
+  # Static IPs: the host nginx resolves its proxy_pass once, at start.
+  internal:
+    name: flexiproject_internal
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${INTERNAL_FLEXIPROJECT_SUBNET}
+
+volumes:
+  db_data:
+    driver: local
+    name: flexiproject_db_data
