@@ -30,7 +30,10 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           printf '%s\n' "$DEV_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
 
-      - name: Deploy
+      # The server pins this key to a forced command in ~/.ssh/authorized_keys:
+      #   restrict,command="/home/kboughaleb/flexiproject/docker/deploy.sh" <DEV_SSH_KEY public key>
+      # so this ssh runs docker/deploy.sh whatever command is sent, and nothing else.
+      - name: Deploy (runs docker/deploy.sh on the server)
         env:
           DEV_SSH_HOST: ${{ secrets.DEV_SSH_HOST }}
           DEV_SSH_USER: ${{ secrets.DEV_SSH_USER }}
