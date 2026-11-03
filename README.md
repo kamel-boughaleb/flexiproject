@@ -110,7 +110,8 @@ importé est mis à jour, rien n'est dupliqué. Aucun e-mail de notification n'e
 
 Options utiles : `--project=<id>` (un projet seulement), `--invite` (invitation par e-mail aux collaborateurs
 créés ; sinon ils se connectent avec Google ou sont invités depuis la page Équipe), `--without-attachments`,
-`--without-comments`. Limites : un seul niveau de sous-tâches (les plus profondes sont rattachées à la tâche
+`--without-comments`, `--reset` (supprime d'abord projets, tâches, règles et collaborateurs non
+administrateurs, après confirmation ; `--force` pour ne pas la demander). Limites : un seul niveau de sous-tâches (les plus profondes sont rattachées à la tâche
 principale), les liens Google Drive/Dropbox ne sont pas copiés, une tâche présente dans plusieurs projets
 Asana est copiée dans chacun.
 

@@ -268,4 +268,36 @@ class AsanaImportTest extends TestCase
 
         $this->assertSame(1, Project::count());
     }
+
+    public function test_reset_option_wipes_data_before_importing(): void
+    {
+        $old = Project::factory()->create(['owner_id' => $this->admin->id]);
+        Task::factory()->in($old)->create();
+        $guest = User::factory()->create();
+        $this->fakeAsana();
+
+        $this->artisan('asana:import', ['--token' => 'secret', '--reset' => true])
+            ->expectsConfirmation('Supprimer tous les projets, tâches, règles et collaborateurs (hors administrateurs) avant l\'import ?', 'yes')
+            ->expectsOutputToContain('Import terminé')
+            ->assertSuccessful();
+
+        $this->assertNull($old->fresh());
+        $this->assertNull($guest->fresh());
+        $this->assertNotNull($this->admin->fresh());
+        $this->assertSame(['Catalogue 2027'], Project::pluck('name')->all());
+        $this->assertSame(4, Task::count());
+    }
+
+    public function test_reset_option_can_be_cancelled(): void
+    {
+        $old = Project::factory()->create(['owner_id' => $this->admin->id]);
+        $this->fakeAsana();
+
+        $this->artisan('asana:import', ['--token' => 'secret', '--reset' => true])
+            ->expectsConfirmation('Supprimer tous les projets, tâches, règles et collaborateurs (hors administrateurs) avant l\'import ?', 'no')
+            ->assertSuccessful();
+
+        $this->assertNotNull($old->fresh());
+        Http::assertNothingSent();
+    }
 }
