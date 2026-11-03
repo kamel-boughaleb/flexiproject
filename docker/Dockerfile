@@ -1,4 +1,4 @@
-FROM php:8.4-fpm
+FROM php:8.4-fpm AS base
 
 ARG UID
 ARG GID
@@ -25,14 +25,9 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
-COPY ./php-overrides.ini /usr/local/etc/php/conf.d/zz-app-overrides.ini
+COPY docker/php-overrides.ini /usr/local/etc/php/conf.d/zz-app-overrides.ini
 
 RUN sed -i "s/^user = .*/user = ${CONTAINER_USER}/" /usr/local/etc/php-fpm.d/www.conf \
     && sed -i "s/^group = .*/group = ${CONTAINER_USER}/" /usr/local/etc/php-fpm.d/www.conf \
@@ -40,19 +35,62 @@ RUN sed -i "s/^user = .*/user = ${CONTAINER_USER}/" /usr/local/etc/php-fpm.d/www
     && mkdir -p /usr/local/var/run \
     && chown -R ${CONTAINER_USER}:${CONTAINER_USER} /usr/local/var/run
 
-COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./nginx-default.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx-default.conf /etc/nginx/conf.d/default.conf
 RUN mkdir -p /tmp/nginx/client_body_temp /tmp/nginx/proxy_temp /tmp/nginx/fastcgi_temp /tmp/nginx/uwsgi_temp /tmp/nginx/scgi_temp \
     && chown -R ${CONTAINER_USER}:${CONTAINER_USER} /tmp/nginx
 
-COPY ./entrypoint.sh /entrypoint.sh
+COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 8000
 
-USER ${CONTAINER_USER}
-
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+
+
+FROM base AS dev
+
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER ${CONTAINER_USER}
+
+
+FROM base AS vendor
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts --no-autoloader
+
+COPY . .
+RUN composer dump-autoload --no-dev --optimize --no-scripts
+
+
+FROM node:22-slim AS assets
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+COPY --from=vendor /app/vendor/tightenco/ziggy vendor/tightenco/ziggy
+RUN cp .env.example .env && npm run build
+
+
+FROM base AS prod
+
+COPY . .
+COPY --from=vendor /app/vendor vendor
+COPY --from=assets /app/public/build public/build
+
+RUN mkdir -p storage bootstrap/cache \
+    && chown -R ${CONTAINER_USER}:${CONTAINER_USER} storage bootstrap/cache
+
+USER ${CONTAINER_USER}

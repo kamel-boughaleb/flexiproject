@@ -8,37 +8,52 @@ x-logging: &logging
     max-file: "5"
     compress: "true"
 
+x-app: &app
+  image: flexiproject-app
+  environment:
+    APP_ENV: ${FLEXIPROJECT_APP_ENV}
+    APP_DEBUG: ${FLEXIPROJECT_APP_DEBUG}
+    APP_URL: https://${FLEXIPROJECT_APP_DOMAIN}
+    DB_CONNECTION: mariadb
+    DB_HOST: db
+    DB_PORT: 3306
+    DB_DATABASE: ${FLEXIPROJECT_MARIADB_DATABASE}
+    DB_USERNAME: ${FLEXIPROJECT_MARIADB_USER}
+    DB_PASSWORD: ${FLEXIPROJECT_MARIADB_PASSWORD}
+  volumes:
+    - ../.env:/app/.env
+    - ../storage:/app/storage
+  logging: *logging
+  depends_on:
+    - db
+
 services:
   app:
+    <<: *app
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: prod
       args:
         UID: ${UID}
         GID: ${GID}
         CONTAINER_USER: ${CONTAINER_USER}
-    image: flexiproject-app
     container_name: ${FLEXIPROJECT_HOSTNAME}
     hostname: ${FLEXIPROJECT_HOSTNAME}
     networks:
       internal:
         ipv4_address: ${INTERNAL_FLEXIPROJECT_APP_IP}
-    environment:
-      APP_ENV: ${FLEXIPROJECT_APP_ENV}
-      APP_DEBUG: ${FLEXIPROJECT_APP_DEBUG}
-      APP_URL: https://${FLEXIPROJECT_APP_DOMAIN}
-      DB_CONNECTION: mariadb
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: ${FLEXIPROJECT_MARIADB_DATABASE}
-      DB_USERNAME: ${FLEXIPROJECT_MARIADB_USER}
-      DB_PASSWORD: ${FLEXIPROJECT_MARIADB_PASSWORD}
-    volumes:
-      - ..:/app
     restart: unless-stopped
-    logging: *logging
-    depends_on:
-      - db
+
+  # One-off commands outside the app container, which every deploy recreates:
+  #   docker compose run --rm cli php artisan asana:import
+  cli:
+    <<: *app
+    profiles:
+      - cli
+    entrypoint: []
+    networks:
+      - internal
 
   db:
     image: mariadb:lts

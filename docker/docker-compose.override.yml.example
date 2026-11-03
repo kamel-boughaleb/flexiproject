@@ -1,0 +1,17 @@
+# Local development: cp docker/docker-compose.override.yml.example docker/docker-compose.override.yml
+# Mounts the working tree over the baked code and installs/builds on every start.
+
+services:
+  app:
+    build:
+      target: dev
+    image: flexiproject-app-dev
+    environment:
+      INSTALL_DEPENDENCIES_ON_START: 1
+    volumes:
+      - ..:/app
+
+  cli:
+    image: flexiproject-app-dev
+    volumes:
+      - ..:/app

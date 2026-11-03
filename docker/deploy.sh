@@ -24,8 +24,11 @@ main() {
     echo "==> git pull"
     git -C "$app_dir" pull --ff-only
 
-    echo "==> rebuild and restart $container"
-    docker compose --project-directory "$docker_dir" up -d --build --force-recreate --no-deps app
+    echo "==> build image (the running container keeps serving)"
+    docker compose --project-directory "$docker_dir" build app
+
+    echo "==> restart $container"
+    docker compose --project-directory "$docker_dir" up -d --no-deps app
 
     echo "==> waiting for /up"
     wait_until_up "$container"

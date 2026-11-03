@@ -1,54 +1,26 @@
 #!/bin/bash
 set -e
 
-# Values docker-compose injects. .env.example ships DB_HOST=127.0.0.1, which
-# inside the container is the container itself, not the db service.
-SEEDED_KEYS="APP_ENV APP_DEBUG APP_URL DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD"
+install_dependencies() {
+    echo "Installing composer dependencies..."
+    composer install --no-interaction --prefer-dist --optimize-autoloader
 
-set_env_key() {
-    local file="$1" key="$2" value="$3" escaped
-
-    # Escape what sed treats specially in a replacement: backslash, ampersand
-    # (means "the whole match") and the | delimiter.
-    escaped=$(printf '%s' "$value" | sed -e 's/[\\&|]/\\&/g')
-
-    if grep -qE "^${key}=" "$file"; then
-        sed -i "s|^${key}=.*|${key}=${escaped}|" "$file"
-    else
-        printf '%s=%s\n' "$key" "$value" >> "$file"
-    fi
-}
-
-seed_dotenv() {
-    local key value
-
-    if [ -f .env ]; then
-        return 0
+    local npm_lock_hash
+    npm_lock_hash=$(sha256sum package-lock.json | cut -d' ' -f1)
+    if [ "$(cat node_modules/.package-lock.sha256 2>/dev/null)" != "$npm_lock_hash" ]; then
+        echo "Installing npm dependencies..."
+        npm ci
+        echo "$npm_lock_hash" > node_modules/.package-lock.sha256
     fi
 
-    echo "Seeding .env from .env.example..."
-    cp .env.example .env
-
-    for key in $SEEDED_KEYS; do
-        value="${!key}"
-        if [ -n "$value" ]; then
-            set_env_key .env "$key" "$value"
-        fi
-    done
+    echo "Building frontend assets..."
+    npm run build
 }
 
-seed_dotenv
-
-# Dependencies come first: every step below shells out to artisan, which cannot
-# run at all without vendor/autoload.php.
-echo "Installing composer dependencies..."
-composer install --no-interaction --prefer-dist --optimize-autoloader
-
-npm_lock_hash=$(sha256sum package-lock.json | cut -d' ' -f1)
-if [ "$(cat node_modules/.package-lock.sha256 2>/dev/null)" != "$npm_lock_hash" ]; then
-    echo "Installing npm dependencies..."
-    npm ci
-    echo "$npm_lock_hash" > node_modules/.package-lock.sha256
+# The prod image ships vendor/ and public/build; the dev image mounts the
+# working tree over /app and has to produce them itself.
+if [ "${INSTALL_DEPENDENCIES_ON_START:-0}" = 1 ]; then
+    install_dependencies
 fi
 
 if ! grep -q "APP_KEY=base64:" .env; then
@@ -82,9 +54,6 @@ echo "Optimizing application..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-
-echo "Building frontend assets..."
-npm run build
 
 echo "Starting services (nginx + php-fpm + scheduler via supervisord)..."
 exec "$@"
