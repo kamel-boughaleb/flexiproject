@@ -25,7 +25,7 @@ class AsanaImporter
 {
     private const USER_FIELDS = 'name,email,photo.image_128x128';
 
-    private const PROJECT_FIELDS = 'name,notes,color,start_on,due_on,due_date,archived,completed,completed_at,created_at,owner.name,owner.email,members.name,members.email';
+    private const PROJECT_FIELDS = 'name,notes,color,start_on,due_on,due_date,archived,completed,completed_at,current_status_update.status_type,created_at,owner.name,owner.email,members.name,members.email';
 
     private const TASK_FIELDS = 'name,html_notes,notes,resource_subtype,assignee.name,assignee.email,start_on,due_on,due_at,completed,completed_at,created_at,num_subtasks,custom_fields.name,custom_fields.enum_value.name';
 
@@ -97,9 +97,11 @@ class AsanaImporter
             'start_date' => $data['start_on'] ?? null,
             'end_date' => $data['due_on'] ?? $data['due_date'] ?? null,
         ]);
-        // Projet archivé ou terminé dans Asana : terminé ici. Un projet terminé localement le reste.
-        if (! $project->completed_at && (($data['archived'] ?? false) || ($data['completed'] ?? false))) {
-            $project->completed_at = $this->date($data['completed_at'] ?? null) ?? now();
+        // Statut repris d'Asana à chaque import : archivé ou terminé => « Terminé », sinon « En cours ».
+        if ($this->isCompleted($data)) {
+            $project->completed_at ??= $this->date($data['completed_at'] ?? null) ?? now();
+        } else {
+            $project->completed_at = null;
         }
         if ($isNew) {
             $project->owner_id = $owner->id;
@@ -330,6 +332,14 @@ class AsanaImporter
     }
 
     /** Champ personnalisé « Priorité » / « Priority » d'Asana. */
+    /** Projet archivé, marqué terminé, ou dont le dernier statut Asana est « Terminé ». */
+    private function isCompleted(array $data): bool
+    {
+        return ($data['archived'] ?? false)
+            || ($data['completed'] ?? false)
+            || ($data['current_status_update']['status_type'] ?? null) === 'complete';
+    }
+
     private function priority(array $customFields): string
     {
         foreach ($customFields as $field) {
