@@ -2,6 +2,7 @@
 import DateField from '@/components/design/DateField.vue';
 import InlineSelect from '@/components/design/InlineSelect.vue';
 import PriorityPicker from '@/components/design/PriorityPicker.vue';
+import { t } from '@/lib/i18n';
 import { isOverdue, sectionColor } from '@/lib/labels';
 import type { Member, Priority, Project, Section, TaskDetail } from '@/types';
 import { CalendarDays, ChevronDown } from 'lucide-vue-next';
@@ -16,7 +17,7 @@ const assignee = computed(() => props.members.find((m) => m.id === props.task.as
 const sectionIndex = computed(() => props.sections.findIndex((s) => s.id === props.task.section_id));
 const overdue = computed(() => isOverdue(props.task.due_date, props.task.completed));
 
-const assigneeOptions = computed(() => [{ value: '', label: 'Personne' }, ...props.members.map((m) => ({ value: m.id, label: m.name }))]);
+const assigneeOptions = computed(() => [{ value: '', label: t('Personne') }, ...props.members.map((m) => ({ value: m.id, label: m.name }))]);
 const sectionOptions = computed(() => props.sections.map((s) => ({ value: s.id, label: s.name })));
 
 const assigneeModel = computed({
@@ -34,19 +35,19 @@ const priorityModel = computed({ get: () => props.task.priority, set: (v: Priori
         class="grid items-center gap-x-4"
         :class="stacked ? 'grid-cols-1 gap-y-1' : 'grid-cols-[110px_minmax(0,1fr)] gap-y-2 sm:grid-cols-[140px_minmax(0,1fr)]'"
     >
-        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">Responsable</dt>
+        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">{{ $t('Responsable') }}</dt>
         <dd class="min-h-9 py-0.5">
-            <InlineSelect v-model="assigneeModel" label="Responsable" :options="assigneeOptions" :disabled="!canEdit">
+            <InlineSelect v-model="assigneeModel" :label="$t('Responsable')" :options="assigneeOptions" :disabled="!canEdit">
                 <span class="flex items-center gap-2 py-0.5 pl-0.5 pr-3">
                     <UserAvatar :user="assignee" size="sm" />
                     <span class="truncate text-sm font-bold" :class="{ 'font-semibold text-ink-soft': !assignee }">{{
-                        assignee?.name ?? 'Personne'
+                        assignee?.name ?? $t('Personne')
                     }}</span>
                 </span>
             </InlineSelect>
         </dd>
 
-        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">Dates</dt>
+        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">{{ $t('Dates') }}</dt>
         <dd class="flex min-h-9 flex-wrap items-center gap-1">
             <span
                 class="mr-1 flex size-7 items-center justify-center rounded-full border-[1.5px] border-dashed"
@@ -54,15 +55,15 @@ const priorityModel = computed({ get: () => props.task.priority, set: (v: Priori
             >
                 <CalendarDays class="size-3.5" />
             </span>
-            <DateField v-model="startModel" label="Date de début" placeholder="Début" :disabled="!canEdit" />
+            <DateField v-model="startModel" :label="$t('Date de début')" :placeholder="$t('Début')" :disabled="!canEdit" />
             <span class="text-sm text-ink-soft" aria-hidden="true">→</span>
-            <DateField v-model="dueModel" label="Échéance" placeholder="Échéance" :disabled="!canEdit" :danger="overdue" />
-            <span v-if="overdue" class="ml-1 rounded-full bg-brand-tint px-2 py-0.5 text-xs font-bold text-brand-active">En retard</span>
+            <DateField v-model="dueModel" :label="$t('Échéance')" :placeholder="$t('Échéance')" :disabled="!canEdit" :danger="overdue" />
+            <span v-if="overdue" class="ml-1 rounded-full bg-brand-tint px-2 py-0.5 text-xs font-bold text-brand-active">{{ $t('En retard') }}</span>
         </dd>
 
-        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">Section</dt>
+        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">{{ $t('Section') }}</dt>
         <dd class="min-h-9 py-0.5">
-            <InlineSelect v-model="sectionModel" label="Section" :options="sectionOptions" :disabled="!canEdit || !!task.parent_id">
+            <InlineSelect v-model="sectionModel" :label="$t('Section')" :options="sectionOptions" :disabled="!canEdit || !!task.parent_id">
                 <span class="flex items-center gap-1.5 rounded-full bg-info-tint py-1 pl-3 pr-2.5 text-sm font-bold text-info-deep">
                     <span class="size-2 rounded-full" :style="{ backgroundColor: sectionColor(sectionIndex) }" />
                     {{ sections[sectionIndex]?.name }}
@@ -71,12 +72,12 @@ const priorityModel = computed({ get: () => props.task.priority, set: (v: Priori
             </InlineSelect>
         </dd>
 
-        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">Priorité</dt>
+        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">{{ $t('Priorité') }}</dt>
         <dd class="min-h-9 py-1">
             <PriorityPicker v-model="priorityModel" :disabled="!canEdit" />
         </dd>
 
-        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">Projet</dt>
+        <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">{{ $t('Projet') }}</dt>
         <dd class="flex min-h-9 items-center gap-2 text-sm font-bold">
             <span class="size-3 rounded-[3px]" :style="{ backgroundColor: project.color }" />{{ project.name }}
         </dd>

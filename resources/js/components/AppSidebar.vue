@@ -18,6 +18,7 @@ import {
     SidebarMenuSubItem,
     useSidebar,
 } from '@/components/ui/sidebar';
+import { t } from '@/lib/i18n';
 import { type ProjectStatus, type SharedData, type SidebarProject } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { CheckSquare, ListFilter, Plus } from 'lucide-vue-next';
@@ -29,14 +30,14 @@ const page = usePage<SharedData>();
 const path = computed(() => page.url.split('?')[0]);
 
 // Accueil = logo ; Notifications, Équipe et Règles sont dans le menu de l'avatar (en haut à droite).
-const mainNavItems = computed(() => [{ title: 'Mes tâches', href: route('my-tasks'), icon: CheckSquare, badge: 0 }]);
+const mainNavItems = computed(() => [{ title: t('Mes tâches'), href: route('my-tasks'), icon: CheckSquare, badge: 0 }]);
 const isActive = (href: string) => path.value === new URL(href).pathname;
 
 // Filtre des projets par statut : par défaut, seuls les projets non terminés. Choix mémorisé sur cet appareil.
 const STATUSES: { value: ProjectStatus; label: string }[] = [
-    { value: 'active', label: 'En cours' },
-    { value: 'done', label: 'Terminés' },
-    { value: 'upcoming', label: 'Non commencés' },
+    { value: 'active', label: t('En cours') },
+    { value: 'done', label: t('Terminés') },
+    { value: 'upcoming', label: t('Non commencés') },
 ];
 const DEFAULT_FILTER: ProjectStatus[] = ['active', 'upcoming'];
 const FILTER_KEY = 'sidebar-project-filter';
@@ -80,8 +81,8 @@ function reorder(list: SidebarProject[]) {
 // Tiroir mobile : sous-liens du projet ouvert et profil en bas (maquette « M-Menu »).
 const { isMobile } = useSidebar();
 const projectLinks = (id: number) => [
-    { title: 'Collaborateurs', href: route('projects.members', id) },
-    { title: 'Paramètres', href: route('projects.settings', id) },
+    { title: t('Collaborateurs'), href: route('projects.members', id) },
+    { title: t('Paramètres'), href: route('projects.settings', id) },
 ];
 </script>
 
@@ -118,18 +119,18 @@ const projectLinks = (id: number) => [
 
             <SidebarGroup class="px-2 pt-5">
                 <SidebarGroupLabel class="gap-1">
-                    Projets
+                    {{ $t('Projets') }}
                     <DropdownMenu>
                         <DropdownMenuTrigger
                             class="flex size-6 items-center justify-center rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
                             :class="isFiltered ? 'text-brand-active' : 'text-sidebar-foreground/70'"
-                            aria-label="Filtrer les projets"
-                            title="Filtrer les projets"
+                            :aria-label="$t('Filtrer les projets')"
+                            :title="$t('Filtrer les projets')"
                         >
                             <ListFilter class="size-3.5" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" class="w-48 rounded-2xl p-1.5">
-                            <DropdownMenuLabel class="text-xs font-semibold text-ink-soft">Afficher les projets</DropdownMenuLabel>
+                            <DropdownMenuLabel class="text-xs font-semibold text-ink-soft">{{ $t('Afficher les projets') }}</DropdownMenuLabel>
                             <DropdownMenuCheckboxItem
                                 v-for="s in STATUSES"
                                 :key="s.value"
@@ -145,7 +146,7 @@ const projectLinks = (id: number) => [
                 </SidebarGroupLabel>
                 <SidebarMenu>
                     <li v-if="!projects.length" class="px-2 py-1.5 text-xs text-ink-soft group-data-[collapsible=icon]:hidden">
-                        Aucun projet pour ce filtre.
+                        {{ $t('Aucun projet pour ce filtre.') }}
                     </li>
                 </SidebarMenu>
                 <draggable
@@ -180,10 +181,10 @@ const projectLinks = (id: number) => [
                 </draggable>
                 <SidebarMenu class="mt-1">
                     <SidebarMenuItem>
-                        <SidebarMenuButton as-child tooltip="Nouveau projet">
+                        <SidebarMenuButton as-child :tooltip="$t('Nouveau projet')">
                             <Link :href="`${route('dashboard')}?new=1`" class="text-ink-soft">
                                 <Plus />
-                                <span>Nouveau projet</span>
+                                <span>{{ $t('Nouveau projet') }}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

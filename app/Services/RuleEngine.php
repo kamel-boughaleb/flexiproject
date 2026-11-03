@@ -7,6 +7,7 @@ use App\Models\Section;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\ProjectNotification;
+use App\Support\Msg;
 
 /**
  * Exécute les règles « quand… alors… » d'un projet.
@@ -34,7 +35,7 @@ class RuleEngine
                 $this->apply($task->refresh(), $action, $actor);
             }
 
-            $task->project->log("Règle « {$rule->name} » appliquée à « {$task->title} »", null, $task);
+            $task->project->log(Msg::make('Règle « :rule » appliquée à « :task »', ['rule' => $rule->name, 'task' => $task->title]), null, $task);
         }
     }
 
@@ -108,7 +109,7 @@ class RuleEngine
     private function notify(?User $user, Task $task, ?string $text): void
     {
         $user?->notify(new ProjectNotification(
-            $text ? "{$text} : « {$task->title} »" : "Mise à jour sur « {$task->title} »",
+            $text ? Msg::make(':text : « :task »', ['text' => $text, 'task' => $task->title]) : Msg::make('Mise à jour sur « :task »', ['task' => $task->title]),
             $task->project_id,
             $task->id,
         ));

@@ -7,6 +7,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { t } from '@/lib/i18n';
 import { openRichLink } from '@/lib/links';
 import type { MiniUser } from '@/types';
 import { Extension } from '@tiptap/core';
@@ -58,7 +59,7 @@ const props = withDefaults(
         /** Édition en place : pas de cadre ni de barre d'outils visibles tant que l'on ne survole ou n'édite pas. */
         bare?: boolean;
     }>(),
-    { placeholder: 'Saisissez « / » pour afficher le menu', submittable: false, busy: false, minHeight: '4rem', bare: false },
+    { placeholder: t('Saisissez « / » pour afficher le menu'), submittable: false, busy: false, minHeight: '4rem', bare: false },
 );
 const emit = defineEmits<{ 'update:modelValue': [html: string]; submit: [html: string]; change: [html: string] }>();
 
@@ -197,7 +198,7 @@ async function upload(file: File) {
         if (!response.ok) throw new Error(json.errors?.image?.[0] ?? json.message ?? 'Envoi impossible.');
         editor.value?.chain().focus().setImage({ src: json.url, alt: file.name }).run();
     } catch (e) {
-        alert(`Image « ${file.name} » non ajoutée : ${(e as Error).message}`);
+        alert(t('Image « :name » non ajoutée : :error', { name: file.name, error: (e as Error).message }));
     } finally {
         uploading.value = false;
     }
@@ -237,21 +238,21 @@ function applyLink() {
 /* ---------- Barre d'outils ---------- */
 
 const STYLES = [
-    { label: 'Texte normal', level: 0, class: 'text-sm' },
-    { label: 'Titre 1', level: 1, class: 'text-xl font-bold' },
-    { label: 'Titre 2', level: 2, class: 'text-lg font-semibold' },
-    { label: 'Titre 3', level: 3, class: 'text-base font-semibold' },
+    { label: t('Texte normal'), level: 0, class: 'text-sm' },
+    { label: t('Titre 1'), level: 1, class: 'text-xl font-bold' },
+    { label: t('Titre 2'), level: 2, class: 'text-lg font-semibold' },
+    { label: t('Titre 3'), level: 3, class: 'text-base font-semibold' },
 ] as const;
 const SIZES = [
-    { label: 'Petit', value: '12px' },
-    { label: 'Normal', value: null },
-    { label: 'Grand', value: '18px' },
-    { label: 'Très grand', value: '24px' },
+    { label: t('Petit'), value: '12px' },
+    { label: t('Normal'), value: null },
+    { label: t('Grand'), value: '18px' },
+    { label: t('Très grand'), value: '24px' },
 ] as const;
 const COLORS = ['#111827', '#6b7280', '#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#2563eb', '#7c3aed', '#db2777'];
 const HIGHLIGHTS = ['#fef08a', '#bbf7d0', '#bfdbfe', '#fbcfe8', '#fed7aa'];
 
-const currentStyle = computed(() => STYLES.find((s) => s.level && editor.value?.isActive('heading', { level: s.level }))?.label ?? 'Texte normal');
+const currentStyle = computed(() => STYLES.find((s) => s.level && editor.value?.isActive('heading', { level: s.level }))?.label ?? t('Texte normal'));
 
 function setStyle(level: 0 | 1 | 2 | 3) {
     const chain = editor.value?.chain().focus();
@@ -266,10 +267,10 @@ function setSize(value: string | null) {
 
 type Mark = 'bold' | 'italic' | 'strike' | 'underline' | 'code';
 const MARKS: { mark: Mark; icon: typeof Bold; title: string }[] = [
-    { mark: 'bold', icon: Bold, title: 'Gras (⌘B)' },
-    { mark: 'italic', icon: Italic, title: 'Italique (⌘I)' },
-    { mark: 'strike', icon: Strikethrough, title: 'Barré' },
-    { mark: 'underline', icon: Underline, title: 'Souligné (⌘U)' },
+    { mark: 'bold', icon: Bold, title: t('Gras (⌘B)') },
+    { mark: 'italic', icon: Italic, title: t('Italique (⌘I)') },
+    { mark: 'strike', icon: Strikethrough, title: t('Barré') },
+    { mark: 'underline', icon: Underline, title: t('Souligné (⌘U)') },
 ];
 function toggle(mark: Mark) {
     const chain = editor.value?.chain().focus();
@@ -331,7 +332,7 @@ function mention() {
                 <DropdownMenuContent align="start" class="z-[60] w-48">
                     <DropdownMenuItem v-for="s in STYLES" :key="s.level" :class="s.class" @select="setStyle(s.level)">{{ s.label }}</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel class="text-xs font-normal text-muted-foreground">Taille du texte</DropdownMenuLabel>
+                    <DropdownMenuLabel class="text-xs font-normal text-muted-foreground">{{ $t('Taille du texte') }}</DropdownMenuLabel>
                     <DropdownMenuItem v-for="s in SIZES" :key="s.label" @select="setSize(s.value)">
                         <span :style="{ fontSize: s.value ?? '14px' }">{{ s.label }}</span>
                     </DropdownMenuItem>
@@ -345,7 +346,9 @@ function mention() {
 
             <PopoverRoot v-model:open="linkOpen">
                 <PopoverAnchor as-child>
-                    <button type="button" title="Lien (⌘K)" :class="[btn, active('link') && on]" @click="openLink"><Link2 class="size-4" /></button>
+                    <button type="button" :title="$t('Lien (⌘K)')" :class="[btn, active('link') && on]" @click="openLink">
+                        <Link2 class="size-4" />
+                    </button>
                 </PopoverAnchor>
                 <PopoverPortal>
                     <PopoverContent align="start" :side-offset="6" class="z-[60] w-72 rounded-md border bg-popover p-2 shadow-lg">
@@ -358,14 +361,14 @@ function mention() {
                             />
                             <button type="submit" class="rounded bg-primary px-2 text-xs text-primary-foreground">OK</button>
                         </form>
-                        <p class="mt-1 text-[11px] text-muted-foreground">Laissez vide pour retirer le lien.</p>
+                        <p class="mt-1 text-[11px] text-muted-foreground">{{ $t('Laissez vide pour retirer le lien.') }}</p>
                     </PopoverContent>
                 </PopoverPortal>
             </PopoverRoot>
 
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                    <button type="button" title="Surligner" :class="[btn, active('highlight') && on]"><Highlighter class="size-4" /></button>
+                    <button type="button" :title="$t('Surligner')" :class="[btn, active('highlight') && on]"><Highlighter class="size-4" /></button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" class="z-[60]">
                     <div class="flex gap-1 p-1">
@@ -377,45 +380,51 @@ function mention() {
                             @select="editor?.chain().focus().setHighlight({ color: c }).run()"
                         />
                     </div>
-                    <DropdownMenuItem @select="editor?.chain().focus().unsetHighlight().run()">Retirer le surlignage</DropdownMenuItem>
+                    <DropdownMenuItem @select="editor?.chain().focus().unsetHighlight().run()">{{ $t('Retirer le surlignage') }}</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <button type="button" title="Code" :class="[btn, active('code') && on]" @click="toggle('code')"><Code class="size-4" /></button>
+            <button type="button" :title="$t('Code')" :class="[btn, active('code') && on]" @click="toggle('code')"><Code class="size-4" /></button>
 
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                    <button type="button" title="Listes" :class="[btn, (active('bulletList') || active('orderedList') || active('taskList')) && on]">
+                    <button
+                        type="button"
+                        :title="$t('Listes')"
+                        :class="[btn, (active('bulletList') || active('orderedList') || active('taskList')) && on]"
+                    >
                         <List class="size-4" />
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" class="z-[60]">
                     <DropdownMenuItem @select="editor?.chain().focus().toggleBulletList().run()"
-                        ><List class="size-4" /> Liste à puces</DropdownMenuItem
+                        ><List class="size-4" /> {{ $t('Liste à puces') }}</DropdownMenuItem
                     >
                     <DropdownMenuItem @select="editor?.chain().focus().toggleOrderedList().run()"
-                        ><ListOrdered class="size-4" /> Liste numérotée</DropdownMenuItem
+                        ><ListOrdered class="size-4" /> {{ $t('Liste numérotée') }}</DropdownMenuItem
                     >
                     <DropdownMenuItem @select="editor?.chain().focus().toggleTaskList().run()"
-                        ><ListChecks class="size-4" /> Liste de tâches</DropdownMenuItem
+                        ><ListChecks class="size-4" /> {{ $t('Liste de tâches') }}</DropdownMenuItem
                     >
                 </DropdownMenuContent>
             </DropdownMenu>
 
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                    <button type="button" title="Plus d'options" :class="btn"><MoreHorizontal class="size-4" /></button>
+                    <button type="button" :title="$t(`Plus d'options`)" :class="btn"><MoreHorizontal class="size-4" /></button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" class="z-[60] w-52">
-                    <DropdownMenuItem @select="editor?.chain().focus().toggleBlockquote().run()"><Quote class="size-4" /> Citation</DropdownMenuItem>
+                    <DropdownMenuItem @select="editor?.chain().focus().toggleBlockquote().run()"
+                        ><Quote class="size-4" /> {{ $t('Citation') }}</DropdownMenuItem
+                    >
                     <DropdownMenuItem @select="editor?.chain().focus().toggleCodeBlock().run()"
-                        ><Code2 class="size-4" /> Bloc de code</DropdownMenuItem
+                        ><Code2 class="size-4" /> {{ $t('Bloc de code') }}</DropdownMenuItem
                     >
                     <DropdownMenuItem @select="editor?.chain().focus().setHorizontalRule().run()"
-                        ><Minus class="size-4" /> Séparateur</DropdownMenuItem
+                        ><Minus class="size-4" /> {{ $t('Séparateur') }}</DropdownMenuItem
                     >
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel class="text-xs font-normal text-muted-foreground">Couleur du texte</DropdownMenuLabel>
+                    <DropdownMenuLabel class="text-xs font-normal text-muted-foreground">{{ $t('Couleur du texte') }}</DropdownMenuLabel>
                     <div class="flex flex-wrap gap-1 px-2 pb-1">
                         <DropdownMenuItem
                             v-for="c in COLORS"
@@ -427,7 +436,7 @@ function mention() {
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem @select="editor?.chain().focus().unsetAllMarks().clearNodes().run()">
-                        <Eraser class="size-4" /> Effacer la mise en forme
+                        <Eraser class="size-4" /> {{ $t('Effacer la mise en forme') }}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -439,22 +448,24 @@ function mention() {
             class="flex items-center gap-0.5 px-1.5 pb-1.5 transition-opacity"
             :class="{ 'opacity-0 group-focus-within/editor:opacity-100 group-hover/editor:opacity-100': bare }"
         >
-            <button type="button" title="Insérer une image" :class="btn" :disabled="uploading" @click="pickImage"><Plus class="size-4" /></button>
+            <button type="button" :title="$t('Insérer une image')" :class="btn" :disabled="uploading" @click="pickImage">
+                <Plus class="size-4" />
+            </button>
             <input ref="fileInput" type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple class="hidden" @change="onPick" />
             <EmojiPicker @pick="insertEmoji">
-                <button type="button" title="Emoji" :class="btn"><Smile class="size-4" /></button>
+                <button type="button" :title="$t('Emoji')" :class="btn"><Smile class="size-4" /></button>
             </EmojiPicker>
-            <button type="button" title="Mentionner un collaborateur" :class="btn" @click="mention"><AtSign class="size-4" /></button>
-            <span v-if="uploading" class="ml-2 text-xs text-muted-foreground">Envoi de l'image…</span>
+            <button type="button" :title="$t('Mentionner un collaborateur')" :class="btn" @click="mention"><AtSign class="size-4" /></button>
+            <span v-if="uploading" class="ml-2 text-xs text-muted-foreground">{{ $t("Envoi de l'image…") }}</span>
             <button
                 v-if="submittable"
                 type="button"
-                title="Envoyer (⌘ + Entrée)"
+                :title="$t('Envoyer (⌘ + Entrée)')"
                 class="ml-auto inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-active px-4 text-sm font-bold text-white transition-colors hover:bg-brand-hover disabled:opacity-40"
                 :disabled="busy || uploading || !editor || editor.isEmpty"
                 @click="submit"
             >
-                Envoyer
+                {{ $t('Envoyer') }}
             </button>
         </div>
     </div>

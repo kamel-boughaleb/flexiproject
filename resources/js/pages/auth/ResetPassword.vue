@@ -31,19 +31,19 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthLayout title="Réinitialiser le mot de passe" description="Choisissez votre nouveau mot de passe">
-        <Head title="Réinitialiser le mot de passe" />
+    <AuthLayout :title="$t('Réinitialiser le mot de passe')" :description="$t('Choisissez votre nouveau mot de passe')">
+        <Head :title="$t('Réinitialiser le mot de passe')" />
 
         <form @submit.prevent="submit">
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="email">E-mail</Label>
+                    <Label for="email">{{ $t('E-mail') }}</Label>
                     <Input id="email" type="email" name="email" autocomplete="email" v-model="form.email" class="mt-1 block w-full" readonly />
                     <InputError :message="form.errors.email" class="mt-2" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">Mot de passe</Label>
+                    <Label for="password">{{ $t('Mot de passe') }}</Label>
                     <Input
                         id="password"
                         type="password"
@@ -52,13 +52,13 @@ const submit = () => {
                         v-model="form.password"
                         class="mt-1 block w-full"
                         autofocus
-                        placeholder="Mot de passe"
+                        :placeholder="$t('Mot de passe')"
                     />
                     <InputError :message="form.errors.password" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation"> Confirmer </Label>
+                    <Label for="password_confirmation"> {{ $t('Confirmer') }} </Label>
                     <Input
                         id="password_confirmation"
                         type="password"
@@ -66,14 +66,14 @@ const submit = () => {
                         autocomplete="new-password"
                         v-model="form.password_confirmation"
                         class="mt-1 block w-full"
-                        placeholder="Confirmer le mot de passe"
+                        :placeholder="$t('Confirmer le mot de passe')"
                     />
                     <InputError :message="form.errors.password_confirmation" />
                 </div>
 
                 <Button type="submit" class="mt-4 h-11 w-full" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Réinitialiser le mot de passe
+                    {{ $t('Réinitialiser le mot de passe') }}
                 </Button>
             </div>
         </form>

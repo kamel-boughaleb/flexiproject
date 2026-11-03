@@ -21,13 +21,13 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthLayout title="Confirmez votre mot de passe" description="Zone sécurisée : confirmez votre mot de passe pour continuer.">
-        <Head title="Confirmer le mot de passe" />
+    <AuthLayout :title="$t('Confirmez votre mot de passe')" :description="$t('Zone sécurisée : confirmez votre mot de passe pour continuer.')">
+        <Head :title="$t('Confirmer le mot de passe')" />
 
         <form @submit.prevent="submit">
             <div class="space-y-6">
                 <div class="grid gap-2">
-                    <Label htmlFor="password">Mot de passe</Label>
+                    <Label htmlFor="password">{{ $t('Mot de passe') }}</Label>
                     <Input
                         id="password"
                         type="password"
@@ -44,7 +44,7 @@ const submit = () => {
                 <div class="flex items-center">
                     <Button class="h-11 w-full" :disabled="form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                        Confirmer
+                        {{ $t('Confirmer') }}
                     </Button>
                 </div>
             </div>

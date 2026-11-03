@@ -24,7 +24,7 @@ const page = usePage<SharedData>();
         <DropdownMenuItem :as-child="true">
             <Link class="flex w-full items-center" :href="route('notifications.index')" as="button">
                 <Bell class="mr-2 h-4 w-4" />
-                Notifications
+                {{ $t('Notifications') }}
                 <span
                     v-if="page.props.unreadNotifications"
                     class="ml-auto rounded-full bg-brand-active px-1.5 text-[11px] font-bold leading-[18px] text-white"
@@ -35,13 +35,13 @@ const page = usePage<SharedData>();
         <DropdownMenuItem :as-child="true">
             <Link class="block w-full" :href="route('team.index')" as="button">
                 <Users class="mr-2 h-4 w-4" />
-                Équipe
+                {{ $t('Équipe') }}
             </Link>
         </DropdownMenuItem>
         <DropdownMenuItem :as-child="true">
             <Link class="block w-full" :href="route('rules.index')" as="button">
                 <Zap class="mr-2 h-4 w-4" />
-                Règles
+                {{ $t('Règles') }}
             </Link>
         </DropdownMenuItem>
     </DropdownMenuGroup>
@@ -50,7 +50,7 @@ const page = usePage<SharedData>();
         <DropdownMenuItem :as-child="true">
             <Link class="block w-full" :href="route('profile.edit')" as="button">
                 <Settings class="mr-2 h-4 w-4" />
-                Réglages
+                {{ $t('Réglages') }}
             </Link>
         </DropdownMenuItem>
     </DropdownMenuGroup>
@@ -58,7 +58,7 @@ const page = usePage<SharedData>();
     <DropdownMenuItem :as-child="true">
         <Link class="block w-full" method="post" :href="route('logout')" as="button">
             <LogOut class="mr-2 h-4 w-4" />
-            Se déconnecter
+            {{ $t('Se déconnecter') }}
         </Link>
     </DropdownMenuItem>
 </template>

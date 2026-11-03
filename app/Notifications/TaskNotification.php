@@ -54,12 +54,12 @@ abstract class TaskNotification extends Notification implements ShouldQueue
     {
         $mail = (new MailMessage)
             ->subject("[{$this->task->project->name}] {$this->task->title}")
-            ->greeting('Bonjour '.strtok($notifiable->name, ' ').',');
+            ->greeting(__('Bonjour :name,', ['name' => strtok($notifiable->name, ' ')]));
 
         return $this->mail($mail)
-            ->action('Ouvrir la tâche', self::taskUrl($this->task))
-            ->salutation('À bientôt sur '.config('app.name').' !')
-            ->line('['.'Régler mes notifications'.']('.route('notifications.settings').')');
+            ->action(__('Ouvrir la tâche'), self::taskUrl($this->task))
+            ->salutation(__('À bientôt sur :app !', ['app' => config('app.name')]))
+            ->line('['.__('Régler mes notifications').']('.route('notifications.settings').')');
     }
 
     public static function taskUrl(Task $task): string

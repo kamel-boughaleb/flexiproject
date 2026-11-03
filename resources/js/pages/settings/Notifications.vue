@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
+import { t } from '@/lib/i18n';
 import { type BreadcrumbItem } from '@/types';
 import { TransitionRoot } from '@headlessui/vue';
 import { Head, useForm } from '@inertiajs/vue3';
@@ -15,42 +16,46 @@ type Preferences = Record<Key, boolean>;
 
 const props = defineProps<{ preferences: Preferences }>();
 
-const breadcrumbItems: BreadcrumbItem[] = [{ title: 'Notifications', href: '/settings/notifications' }];
+const breadcrumbItems: BreadcrumbItem[] = [{ title: t('Notifications'), href: '/settings/notifications' }];
 
 const OPTIONS: { key: Key; label: string; description: string }[] = [
-    { key: 'assigned', label: 'Une tâche m’est assignée', description: 'Un e-mail dès qu’un collaborateur (ou une règle) vous confie une tâche.' },
+    {
+        key: 'assigned',
+        label: t('Une tâche m’est assignée'),
+        description: t('Un e-mail dès qu’un collaborateur (ou une règle) vous confie une tâche.'),
+    },
     {
         key: 'mentions',
-        label: 'On me mentionne avec « @ »',
-        description: 'Quand un collaborateur vous cite dans la description ou un commentaire d’une tâche.',
+        label: t('On me mentionne avec « @ »'),
+        description: t('Quand un collaborateur vous cite dans la description ou un commentaire d’une tâche.'),
     },
     {
         key: 'comments',
-        label: 'Nouveaux commentaires',
-        description: 'Sur les tâches dont vous êtes responsable, que vous avez créées, modifiées ou commentées.',
+        label: t('Nouveaux commentaires'),
+        description: t('Sur les tâches dont vous êtes responsable, que vous avez créées, modifiées ou commentées.'),
     },
     {
         key: 'updates',
-        label: 'Modifications de tâches',
-        description: 'Changement de titre, d’échéance, de section, de priorité… sur ces mêmes tâches.',
+        label: t('Modifications de tâches'),
+        description: t('Changement de titre, d’échéance, de section, de priorité… sur ces mêmes tâches.'),
     },
     {
         key: 'daily_digest',
-        label: 'Récapitulatif quotidien',
-        description: 'Chaque matin à 8 h, la liste de vos tâches en cours : en retard, du jour et à venir.',
+        label: t('Récapitulatif quotidien'),
+        description: t('Chaque matin à 8 h, la liste de vos tâches en cours : en retard, du jour et à venir.'),
     },
 ];
 
 /** Niveaux prédéfinis : on peut ensuite affiner case par case. */
 const LEVELS: { label: string; values: Preferences }[] = [
-    { label: 'Tout', values: { assigned: true, mentions: true, comments: true, updates: true, daily_digest: true } },
-    { label: 'L’essentiel', values: { assigned: true, mentions: true, comments: true, updates: false, daily_digest: true } },
-    { label: 'Aucun e-mail', values: { assigned: false, mentions: false, comments: false, updates: false, daily_digest: false } },
+    { label: t('Tout'), values: { assigned: true, mentions: true, comments: true, updates: true, daily_digest: true } },
+    { label: t('L’essentiel'), values: { assigned: true, mentions: true, comments: true, updates: false, daily_digest: true } },
+    { label: t('Aucun e-mail'), values: { assigned: false, mentions: false, comments: false, updates: false, daily_digest: false } },
 ];
 
 const form = useForm<Preferences>({ ...props.preferences });
 
-const currentLevel = computed(() => LEVELS.find((l) => OPTIONS.every((o) => l.values[o.key] === form[o.key]))?.label ?? 'Personnalisé');
+const currentLevel = computed(() => LEVELS.find((l) => OPTIONS.every((o) => l.values[o.key] === form[o.key]))?.label ?? t('Personnalisé'));
 
 function save() {
     form.patch(route('notifications.settings.update'), { preserveScroll: true });
@@ -69,17 +74,19 @@ function applyLevel(values: Preferences) {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Notifications" />
+        <Head :title="$t('Notifications')" />
 
         <SettingsLayout>
             <div class="space-y-6">
                 <HeadingSmall
-                    title="Notifications par e-mail"
-                    description="Choisissez les e-mails que vous recevez. Les notifications restent toujours visibles dans la cloche de l’application."
+                    :title="$t('Notifications par e-mail')"
+                    :description="
+                        $t('Choisissez les e-mails que vous recevez. Les notifications restent toujours visibles dans la cloche de l’application.')
+                    "
                 />
 
                 <div class="space-y-2">
-                    <Label>Niveau</Label>
+                    <Label>{{ $t('Niveau') }}</Label>
                     <div class="flex flex-wrap gap-2">
                         <Button
                             v-for="level in LEVELS"
@@ -91,7 +98,9 @@ function applyLevel(values: Preferences) {
                         >
                             {{ level.label }}
                         </Button>
-                        <span v-if="currentLevel === 'Personnalisé'" class="self-center text-sm text-muted-foreground">Personnalisé</span>
+                        <span v-if="currentLevel === $t('Personnalisé')" class="self-center text-sm text-muted-foreground">{{
+                            $t('Personnalisé')
+                        }}</span>
                     </div>
                 </div>
 
@@ -117,7 +126,7 @@ function applyLevel(values: Preferences) {
                     leave="transition ease-in-out"
                     leave-to="opacity-0"
                 >
-                    <p class="text-sm text-neutral-600">Enregistré</p>
+                    <p class="text-sm text-neutral-600">{{ $t('Enregistré') }}</p>
                 </TransitionRoot>
             </div>
         </SettingsLayout>

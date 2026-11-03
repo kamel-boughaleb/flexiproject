@@ -26,14 +26,14 @@ class InvitationNotification extends Notification
         $app = config('app.name');
 
         return (new MailMessage)
-            ->subject("{$this->inviter->name} vous invite sur {$app}")
-            ->greeting('Bonjour,')
+            ->subject(__(':name vous invite sur :app', ['name' => $this->inviter->name, 'app' => $app]))
+            ->greeting(__('Bonjour,'))
             ->line($this->project
-                ? "{$this->inviter->name} vous invite à collaborer sur le projet « {$this->project->name} » dans {$app}."
-                : "{$this->inviter->name} vous invite à rejoindre l'équipe sur {$app}.")
-            ->line('Créez votre compte en quelques secondes : choisissez un mot de passe (ou connectez-vous avec Google) et ajoutez votre photo.')
-            ->action('Accepter l\'invitation', route('invitations.show', $this->token))
-            ->line('Ce lien est valable '.User::INVITATION_DAYS.' jours.')
-            ->salutation("À bientôt,\nL'équipe {$app}");
+                ? __(':name vous invite à collaborer sur le projet « :project » dans :app.', ['name' => $this->inviter->name, 'project' => $this->project->name, 'app' => $app])
+                : __(':name vous invite à rejoindre l\'équipe sur :app.', ['name' => $this->inviter->name, 'app' => $app]))
+            ->line(__('Créez votre compte en quelques secondes : choisissez un mot de passe (ou connectez-vous avec Google) et ajoutez votre photo.'))
+            ->action(__('Accepter l\'invitation'), route('invitations.show', $this->token))
+            ->line(__('Ce lien est valable :days jours.', ['days' => User::INVITATION_DAYS]))
+            ->salutation(__("À bientôt,\nL'équipe :app", ['app' => $app]));
     }
 }

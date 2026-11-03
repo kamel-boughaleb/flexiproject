@@ -49,7 +49,7 @@ function pick(emoji: string) {
                         v-for="(g, i) in EMOJI_GROUPS"
                         :key="g.name"
                         type="button"
-                        :title="g.name"
+                        :title="$t(g.name)"
                         class="rounded px-1.5 py-0.5 text-lg"
                         :class="tab === i ? 'bg-accent' : 'opacity-60 hover:opacity-100'"
                         @click="tab = i"
@@ -58,7 +58,7 @@ function pick(emoji: string) {
                     </button>
                 </div>
                 <template v-if="recent.length">
-                    <p class="px-1 text-xs text-muted-foreground">Récents</p>
+                    <p class="px-1 text-xs text-muted-foreground">{{ $t('Récents') }}</p>
                     <div class="mb-1 grid grid-cols-8">
                         <button v-for="e in recent" :key="`r${e}`" type="button" class="rounded p-1 text-xl hover:bg-accent" @click="pick(e)">
                             {{ e }}

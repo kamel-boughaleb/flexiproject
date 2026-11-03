@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EditorImageController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MyTasksController;
 use App\Http\Controllers\NotificationController;
@@ -19,6 +20,8 @@ use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
+
+Route::post('locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware('guest')->group(function () {
     Route::get('auth/google', [GoogleController::class, 'redirect'])->name('google.redirect');

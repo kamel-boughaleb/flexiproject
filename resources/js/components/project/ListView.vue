@@ -9,6 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSectionEditing, vFocusSelect } from '@/composables/useSectionEditing';
+import { locale, t } from '@/lib/i18n';
 import { PRIORITIES, dueLabel, isOverdue, sectionColor } from '@/lib/labels';
 import type { Priority, Section, SharedData, Task } from '@/types';
 import { useForm, usePage } from '@inertiajs/vue3';
@@ -31,7 +32,7 @@ const onlyLate = ref(false);
 const sort = ref<'position' | 'due' | 'priority' | 'title'>('position');
 const groupBy = ref<'section' | 'assignee' | 'priority' | 'none'>('section');
 
-const GROUP_LABELS = { section: 'Section', assignee: 'Responsable', priority: 'Priorité', none: 'Aucun' };
+const GROUP_LABELS = { section: t('Section'), assignee: t('Responsable'), priority: t('Priorité'), none: t('Aucun') };
 const PRIORITY_RANK: Record<Priority, number> = { high: 0, medium: 1, low: 2, none: 3 };
 
 const filtered = computed(() => {
@@ -47,7 +48,7 @@ const filtered = computed(() => {
         position: () => 0,
         due: (a: Task, b: Task) => (a.due_date ?? '9999').localeCompare(b.due_date ?? '9999'),
         priority: (a: Task, b: Task) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority],
-        title: (a: Task, b: Task) => a.title.localeCompare(b.title, 'fr'),
+        title: (a: Task, b: Task) => a.title.localeCompare(b.title, locale.value),
     }[sort.value];
     return [...list].sort(by);
 });
@@ -73,7 +74,7 @@ const groups = computed<Group[]>(() => {
     if (groupBy.value === 'priority')
         return (['high', 'medium', 'low', 'none'] as Priority[]).map((p) => ({
             key: `p${p}`,
-            name: p === 'none' ? 'Sans priorité' : PRIORITIES[p].label,
+            name: p === 'none' ? t('Sans priorité') : PRIORITIES[p].label,
             color: null,
             section: null,
             sectionId: null,
@@ -81,7 +82,7 @@ const groups = computed<Group[]>(() => {
         }));
     if (groupBy.value === 'assignee') {
         const people = new Map<number | null, string>();
-        filtered.value.forEach((t) => people.set(t.assignee_id, t.assignee?.name ?? 'Sans responsable'));
+        filtered.value.forEach((task) => people.set(task.assignee_id, task.assignee?.name ?? t('Sans responsable')));
         return [...people.entries()]
             .sort(([a], [b]) => (a === null ? 1 : b === null ? -1 : 0))
             .map(([id, name]) => ({
@@ -93,7 +94,7 @@ const groups = computed<Group[]>(() => {
                 tasks: filtered.value.filter((t) => t.assignee_id === id),
             }));
     }
-    return [{ key: 'all', name: 'Toutes les tâches', color: null, section: null, sectionId: null, tasks: filtered.value }];
+    return [{ key: 'all', name: t('Toutes les tâches'), color: null, section: null, sectionId: null, tasks: filtered.value }];
 });
 
 const collapsed = ref<Record<string, boolean>>({});
@@ -123,50 +124,49 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
     <div class="min-h-full">
         <div class="flex flex-wrap items-center gap-2 border-b border-app-border px-4 py-3 md:px-7">
             <label class="relative mr-auto w-full sm:w-[270px]">
-                <span class="sr-only">Rechercher une tâche</span>
+                <span class="sr-only">{{ $t('Rechercher une tâche') }}</span>
                 <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
                 <input
                     v-model="search"
                     type="search"
-                    placeholder="Rechercher une tâche"
+                    :placeholder="$t('Rechercher une tâche')"
                     class="h-10 w-full rounded-full border-2 border-app-border-strong bg-background pl-10 pr-3 text-sm font-medium outline-none focus:border-info focus:ring-4 focus:ring-info-tint"
                 />
             </label>
             <DropdownMenu>
                 <DropdownMenuTrigger :class="tool">
-                    <ListFilter class="size-4" /> Filtrer<span
-                        v-if="filterCount"
-                        class="rounded-full bg-brand-tint px-1.5 text-xs text-brand-active"
-                        >{{ filterCount }}</span
-                    >
+                    <ListFilter class="size-4" /> {{ $t('Filtrer')
+                    }}<span v-if="filterCount" class="rounded-full bg-brand-tint px-1.5 text-xs text-brand-active">{{ filterCount }}</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" class="w-56 rounded-2xl p-1.5">
-                    <DropdownMenuCheckboxItem v-model:checked="hideDone" class="rounded-icon font-semibold"
-                        >Masquer les tâches terminées</DropdownMenuCheckboxItem
-                    >
-                    <DropdownMenuCheckboxItem v-model:checked="onlyMine" class="rounded-icon font-semibold"
-                        >Mes tâches uniquement</DropdownMenuCheckboxItem
-                    >
-                    <DropdownMenuCheckboxItem v-model:checked="onlyLate" class="rounded-icon font-semibold">En retard</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem v-model:checked="hideDone" class="rounded-icon font-semibold">{{
+                        $t('Masquer les tâches terminées')
+                    }}</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem v-model:checked="onlyMine" class="rounded-icon font-semibold">{{
+                        $t('Mes tâches uniquement')
+                    }}</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem v-model:checked="onlyLate" class="rounded-icon font-semibold">{{
+                        $t('En retard')
+                    }}</DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
-                <DropdownMenuTrigger :class="tool"><ArrowUpDown class="size-4" /> Trier</DropdownMenuTrigger>
+                <DropdownMenuTrigger :class="tool"><ArrowUpDown class="size-4" /> {{ $t('Trier') }}</DropdownMenuTrigger>
                 <DropdownMenuContent align="end" class="w-52 rounded-2xl p-1.5">
                     <DropdownMenuRadioGroup v-model="sort">
-                        <DropdownMenuRadioItem value="position" class="rounded-icon font-semibold">Ordre du projet</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="due" class="rounded-icon font-semibold">Échéance</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="priority" class="rounded-icon font-semibold">Priorité</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="title" class="rounded-icon font-semibold">Nom</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="position" class="rounded-icon font-semibold">{{ $t('Ordre du projet') }}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="due" class="rounded-icon font-semibold">{{ $t('Échéance') }}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="priority" class="rounded-icon font-semibold">{{ $t('Priorité') }}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="title" class="rounded-icon font-semibold">{{ $t('Nom') }}</DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
                 <DropdownMenuTrigger :class="[tool, 'bg-app-hover']"
-                    ><Rows3 class="size-4" /> Regrouper : {{ GROUP_LABELS[groupBy] }}</DropdownMenuTrigger
+                    ><Rows3 class="size-4" /> {{ $t('Regrouper : :group', { group: GROUP_LABELS[groupBy] }) }}</DropdownMenuTrigger
                 >
                 <DropdownMenuContent align="end" class="w-48 rounded-2xl p-1.5">
-                    <DropdownMenuLabel class="text-xs text-ink-soft">Regrouper par</DropdownMenuLabel>
+                    <DropdownMenuLabel class="text-xs text-ink-soft">{{ $t('Regrouper par') }}</DropdownMenuLabel>
                     <DropdownMenuRadioGroup v-model="groupBy">
                         <DropdownMenuRadioItem v-for="(label, key) in GROUP_LABELS" :key="key" :value="key" class="rounded-icon font-semibold">{{
                             label
@@ -176,14 +176,18 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
             </DropdownMenu>
         </div>
 
-        <div class="px-2 pb-10 md:px-7" role="table" aria-label="Tâches du projet">
+        <div class="px-2 pb-10 md:px-7" role="table" :aria-label="$t('Tâches du projet')">
             <div
                 role="row"
                 :class="cols"
                 class="sticky top-0 z-10 hidden border-b border-app-border bg-background py-3 pl-9 pr-2 text-xs font-bold uppercase tracking-[.04em] text-ink-soft md:grid"
             >
-                <span role="columnheader">Nom de la tâche</span><span role="columnheader">Responsable</span><span role="columnheader">Échéance</span
-                ><span role="columnheader">Priorité</span><span role="columnheader">Sous-tâches</span><span role="columnheader">Activité</span>
+                <span role="columnheader">{{ $t('Nom de la tâche') }}</span
+                ><span role="columnheader">{{ $t('Responsable') }}</span
+                ><span role="columnheader">{{ $t('Échéance') }}</span
+                ><span role="columnheader">{{ $t('Priorité') }}</span
+                ><span role="columnheader">{{ $t('Sous-tâches') }}</span
+                ><span role="columnheader">{{ $t('Activité') }}</span>
             </div>
 
             <draggable
@@ -203,7 +207,9 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                                 type="button"
                                 class="-m-1 flex items-center gap-2 rounded-icon p-1 hover:bg-app-hover"
                                 :aria-expanded="!collapsed[group.key]"
-                                :aria-label="`${collapsed[group.key] ? 'Déplier' : 'Replier'} ${group.name}`"
+                                :aria-label="
+                                    collapsed[group.key] ? $t('Déplier :name', { name: group.name }) : $t('Replier :name', { name: group.name })
+                                "
                                 @click="collapsed[group.key] = !collapsed[group.key]"
                             >
                                 <ChevronDown class="size-4 transition-transform" :class="{ '-rotate-90': collapsed[group.key] }" />
@@ -213,7 +219,7 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                                 v-if="group.section && renaming === group.section.id"
                                 v-focus-select
                                 :value="group.name"
-                                aria-label="Nom de la section"
+                                :aria-label="$t('Nom de la section')"
                                 maxlength="100"
                                 class="h-8 w-72 max-w-full rounded-field border-2 border-info bg-background px-2 text-base font-bold outline-none"
                                 @keydown.enter.prevent="rename(group.section, ($event.target as HTMLInputElement).value)"
@@ -225,7 +231,7 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                                 data-section-handle
                                 role="button"
                                 tabindex="0"
-                                title="Cliquer pour renommer, glisser pour déplacer"
+                                :title="$t('Cliquer pour renommer, glisser pour déplacer')"
                                 class="cursor-grab rounded-icon px-1.5 py-0.5 text-base font-bold hover:bg-app-hover active:cursor-grabbing"
                                 @click="renaming = group.section.id"
                                 @keydown.enter.prevent="renaming = group.section.id"
@@ -298,8 +304,8 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                             <input
                                 v-if="canAdd && group.sectionId"
                                 data-add-task
-                                aria-label="Ajouter une tâche"
-                                placeholder="Ajouter une tâche…"
+                                :aria-label="$t('Ajouter une tâche')"
+                                :placeholder="$t('Ajouter une tâche…')"
                                 class="h-11 w-full border-b border-app-border bg-transparent pl-14 text-sm font-semibold outline-none placeholder:text-ink-soft focus:bg-app-surface md:pl-11"
                                 @keydown.enter.prevent="add(group.sectionId, $event)"
                             />
@@ -313,8 +319,8 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                     <input
                         v-model="newSection.name"
                         autofocus
-                        aria-label="Nom de la nouvelle section"
-                        placeholder="Nom de la section, puis Entrée"
+                        :aria-label="$t('Nom de la nouvelle section')"
+                        :placeholder="$t('Nom de la section, puis Entrée')"
                         class="h-10 w-72 rounded-full border-2 border-info px-4 text-sm font-bold outline-none"
                         @blur="addSection"
                         @keydown.esc="addingSection = false"
@@ -326,7 +332,7 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                     class="mt-5 h-10 rounded-full border-2 border-dashed border-app-border-strong px-4 text-sm font-bold text-ink-soft hover:border-app-muted hover:text-ink"
                     @click="addingSection = true"
                 >
-                    + Ajouter une section
+                    {{ $t('+ Ajouter une section') }}
                 </button>
             </template>
         </div>

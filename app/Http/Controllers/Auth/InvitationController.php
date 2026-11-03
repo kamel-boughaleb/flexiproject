@@ -46,6 +46,8 @@ class InvitationController extends Controller
             'name' => $data['name'],
             'password' => $data['password'],
             'invitation_token' => null,
+            // Langue dans laquelle la personne a créé son compte.
+            'locale' => app()->getLocale(),
             'email_verified_at' => $user->email_verified_at ?? now(),
         ])->save();
 
@@ -64,13 +66,13 @@ class InvitationController extends Controller
         $user = User::findByInvitationToken($token);
 
         if ($user && ! $user->isActive()) {
-            return to_route('login')->withErrors(['account' => User::INACTIVE_MESSAGE]);
+            return to_route('login')->withErrors(['account' => __(User::INACTIVE_MESSAGE)]);
         }
         if (! $user || ! $user->isPending()) {
-            return to_route('login')->with('status', 'Cette invitation a déjà été utilisée. Connectez-vous avec votre compte.');
+            return to_route('login')->with('status', __('Cette invitation a déjà été utilisée. Connectez-vous avec votre compte.'));
         }
         if ($user->invitationExpired()) {
-            return to_route('login')->with('status', 'Cette invitation a expiré. Demandez à la personne qui vous a invité de la renvoyer.');
+            return to_route('login')->with('status', __('Cette invitation a expiré. Demandez à la personne qui vous a invité de la renvoyer.'));
         }
 
         return $user;
