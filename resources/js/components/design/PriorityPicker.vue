@@ -9,7 +9,7 @@ const OPTIONS = ['low', 'medium', 'high'] as const;
 </script>
 
 <template>
-    <div role="radiogroup" :aria-label="label ?? 'Priorité'" class="flex flex-wrap gap-1.5">
+    <div role="radiogroup" :aria-label="label ?? $t('Priorité')" class="flex flex-wrap gap-1.5">
         <button
             v-for="p in OPTIONS"
             :key="p"

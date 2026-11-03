@@ -113,7 +113,7 @@ class TaskTest extends TestCase
         }
         $this->actingAs($owner)->patch("/tasks/{$task->id}", ['priority' => 'high']);
 
-        $messages = $task->activities()->pluck('message')->all();
+        $messages = $task->activities()->get()->pluck('message')->all();
         $this->assertCount(2, $messages);
         $this->assertStringContainsString('Priorité : aucune → haute', $messages[0]);
         $this->assertStringContainsString('description mise à jour', $messages[1]);

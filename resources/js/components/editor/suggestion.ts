@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import type { MiniUser } from '@/types';
 import { Extension, type Editor, type Range } from '@tiptap/core';
 import Mention from '@tiptap/extension-mention';
@@ -96,18 +97,28 @@ export function mentionExtension(members: () => MiniUser[], host: () => HTMLElem
 
 export function slashItems(actions: { pickImage: () => void }): SlashItem[] {
     return [
-        { title: 'Texte', icon: Type, keywords: 'paragraphe normal', run: (e) => e.chain().focus().setParagraph().run() },
-        { title: 'Titre 1', icon: Heading1, keywords: 'h1 grand', run: (e) => e.chain().focus().setHeading({ level: 1 }).run() },
-        { title: 'Titre 2', icon: Heading2, keywords: 'h2', run: (e) => e.chain().focus().setHeading({ level: 2 }).run() },
-        { title: 'Titre 3', icon: Heading3, keywords: 'h3 petit', run: (e) => e.chain().focus().setHeading({ level: 3 }).run() },
-        { title: 'Liste à puces', icon: List, keywords: 'puce ul', run: (e) => e.chain().focus().toggleBulletList().run() },
-        { title: 'Liste numérotée', icon: ListOrdered, keywords: 'numero ol', run: (e) => e.chain().focus().toggleOrderedList().run() },
-        { title: 'Liste de tâches', icon: ListChecks, keywords: 'checklist case cocher todo', run: (e) => e.chain().focus().toggleTaskList().run() },
-        { title: 'Citation', icon: Quote, keywords: 'quote', run: (e) => e.chain().focus().toggleBlockquote().run() },
-        { title: 'Bloc de code', icon: Code2, keywords: 'code pre', run: (e) => e.chain().focus().toggleCodeBlock().run() },
-        { title: 'Séparateur', icon: Minus, keywords: 'ligne hr', run: (e) => e.chain().focus().setHorizontalRule().run() },
-        { title: 'Image', icon: Image, keywords: 'photo upload', run: () => actions.pickImage() },
-        { title: 'Mentionner un collaborateur', icon: AtSign, keywords: 'mention personne', run: (e) => e.chain().focus().insertContent('@').run() },
+        { title: t('Texte'), icon: Type, keywords: 'paragraphe normal', run: (e) => e.chain().focus().setParagraph().run() },
+        { title: t('Titre 1'), icon: Heading1, keywords: 'h1 grand', run: (e) => e.chain().focus().setHeading({ level: 1 }).run() },
+        { title: t('Titre 2'), icon: Heading2, keywords: 'h2', run: (e) => e.chain().focus().setHeading({ level: 2 }).run() },
+        { title: t('Titre 3'), icon: Heading3, keywords: 'h3 petit', run: (e) => e.chain().focus().setHeading({ level: 3 }).run() },
+        { title: t('Liste à puces'), icon: List, keywords: 'puce ul', run: (e) => e.chain().focus().toggleBulletList().run() },
+        { title: t('Liste numérotée'), icon: ListOrdered, keywords: 'numero ol', run: (e) => e.chain().focus().toggleOrderedList().run() },
+        {
+            title: t('Liste de tâches'),
+            icon: ListChecks,
+            keywords: 'checklist case cocher todo',
+            run: (e) => e.chain().focus().toggleTaskList().run(),
+        },
+        { title: t('Citation'), icon: Quote, keywords: 'quote', run: (e) => e.chain().focus().toggleBlockquote().run() },
+        { title: t('Bloc de code'), icon: Code2, keywords: 'code pre', run: (e) => e.chain().focus().toggleCodeBlock().run() },
+        { title: t('Séparateur'), icon: Minus, keywords: 'ligne hr', run: (e) => e.chain().focus().setHorizontalRule().run() },
+        { title: t('Image'), icon: Image, keywords: 'photo upload', run: () => actions.pickImage() },
+        {
+            title: t('Mentionner un collaborateur'),
+            icon: AtSign,
+            keywords: 'mention personne',
+            run: (e) => e.chain().focus().insertContent('@').run(),
+        },
     ];
 }
 

@@ -37,7 +37,7 @@ function send(html: string) {
                 submittable
                 min-height="2.5rem"
                 :busy="comment.processing"
-                placeholder="Ajoutez un commentaire ou @mentionnez un collègue"
+                :placeholder="$t('Ajoutez un commentaire ou @mentionnez un collègue')"
                 @submit="send"
             />
             <p v-if="comment.errors.body" class="mt-1 text-xs text-brand-active">{{ comment.errors.body }}</p>

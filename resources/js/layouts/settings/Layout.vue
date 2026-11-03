@@ -2,24 +2,25 @@
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { t } from '@/lib/i18n';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profil',
+        title: t('Profil'),
         href: '/settings/profile',
     },
     {
-        title: 'Mot de passe',
+        title: t('Mot de passe'),
         href: '/settings/password',
     },
     {
-        title: 'Notifications',
+        title: t('Notifications'),
         href: '/settings/notifications',
     },
     {
-        title: 'Apparence',
+        title: t('Apparence'),
         href: '/settings/appearance',
     },
 ];
@@ -29,7 +30,7 @@ const currentPath = window.location.pathname;
 
 <template>
     <div class="px-4 py-6">
-        <Heading title="Réglages" description="Gérez votre profil et votre compte" />
+        <Heading :title="$t('Réglages')" :description="$t('Gérez votre profil et votre compte')" />
 
         <div class="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-x-12 lg:space-y-0">
             <aside class="w-full max-w-xl lg:w-48">

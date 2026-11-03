@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Support\Msg;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,9 +28,9 @@ class ProjectController extends Controller
             $project = Project::create($data + ['owner_id' => $request->user()->id]);
             $project->members()->attach($request->user(), ['role' => 'admin']);
             foreach (Project::DEFAULT_SECTIONS as $i => $name) {
-                $project->sections()->create(['name' => $name, 'position' => $i + 1]);
+                $project->sections()->create(['name' => __($name), 'position' => $i + 1]);
             }
-            $project->log("a créé le projet « {$project->name} »", $request->user());
+            $project->log(Msg::make('a créé le projet « :project »', ['project' => $project->name]), $request->user());
 
             return $project;
         });
@@ -100,7 +101,7 @@ class ProjectController extends Controller
         } elseif ($request->boolean('remove_image')) {
             $project->removeImage();
         }
-        $project->log('a modifié les informations du projet', $request->user());
+        $project->log(Msg::make('a modifié les informations du projet'), $request->user());
 
         return back();
     }
@@ -140,7 +141,7 @@ class ProjectController extends Controller
         Gate::authorize('manage', $project);
         if (! $project->isCompleted()) {
             $project->forceFill(['completed_at' => now()])->save();
-            $project->log('a terminé le projet', $request->user());
+            $project->log(Msg::make('a terminé le projet'), $request->user());
         }
 
         return back();
@@ -151,7 +152,7 @@ class ProjectController extends Controller
         Gate::authorize('manage', $project);
         if ($project->isCompleted()) {
             $project->forceFill(['completed_at' => null])->save();
-            $project->log('a rouvert le projet', $request->user());
+            $project->log(Msg::make('a rouvert le projet'), $request->user());
         }
 
         return back();

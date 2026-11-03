@@ -57,7 +57,7 @@ class LoginRequest extends FormRequest
             Auth::guard('web')->logout();
 
             throw ValidationException::withMessages([
-                'email' => User::INACTIVE_MESSAGE,
+                'email' => __(User::INACTIVE_MESSAGE),
             ]);
         }
     }

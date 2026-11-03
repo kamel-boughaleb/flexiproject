@@ -22,8 +22,8 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthLayout title="Mot de passe oublié" description="Saisissez votre e-mail pour recevoir un lien de réinitialisation">
-        <Head title="Mot de passe oublié" />
+    <AuthLayout :title="$t('Mot de passe oublié')" :description="$t('Saisissez votre e-mail pour recevoir un lien de réinitialisation')">
+        <Head :title="$t('Mot de passe oublié')" />
 
         <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
             {{ status }}
@@ -32,7 +32,7 @@ const submit = () => {
         <div class="space-y-6">
             <form @submit.prevent="submit">
                 <div class="grid gap-2">
-                    <Label for="email">Adresse e-mail</Label>
+                    <Label for="email">{{ $t('Adresse e-mail') }}</Label>
                     <Input
                         id="email"
                         type="email"
@@ -48,14 +48,14 @@ const submit = () => {
                 <div class="my-6 flex items-center justify-start">
                     <Button class="h-11 w-full" :disabled="form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                        Envoyer le lien de réinitialisation
+                        {{ $t('Envoyer le lien de réinitialisation') }}
                     </Button>
                 </div>
             </form>
 
             <div class="space-x-1 text-center text-sm text-muted-foreground">
-                <span>Ou revenir à la</span>
-                <TextLink :href="route('login')">connexion</TextLink>
+                <span>{{ $t('Ou revenir à la') }}</span>
+                <TextLink :href="route('login')">{{ $t('connexion') }}</TextLink>
             </div>
         </div>
     </AuthLayout>

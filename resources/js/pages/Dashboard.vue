@@ -28,17 +28,17 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
 </script>
 
 <template>
-    <Head title="Accueil" />
-    <AppLayout :breadcrumbs="[{ title: 'Projets', href: route('dashboard') }]">
+    <Head :title="$t('Accueil')" />
+    <AppLayout :breadcrumbs="[{ title: $t('Projets'), href: route('dashboard') }]">
         <div class="p-6">
             <div class="flex items-center">
                 <div>
-                    <h1 class="text-2xl font-semibold">Bonjour {{ user.name.split(' ')[0] }} 👋</h1>
-                    <p class="text-sm text-muted-foreground">Vos projets Flexilivre</p>
+                    <h1 class="text-2xl font-semibold">{{ $t('Bonjour :name 👋', { name: user.name.split(' ')[0] }) }}</h1>
+                    <p class="text-sm text-muted-foreground">{{ $t('Vos projets Flexilivre') }}</p>
                 </div>
                 <div class="ml-auto flex gap-2">
                     <InviteDialog v-if="user.is_admin" />
-                    <Button @click="creating = true"><Plus class="size-4" /> Nouveau projet</Button>
+                    <Button @click="creating = true"><Plus class="size-4" /> {{ $t('Nouveau projet') }}</Button>
                 </div>
             </div>
 
@@ -53,7 +53,7 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
                         <div class="h-1.5 rounded-full" :style="{ width: `${pct(p)}%`, backgroundColor: p.color }" />
                     </div>
                     <div class="mt-2 flex justify-between text-xs text-muted-foreground">
-                        <span>{{ p.tasks_done }}/{{ p.tasks_total }} tâches terminées</span>
+                        <span>{{ $tc(':done/:count tâche terminée|:done/:count tâches terminées', p.tasks_total, { done: p.tasks_done }) }}</span>
                         <span>{{ dateRange(p.start_date, p.end_date) }}</span>
                     </div>
                     <div class="mt-3 flex -space-x-1.5">
@@ -67,37 +67,39 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
                     class="rounded-xl border border-dashed p-8 text-sm text-muted-foreground hover:bg-muted/40"
                     @click="creating = true"
                 >
-                    Créez votre premier projet
+                    {{ $t('Créez votre premier projet') }}
                 </button>
             </div>
         </div>
 
         <Dialog v-model:open="creating">
             <DialogContent class="max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>Nouveau projet</DialogTitle></DialogHeader>
+                <DialogHeader
+                    ><DialogTitle>{{ $t('Nouveau projet') }}</DialogTitle></DialogHeader
+                >
                 <form class="space-y-4" @submit.prevent="submit">
                     <div class="grid gap-2">
-                        <Label for="name">Nom du projet</Label>
-                        <Input id="name" v-model="form.name" required placeholder="Ex. Catalogue de Noël 2026" />
+                        <Label for="name">{{ $t('Nom du projet') }}</Label>
+                        <Input id="name" v-model="form.name" required :placeholder="$t('Ex. Catalogue de Noël 2026')" />
                         <InputError :message="form.errors.name" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="description">Description</Label>
+                        <Label for="description">{{ $t('Description') }}</Label>
                         <textarea id="description" v-model="form.description" rows="2" class="rounded-md border bg-background px-3 py-2 text-sm" />
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="grid gap-2">
-                            <Label for="start">Début</Label>
+                            <Label for="start">{{ $t('Début') }}</Label>
                             <Input id="start" v-model="form.start_date" type="date" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="end">Fin</Label>
+                            <Label for="end">{{ $t('Fin') }}</Label>
                             <Input id="end" v-model="form.end_date" type="date" />
                             <InputError :message="form.errors.end_date" />
                         </div>
                     </div>
                     <div class="grid gap-2">
-                        <Label>Avatar</Label>
+                        <Label>{{ $t('Avatar') }}</Label>
                         <ProjectAvatarField v-model:icon="form.icon" v-model:image="form.image" :name="form.name" :color="form.color" />
                         <InputError :message="form.errors.image" />
                     </div>
@@ -106,15 +108,17 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
                             v-for="c in colors"
                             :key="c"
                             type="button"
-                            :aria-label="`Couleur ${c}`"
+                            :aria-label="$t('Couleur :color', { color: c })"
                             class="size-6 rounded-full ring-offset-2 ring-offset-background"
                             :class="{ 'ring-2 ring-neutral-400': form.color === c }"
                             :style="{ backgroundColor: c }"
                             @click="form.color = c"
                         />
                     </div>
-                    <p class="text-xs text-muted-foreground">Le projet démarre avec les sections « À faire », « En cours » et « Terminé ».</p>
-                    <Button type="submit" :disabled="form.processing">Créer le projet</Button>
+                    <p class="text-xs text-muted-foreground">
+                        {{ $t('Le projet démarre avec les sections « À faire », « En cours » et « Terminé ».') }}
+                    </p>
+                    <Button type="submit" :disabled="form.processing">{{ $t('Créer le projet') }}</Button>
                 </form>
             </DialogContent>
         </Dialog>

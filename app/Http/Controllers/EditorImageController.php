@@ -22,7 +22,7 @@ class EditorImageController extends Controller
         Gate::authorize('view', $project);
         $request->validate(
             ['image' => ['required', 'file', 'mimes:png,jpg,jpeg,gif,webp', 'max:10240']],
-            ['image.max' => 'L’image doit faire moins de 10 Mo.', 'image.mimes' => 'Formats acceptés : PNG, JPG, GIF, WebP.'],
+            ['image.max' => __('L’image doit faire moins de 10 Mo.'), 'image.mimes' => __('Formats acceptés : PNG, JPG, GIF, WebP.')],
         );
 
         $file = $request->file('image');

@@ -81,7 +81,7 @@ function confirmDelete() {
         <div class="px-4 pt-3 md:hidden">
             <SegmentedControl
                 v-model="mobileColumn"
-                label="Colonne affichée"
+                :label="$t('Colonne affichée')"
                 size="sm"
                 :options="sections.map((s) => ({ value: s.id, label: s.name, count: columns[s.id]?.length ?? 0 }))"
             />
@@ -110,7 +110,7 @@ function confirmDelete() {
                                 v-if="renaming === section.id"
                                 v-focus-select
                                 :value="section.name"
-                                aria-label="Nom de la section"
+                                :aria-label="$t('Nom de la section')"
                                 maxlength="100"
                                 class="min-w-0 flex-1 rounded-field border-2 border-info bg-background px-2 py-0.5 text-[15px] font-bold outline-none"
                                 @keydown.enter.prevent="rename(section, ($event.target as HTMLInputElement).value)"
@@ -123,7 +123,7 @@ function confirmDelete() {
                                     data-section-handle
                                     role="button"
                                     tabindex="0"
-                                    title="Cliquer pour renommer, glisser pour déplacer"
+                                    :title="$t('Cliquer pour renommer, glisser pour déplacer')"
                                     class="-mx-1.5 cursor-grab rounded-icon px-1.5 py-0.5 hover:bg-background active:cursor-grabbing"
                                     @click="renaming = section.id"
                                     @keydown.enter.prevent="renaming = section.id"
@@ -135,21 +135,21 @@ function confirmDelete() {
                             <DropdownMenu v-if="canEdit">
                                 <DropdownMenuTrigger
                                     class="flex size-8 items-center justify-center rounded-icon text-ink-soft hover:bg-background hover:text-ink data-[state=open]:bg-background data-[state=open]:text-ink"
-                                    :aria-label="`Actions de la section ${section.name}`"
+                                    :aria-label="$t('Actions de la section :name', { name: section.name })"
                                 >
                                     <Ellipsis class="size-[18px]" />
                                 </DropdownMenuTrigger>
                                 <!-- Pas de retour du focus sur le bouton : il fermerait aussitôt le champ « Renommer ». -->
                                 <DropdownMenuContent align="end" class="w-44 rounded-2xl p-1.5" @close-auto-focus.prevent>
                                     <DropdownMenuItem class="rounded-icon font-semibold" @select="renaming = section.id">
-                                        <Pencil class="size-4" /> Renommer
+                                        <Pencil class="size-4" /> {{ $t('Renommer') }}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         v-if="sections.length > 1"
                                         class="rounded-icon font-semibold text-destructive focus:bg-destructive/10 focus:text-destructive"
                                         @select="askDelete(section)"
                                     >
-                                        <Trash2 class="size-4" /> Supprimer
+                                        <Trash2 class="size-4" /> {{ $t('Supprimer') }}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -175,8 +175,8 @@ function confirmDelete() {
                                 <input
                                     v-focus
                                     v-model="newTask.title"
-                                    aria-label="Nom de la nouvelle tâche"
-                                    placeholder="Nom de la tâche, puis Entrée"
+                                    :aria-label="$t('Nom de la nouvelle tâche')"
+                                    :placeholder="$t('Nom de la tâche, puis Entrée')"
                                     class="w-full rounded-task border-2 border-brand bg-background px-3.5 py-2.5 text-sm font-semibold shadow-soft outline-none"
                                     @keydown.esc="addingIn = null"
                                     @blur="!newTask.title && (addingIn = null)"
@@ -187,7 +187,7 @@ function confirmDelete() {
                                 class="mx-3 mb-3 mt-1 flex items-center gap-1.5 rounded-icon px-2 py-2 text-left text-sm font-semibold text-ink-soft hover:bg-background hover:text-ink"
                                 @click="startAdding(section.id)"
                             >
-                                <Plus class="size-4" /> Ajouter une tâche
+                                <Plus class="size-4" /> {{ $t('Ajouter une tâche') }}
                             </button>
                         </template>
                     </section>
@@ -197,8 +197,8 @@ function confirmDelete() {
             <form v-if="canEdit" class="shrink-0 max-md:hidden md:w-[272px]" @submit.prevent="addSection">
                 <input
                     v-model="newSection.name"
-                    aria-label="Nom de la nouvelle section"
-                    placeholder="+ Ajouter une section"
+                    :aria-label="$t('Nom de la nouvelle section')"
+                    :placeholder="$t('+ Ajouter une section')"
                     class="h-12 w-full rounded-card border-2 border-dashed border-app-border-strong bg-transparent px-[18px] text-sm font-bold placeholder:text-ink-soft focus:border-info focus:outline-none"
                 />
             </form>
@@ -207,17 +207,17 @@ function confirmDelete() {
         <Dialog v-model:open="deleteOpen">
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Supprimer la section « {{ deleting?.name }} » ?</DialogTitle>
+                    <DialogTitle>{{ $t('Supprimer la section « :name » ?', { name: deleting?.name ?? '' }) }}</DialogTitle>
                     <DialogDescription>
                         <template v-if="deleting && columns[deleting.id]?.length">
-                            Ses {{ columns[deleting.id].length }} tâche(s) seront aussi supprimées.
+                            {{ $tc('Sa tâche sera aussi supprimée.|Ses :count tâches seront aussi supprimées.', columns[deleting.id].length) }}
                         </template>
-                        Cette action est définitive.
+                        {{ $t('Cette action est définitive.') }}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2">
-                    <Button variant="outline" @click="deleteOpen = false">Annuler</Button>
-                    <Button variant="destructive" @click="confirmDelete">Supprimer</Button>
+                    <Button variant="outline" @click="deleteOpen = false">{{ $t('Annuler') }}</Button>
+                    <Button variant="destructive" @click="confirmDelete">{{ $t('Supprimer') }}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

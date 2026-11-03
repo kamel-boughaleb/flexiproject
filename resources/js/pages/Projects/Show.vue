@@ -6,6 +6,7 @@ import QuickAddSheet from '@/components/project/QuickAddSheet.vue';
 import TaskPanel from '@/components/project/TaskPanel.vue';
 import TimelineView from '@/components/project/TimelineView.vue';
 import ProjectLayout from '@/layouts/ProjectLayout.vue';
+import { t } from '@/lib/i18n';
 import type { ProjectPageProps, Section, Task, TaskDetail } from '@/types';
 import { router } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
@@ -20,7 +21,7 @@ const props = defineProps<
     }
 >();
 
-const TITLES = { board: 'Tableau', list: 'Liste', calendar: 'Calendrier', timeline: 'Planning' };
+const TITLES = { board: t('Tableau'), list: t('Liste'), calendar: t('Calendrier'), timeline: t('Planning') };
 
 /** Ouvre la fiche d'une tâche en ne rechargeant que ses données (l'URL reste partageable). */
 function openTask(id: number | null) {
@@ -76,7 +77,7 @@ const quickAdd = ref(false);
         <button
             v-if="can.add && !selectedTask"
             type="button"
-            aria-label="Ajouter une tâche"
+            :aria-label="$t('Ajouter une tâche')"
             class="fixed bottom-[84px] right-4 z-20 flex size-14 items-center justify-center rounded-full bg-brand-active text-white shadow-product md:hidden"
             @click="quickAdd = true"
         >

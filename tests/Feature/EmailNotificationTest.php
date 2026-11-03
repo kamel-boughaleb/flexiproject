@@ -9,6 +9,7 @@ use App\Notifications\DailyDigest;
 use App\Notifications\TaskAssigned;
 use App\Notifications\TaskCommented;
 use App\Notifications\TaskUpdated;
+use App\Support\Msg;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -75,7 +76,7 @@ class EmailNotificationTest extends TestCase
 
         $this->actingAs($project->owner)->patch("/tasks/{$task->id}", ['due_date' => '2026-11-25', 'priority' => 'high']);
 
-        Notification::assertSentTo($assignee, TaskUpdated::class, fn (TaskUpdated $n) => $n->changes === ['Échéance : 20/11/2026 → 25/11/2026', 'Priorité : aucune → haute']);
+        Notification::assertSentTo($assignee, TaskUpdated::class, fn (TaskUpdated $n) => array_map(Msg::render(...), $n->changes) === ['Échéance : 20/11/2026 → 25/11/2026', 'Priorité : aucune → haute']);
         Notification::assertNotSentTo($project->owner, TaskUpdated::class);
     }
 
@@ -92,7 +93,7 @@ class EmailNotificationTest extends TestCase
 
         Notification::assertSentTo($after, TaskAssigned::class);
         Notification::assertNotSentTo($after, TaskUpdated::class);
-        Notification::assertSentTo($before, TaskUpdated::class, fn (TaskUpdated $n) => $n->changes === ['Responsable : Paul Martin → Léa Durand']);
+        Notification::assertSentTo($before, TaskUpdated::class, fn (TaskUpdated $n) => array_map(Msg::render(...), $n->changes) === ['Responsable : Paul Martin → Léa Durand']);
     }
 
     public function test_moving_and_completing_notify_participants(): void
@@ -107,7 +108,7 @@ class EmailNotificationTest extends TestCase
         $this->actingAs($project->owner)->post("/tasks/{$task->id}/toggle");
 
         Notification::assertSentToTimes($assignee, TaskUpdated::class, 2);
-        Notification::assertSentTo($assignee, TaskUpdated::class, fn (TaskUpdated $n) => $n->changes === ["Section : À faire → {$target->name}"]);
+        Notification::assertSentTo($assignee, TaskUpdated::class, fn (TaskUpdated $n) => array_map(Msg::render(...), $n->changes) === ["Section : À faire → {$target->name}"]);
     }
 
     public function test_preferences_turn_emails_off_but_keep_in_app_notifications(): void

@@ -10,11 +10,13 @@ defineProps<{ tasks: (Task & { project: { id: number; name: string; color: strin
 </script>
 
 <template>
-    <Head title="Mes tâches" />
-    <AppLayout :breadcrumbs="[{ title: 'Mes tâches', href: route('my-tasks') }]">
+    <Head :title="$t('Mes tâches')" />
+    <AppLayout :breadcrumbs="[{ title: $t('Mes tâches'), href: route('my-tasks') }]">
         <div class="p-6">
-            <h1 class="text-2xl font-semibold">Mes tâches</h1>
-            <p class="text-sm text-muted-foreground">{{ tasks.length }} tâche(s) ouverte(s), triées par échéance</p>
+            <h1 class="text-2xl font-semibold">{{ $t('Mes tâches') }}</h1>
+            <p class="text-sm text-muted-foreground">
+                {{ $tc(':count tâche ouverte, triée par échéance|:count tâches ouvertes, triées par échéance', tasks.length) }}
+            </p>
             <ul class="mt-6 divide-y rounded-lg border">
                 <li v-for="t in tasks" :key="t.id" class="flex items-center gap-3 px-4 py-2.5 text-sm">
                     <TaskCheck :task-id="t.id" :completed="t.completed" />
@@ -30,7 +32,7 @@ defineProps<{ tasks: (Task & { project: { id: number; name: string; color: strin
                         {{ dateRange(t.start_date, t.due_date) }}
                     </span>
                 </li>
-                <li v-if="!tasks.length" class="px-4 py-8 text-center text-sm text-muted-foreground">Rien à faire pour le moment 🎉</li>
+                <li v-if="!tasks.length" class="px-4 py-8 text-center text-sm text-muted-foreground">{{ $t('Rien à faire pour le moment 🎉') }}</li>
             </ul>
         </div>
     </AppLayout>

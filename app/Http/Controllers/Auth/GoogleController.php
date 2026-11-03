@@ -16,7 +16,7 @@ class GoogleController extends Controller
     public function redirect(): SymfonyRedirect
     {
         if (! config('services.google.client_id') || ! config('services.google.client_secret')) {
-            return to_route('login')->withErrors(['google' => 'La connexion Google n\'est pas encore configurée (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).']);
+            return to_route('login')->withErrors(['google' => __('La connexion Google n\'est pas encore configurée (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).')]);
         }
 
         $driver = Socialite::driver('google');
@@ -37,32 +37,37 @@ class GoogleController extends Controller
             // Connexion annulée par l'utilisateur, session expirée ou clés invalides.
             report($e);
 
-            return to_route('login')->withErrors(['google' => 'La connexion avec Google a échoué. Veuillez réessayer.']);
+            return to_route('login')->withErrors(['google' => __('La connexion avec Google a échoué. Veuillez réessayer.')]);
         }
 
         $email = strtolower($google->getEmail());
         $domains = config('services.google.allowed_domains');
 
         if ($domains && ! in_array(substr(strrchr($email, '@'), 1), $domains, true)) {
-            return to_route('login')->withErrors(['google' => 'Ce compte Google n\'appartient pas à un domaine autorisé.']);
+            return to_route('login')->withErrors(['google' => __('Ce compte Google n\'appartient pas à un domaine autorisé.')]);
         }
 
         // Pas d'inscription libre : seuls les comptes existants ou invités peuvent se connecter.
         $user = User::where('email', $email)->first();
         if (! $user) {
-            return to_route('login')->withErrors(['google' => 'Aucun compte n\'est associé à cette adresse. Demandez une invitation à un administrateur.']);
+            return to_route('login')->withErrors(['google' => __('Aucun compte n\'est associé à cette adresse. Demandez une invitation à un administrateur.')]);
         }
 
         if (! $user->isActive()) {
-            return to_route('login')->withErrors(['google' => User::INACTIVE_MESSAGE]);
+            return to_route('login')->withErrors(['google' => __(User::INACTIVE_MESSAGE)]);
         }
 
+        $pending = $user->isPending();
         $user->fill([
             'name' => $user->name ?: $google->getName(),
             'google_id' => $google->getId(),
             // Ne remplace ni une photo envoyée par le collaborateur, ni un avatar déjà choisi.
             'avatar' => $user->avatar ?: $google->getAvatar(),
         ]);
+        if ($pending) {
+            // Première connexion d'une personne invitée : son compte prend la langue qu'elle utilise.
+            $user->locale = app()->getLocale();
+        }
         $user->email_verified_at ??= now();
         $user->save();
 

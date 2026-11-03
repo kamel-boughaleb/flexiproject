@@ -4,6 +4,7 @@ import UserAvatar from '@/components/project/UserAvatar.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import UserMenu from '@/components/UserMenu.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { t } from '@/lib/i18n';
 import { dateRange } from '@/lib/labels';
 import type { Member, Project, ProjectPageProps, SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
@@ -22,12 +23,12 @@ const toggleDone = () =>
         preserveScroll: true,
     });
 const tabs = computed(() => [
-    { label: 'Tableau', href: route('projects.view', [props.project.id, 'board']) },
-    { label: 'Liste', href: route('projects.view', [props.project.id, 'list']) },
-    { label: 'Calendrier', href: route('projects.view', [props.project.id, 'calendar']) },
-    { label: 'Planning', href: route('projects.view', [props.project.id, 'timeline']) },
-    { label: 'Collaborateurs', href: route('projects.members', props.project.id) },
-    { label: 'Paramètres', href: route('projects.settings', props.project.id) },
+    { label: t('Tableau'), href: route('projects.view', [props.project.id, 'board']) },
+    { label: t('Liste'), href: route('projects.view', [props.project.id, 'list']) },
+    { label: t('Calendrier'), href: route('projects.view', [props.project.id, 'calendar']) },
+    { label: t('Planning'), href: route('projects.view', [props.project.id, 'timeline']) },
+    { label: t('Collaborateurs'), href: route('projects.members', props.project.id) },
+    { label: t('Paramètres'), href: route('projects.settings', props.project.id) },
 ]);
 
 const isActive = (href: string) => page.url.split('?')[0] === new URL(href).pathname;
@@ -50,8 +51,8 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                         type="button"
                         class="flex size-8 shrink-0 items-center justify-center rounded-icon transition-colors"
                         :class="done ? 'text-success hover:bg-app-hover' : 'text-ink-soft hover:bg-success-tint hover:text-success'"
-                        :aria-label="done ? 'Rouvrir le projet' : 'Terminer le projet'"
-                        :title="done ? 'Rouvrir le projet' : 'Terminer le projet'"
+                        :aria-label="done ? $t('Rouvrir le projet') : $t('Terminer le projet')"
+                        :title="done ? $t('Rouvrir le projet') : $t('Terminer le projet')"
                         @click="toggleDone"
                     >
                         <CircleCheck class="size-5" />
@@ -60,7 +61,7 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                         v-if="done"
                         class="inline-flex shrink-0 items-center gap-1 rounded-full bg-success-tint px-2.5 py-0.5 text-xs font-bold text-success-text"
                     >
-                        <CircleCheck class="size-3.5" /> Terminé
+                        <CircleCheck class="size-3.5" /> {{ $t('Terminé') }}
                     </span>
                     <span
                         v-if="project.start_date || project.end_date"
@@ -72,8 +73,8 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                         <Link
                             v-if="others.length"
                             :href="route('projects.members', project.id)"
-                            title="Voir les collaborateurs"
-                            aria-label="Voir les collaborateurs du projet"
+                            :title="$t('Voir les collaborateurs')"
+                            :aria-label="$t('Voir les collaborateurs du projet')"
                             class="hidden -space-x-1.5 border-r border-app-border pr-3 transition-opacity hover:opacity-80 sm:flex"
                         >
                             <span v-for="m in others.slice(0, 5)" :key="m.id" class="rounded-full ring-2 ring-background">
@@ -89,7 +90,7 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                         <UserMenu />
                     </div>
                 </div>
-                <nav aria-label="Vues du projet" class="-mb-px mt-3 flex gap-1 overflow-x-auto md:gap-2">
+                <nav :aria-label="$t('Vues du projet')" class="-mb-px mt-3 flex gap-1 overflow-x-auto md:gap-2">
                     <Link
                         v-for="tab in tabs"
                         :key="tab.label"

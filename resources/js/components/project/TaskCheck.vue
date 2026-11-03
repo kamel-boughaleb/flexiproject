@@ -32,7 +32,7 @@ const SIZES = { sm: 'size-[18px]', md: 'size-5', lg: 'size-[22px]' };
         type="button"
         :disabled="disabled"
         :aria-pressed="done"
-        :aria-label="done ? 'Rouvrir la tâche' : 'Marquer comme terminée'"
+        :aria-label="done ? $t('Rouvrir la tâche') : $t('Marquer comme terminée')"
         :class="[
             SIZES[size],
             done ? 'border-success bg-success text-white' : 'border-app-muted text-transparent hover:border-success hover:text-success',

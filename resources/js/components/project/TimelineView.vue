@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import SegmentedControl from '@/components/design/SegmentedControl.vue';
+import { dateLocale } from '@/lib/i18n';
 import { PRIORITIES, isOverdue, toDate } from '@/lib/labels';
 import type { Priority, Project, Section, Task } from '@/types';
 import { router } from '@inertiajs/vue3';
 import { addDays, differenceInCalendarDays, eachDayOfInterval, format, isMonday, isToday, isWeekend, min, startOfDay, startOfWeek } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import UserAvatar from './UserAvatar.vue';
@@ -34,7 +34,7 @@ const months = computed(() => {
     days.value.forEach((d, i) => {
         if (i === 0 || d.getDate() === 1)
             result.push({
-                label: capitalize(format(d, scale.value === 'months' ? 'MMM yyyy' : 'MMMM yyyy', { locale: fr })),
+                label: capitalize(format(d, scale.value === 'months' ? 'MMM yyyy' : 'MMMM yyyy', { locale: dateLocale() })),
                 left: i * DAY.value,
                 width: 0,
             });
@@ -119,26 +119,27 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                 class="h-9 rounded-full border border-app-border-strong px-4 text-sm font-bold text-app-strong hover:bg-app-hover"
                 @click="goToday"
             >
-                Aujourd'hui
+                {{ $t("Aujourd'hui") }}
             </button>
             <div class="flex gap-0.5">
                 <button
                     class="flex size-9 items-center justify-center rounded-full hover:bg-app-hover"
-                    aria-label="Période précédente"
+                    :aria-label="$t('Période précédente')"
                     @click="start = addDays(start, -SCALES[scale].step)"
                 >
                     <ChevronLeft class="size-5" />
                 </button>
                 <button
                     class="flex size-9 items-center justify-center rounded-full hover:bg-app-hover"
-                    aria-label="Période suivante"
+                    :aria-label="$t('Période suivante')"
                     @click="start = addDays(start, SCALES[scale].step)"
                 >
                     <ChevronRight class="size-5" />
                 </button>
             </div>
             <h2 class="text-lg font-bold">
-                {{ format(days[0], 'd MMM', { locale: fr }) }} – {{ format(days[days.length - 1], 'd MMM yyyy', { locale: fr }) }}
+                {{ format(days[0], $t('d MMM'), { locale: dateLocale() }) }} –
+                {{ format(days[days.length - 1], $t('d MMM yyyy'), { locale: dateLocale() }) }}
             </h2>
             <div class="ml-auto flex flex-wrap items-center gap-3">
                 <span v-for="p in ['low', 'medium', 'high'] as const" :key="p" class="flex items-center gap-1.5 text-xs font-bold text-ink-soft">
@@ -146,18 +147,18 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                 </span>
                 <SegmentedControl
                     v-model="scale"
-                    label="Échelle"
+                    :label="$t('Échelle')"
                     size="sm"
                     :options="[
-                        { value: 'days', label: 'Jours' },
-                        { value: 'weeks', label: 'Semaines' },
-                        { value: 'months', label: 'Mois' },
+                        { value: 'days', label: $t('Jours') },
+                        { value: 'weeks', label: $t('Semaines') },
+                        { value: 'months', label: $t('Mois') },
                     ]"
                 />
             </div>
         </div>
         <p v-if="canEdit" class="-mt-1 px-4 pb-2 text-xs text-ink-soft md:px-7">
-            Glissez une barre pour la décaler, ou son bord droit pour changer l'échéance.
+            {{ $t("Glissez une barre pour la décaler, ou son bord droit pour changer l'échéance.") }}
         </p>
 
         <div class="mx-4 mb-6 select-none overflow-x-auto rounded-card border border-app-border md:mx-7">
@@ -168,7 +169,7 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                         class="sticky left-0 z-10 flex shrink-0 items-end border-r border-app-border bg-background px-4 pb-3 text-xs font-bold uppercase tracking-[.04em] text-ink-soft"
                         :style="{ width: `${NAME_COL}px` }"
                     >
-                        Tâche
+                        {{ $t('Tâche') }}
                     </div>
                     <div class="relative" :style="{ width: `${SPAN * DAY}px` }">
                         <div class="relative h-7">
@@ -190,7 +191,7 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                             >
                                 <template v-if="showDay(d)">
                                     <span v-if="scale === 'days'" class="text-[10px] font-bold uppercase">{{
-                                        format(d, 'EEEEE', { locale: fr })
+                                        format(d, 'EEEEE', { locale: dateLocale() })
                                     }}</span>
                                     <span
                                         class="flex size-[22px] items-center justify-center whitespace-nowrap rounded-full text-xs font-bold"
@@ -217,13 +218,13 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                     <div v-if="todayX !== null" class="absolute inset-y-0 w-0.5 bg-brand-active" :style="{ left: `${todayX}px` }" />
                     <div
                         v-if="marker(project.start_date) !== null"
-                        title="Début du projet"
+                        :title="$t('Début du projet')"
                         class="absolute inset-y-0 border-l-2 border-dashed border-success"
                         :style="{ left: `${marker(project.start_date)}px` }"
                     />
                     <div
                         v-if="marker(project.end_date) !== null"
-                        title="Fin du projet"
+                        :title="$t('Fin du projet')"
                         class="absolute inset-y-0 border-l-2 border-dashed border-brand"
                         :style="{ left: `${marker(project.end_date)! + DAY}px` }"
                     />
@@ -258,7 +259,7 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                             <template v-if="bar(t)">
                                 <span
                                     v-if="bar(t)!.lateWidth > 0"
-                                    title="Échéance dépassée"
+                                    :title="$t('Échéance dépassée')"
                                     class="absolute top-3.5 h-[18px] rounded-r-full border-2 border-l-0 border-dashed border-brand-active bg-[repeating-linear-gradient(135deg,var(--primary-tint)_0_6px,var(--white)_6px_10px)]"
                                     :style="{ left: `${bar(t)!.lateFrom}px`, width: `${bar(t)!.lateWidth}px` }"
                                 />
@@ -282,7 +283,7 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                                     />
                                 </div>
                             </template>
-                            <span v-else class="absolute left-3 top-3.5 text-xs font-semibold text-app-muted">Non planifiée</span>
+                            <span v-else class="absolute left-3 top-3.5 text-xs font-semibold text-app-muted">{{ $t('Non planifiée') }}</span>
                         </div>
                     </div>
                 </template>

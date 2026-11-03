@@ -42,7 +42,7 @@ function clearImage() {
 <template>
     <div class="space-y-3">
         <div class="flex items-center gap-4">
-            <button type="button" class="group relative rounded-2xl" title="Choisir une image" :disabled="disabled" @click="input?.click()">
+            <button type="button" class="group relative rounded-2xl" :title="$t('Choisir une image')" :disabled="disabled" @click="input?.click()">
                 <ProjectAvatar :project="{ name: name || '?', color, icon, image: null }" :src="shownImage" size="xl" />
                 <span
                     v-if="!disabled"
@@ -54,11 +54,13 @@ function clearImage() {
             <div class="space-y-1.5">
                 <div class="flex flex-wrap gap-2">
                     <Button type="button" variant="outline" size="sm" :disabled="disabled" @click="input?.click()">
-                        {{ hasImage ? "Changer l'image" : 'Ajouter une image' }}
+                        {{ hasImage ? $t("Changer l'image") : $t('Ajouter une image') }}
                     </Button>
-                    <Button v-if="removable" type="button" variant="ghost" size="sm" :disabled="disabled" @click="clearImage">Retirer</Button>
+                    <Button v-if="removable" type="button" variant="ghost" size="sm" :disabled="disabled" @click="clearImage">{{
+                        $t('Retirer')
+                    }}</Button>
                 </div>
-                <p class="text-xs text-ink-soft">Sans image, l'initiale du projet sur sa couleur.</p>
+                <p class="text-xs text-ink-soft">{{ $t("Sans image, l'initiale du projet sur sa couleur.") }}</p>
             </div>
         </div>
         <input ref="input" type="file" accept="image/*" class="hidden" @change="pick" />

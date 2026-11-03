@@ -44,46 +44,49 @@ const closeModal = () => {
 
 <template>
     <div class="space-y-6">
-        <HeadingSmall title="Supprimer le compte" description="Supprimer votre compte et toutes ses données" />
+        <HeadingSmall :title="$t('Supprimer le compte')" :description="$t('Supprimer votre compte et toutes ses données')" />
         <div class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
             <div class="relative space-y-0.5 text-red-600 dark:text-red-100">
-                <p class="font-medium">Attention</p>
-                <p class="text-sm">Attention, cette action est irréversible.</p>
+                <p class="font-medium">{{ $t('Attention') }}</p>
+                <p class="text-sm">{{ $t('Attention, cette action est irréversible.') }}</p>
             </div>
             <Dialog>
                 <DialogTrigger as-child>
-                    <Button variant="destructive">Supprimer le compte</Button>
+                    <Button variant="destructive">{{ $t('Supprimer le compte') }}</Button>
                 </DialogTrigger>
                 <DialogContent>
                     <form class="space-y-6" @submit="deleteUser">
                         <DialogHeader class="space-y-3">
-                            <DialogTitle>Voulez-vous vraiment supprimer votre compte ?</DialogTitle>
+                            <DialogTitle>{{ $t('Voulez-vous vraiment supprimer votre compte ?') }}</DialogTitle>
                             <DialogDescription>
-                                Une fois votre compte supprimé, toutes ses données seront définitivement effacées. Saisissez votre mot de passe pour
-                                confirmer la suppression définitive.
+                                {{
+                                    $t(
+                                        'Une fois votre compte supprimé, toutes ses données seront définitivement effacées. Saisissez votre mot de passe pour confirmer la suppression définitive.',
+                                    )
+                                }}
                             </DialogDescription>
                         </DialogHeader>
 
                         <div class="grid gap-2">
-                            <Label for="password" class="sr-only">Mot de passe</Label>
+                            <Label for="password" class="sr-only">{{ $t('Mot de passe') }}</Label>
                             <Input
                                 id="password"
                                 type="password"
                                 name="password"
                                 ref="passwordInput"
                                 v-model="form.password"
-                                placeholder="Mot de passe"
+                                :placeholder="$t('Mot de passe')"
                             />
                             <InputError :message="form.errors.password" />
                         </div>
 
                         <DialogFooter>
                             <DialogClose as-child>
-                                <Button variant="secondary" @click="closeModal"> Annuler </Button>
+                                <Button variant="secondary" @click="closeModal"> {{ $t('Annuler') }} </Button>
                             </DialogClose>
 
                             <Button variant="destructive" :disabled="form.processing">
-                                <button type="submit">Supprimer le compte</button>
+                                <button type="submit">{{ $t('Supprimer le compte') }}</button>
                             </Button>
                         </DialogFooter>
                     </form>

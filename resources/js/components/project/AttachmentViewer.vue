@@ -55,18 +55,18 @@ onKeyStroke('ArrowRight', () => hasNext.value && emit('navigate', props.index + 
                 <div class="min-w-0 flex-1">
                     <DialogTitle class="truncate text-base">{{ file.name }}</DialogTitle>
                     <DialogDescription class="text-xs">
-                        {{ fileSize(file.size) }}<template v-if="file.user"> · ajouté par {{ file.user.name }}</template>
+                        {{ fileSize(file.size) }}<template v-if="file.user"> · {{ $t('ajouté par :name', { name: file.user.name }) }}</template>
                     </DialogDescription>
                 </div>
                 <span v-if="attachments.length > 1" class="text-xs text-muted-foreground">{{ index + 1 }} / {{ attachments.length }}</span>
-                <Button variant="ghost" size="icon" :disabled="!hasPrev" title="Précédent" @click="emit('navigate', index - 1)">
+                <Button variant="ghost" size="icon" :disabled="!hasPrev" :title="$t('Précédent')" @click="emit('navigate', index - 1)">
                     <ChevronLeft class="size-4" />
                 </Button>
-                <Button variant="ghost" size="icon" :disabled="!hasNext" title="Suivant" @click="emit('navigate', index + 1)">
+                <Button variant="ghost" size="icon" :disabled="!hasNext" :title="$t('Suivant')" @click="emit('navigate', index + 1)">
                     <ChevronRight class="size-4" />
                 </Button>
                 <Button as="a" :href="route('attachments.download', file.id)" variant="outline" size="sm">
-                    <Download class="size-4" /> Télécharger
+                    <Download class="size-4" /> {{ $t('Télécharger') }}
                 </Button>
             </header>
 
@@ -77,19 +77,19 @@ onKeyStroke('ArrowRight', () => hasNext.value && emit('navigate', props.index + 
                 <iframe v-else-if="file.kind === 'pdf'" :key="file.id" :src="src" :title="file.name" class="size-full rounded-md bg-white" />
                 <div v-else-if="file.kind === 'text'" class="flex size-full flex-col">
                     <p v-if="truncated" class="border-b px-3 py-1.5 text-xs text-muted-foreground">
-                        Aperçu limité au premier Mo : téléchargez le fichier pour le voir en entier.
+                        {{ $t('Aperçu limité au premier Mo : téléchargez le fichier pour le voir en entier.') }}
                     </p>
-                    <p v-if="failed" class="m-auto text-sm text-muted-foreground">Impossible d'afficher ce fichier.</p>
-                    <p v-else-if="code === null" class="m-auto text-sm text-muted-foreground">Chargement…</p>
+                    <p v-if="failed" class="m-auto text-sm text-muted-foreground">{{ $t("Impossible d'afficher ce fichier.") }}</p>
+                    <p v-else-if="code === null" class="m-auto text-sm text-muted-foreground">{{ $t('Chargement…') }}</p>
                     <!-- eslint-disable-next-line vue/no-v-html : sortie échappée par highlight.js -->
                     <pre v-else class="hljs size-full overflow-auto p-4 text-xs leading-relaxed"><code v-html="code" /></pre>
                 </div>
                 <div v-else class="flex flex-col items-center gap-3 p-8 text-center">
                     <FileIcon class="size-12 text-muted-foreground" />
                     <p class="text-sm text-muted-foreground">
-                        L'aperçu n'est pas disponible pour ce type de fichier ({{ file.extension || 'inconnu' }}).
+                        {{ $t("L'aperçu n'est pas disponible pour ce type de fichier (:type).", { type: file.extension || $t('inconnu') }) }}
                     </p>
-                    <Button as="a" :href="route('attachments.download', file.id)"><Download class="size-4" /> Télécharger</Button>
+                    <Button as="a" :href="route('attachments.download', file.id)"><Download class="size-4" /> {{ $t('Télécharger') }}</Button>
                 </div>
             </div>
         </DialogContent>

@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Notifications\AccountReactivated;
 use App\Notifications\InvitationNotification;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +18,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -35,6 +36,7 @@ class User extends Authenticatable
         'avatar',
         'color',
         'notification_preferences',
+        'locale',
     ];
 
     /**
@@ -89,6 +91,12 @@ class User extends Authenticatable
             $user->color ??= self::COLORS[crc32($user->email) % count(self::COLORS)];
         });
         static::deleting(fn (User $user) => $user->deletePhotoFile());
+    }
+
+    /** Langue de l'interface et des e-mails de ce collaborateur. */
+    public function preferredLocale(): string
+    {
+        return $this->locale ?? config('app.locale');
     }
 
     public function projects(): BelongsToMany
@@ -187,6 +195,8 @@ class User extends Authenticatable
     {
         $token = Str::random(48);
         $this->forceFill([
+            // Tant que la personne n'a pas créé son compte, on lui écrit dans la langue de qui l'invite.
+            'locale' => $this->isPending() || ! $this->locale ? $by->preferredLocale() : $this->locale,
             'invitation_token' => hash('sha256', $token),
             'invited_at' => now(),
             'invited_by' => $by->id,
