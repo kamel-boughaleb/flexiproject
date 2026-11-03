@@ -94,7 +94,8 @@ class AttachmentController extends Controller
 
     private function makeThumbnail(string $source, string $target): void
     {
-        if (! function_exists('imagecreatefromstring')) {
+        // GD peut être compilé sans JPEG : on renvoie alors l'original plutôt qu'une erreur.
+        if (! function_exists('imagecreatefromstring') || ! function_exists('imagejpeg')) {
             return;
         }
         $size = @getimagesize($source);

@@ -7,11 +7,14 @@ ARG CONTAINER_USER
 RUN groupadd --force -g $GID $CONTAINER_USER
 RUN useradd -ms /bin/bash --no-user-group -g $GID -u $UID $CONTAINER_USER
 
+# GD a besoin de JPEG pour imagejpeg() : sans lui, les vignettes des cartes échouaient.
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     nginx \
     libpng-dev \
+    libjpeg62-turbo-dev \
+    libwebp-dev \
     libonig-dev \
     libxml2-dev \
     libicu-dev \
@@ -19,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     supervisor \
+    && docker-php-ext-configure gd --with-jpeg --with-webp \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
