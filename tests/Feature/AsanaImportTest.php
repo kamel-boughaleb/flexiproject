@@ -22,6 +22,9 @@ class AsanaImportTest extends TestCase
 
     private User $admin;
 
+    /** Champs du projet Asana simulé, modifiables entre deux imports. */
+    private array $asanaProject = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -47,10 +50,11 @@ class AsanaImportTest extends TestCase
                 ->push(['data' => [['gid' => 'u1', 'name' => 'Kamel', 'email' => 'Kamel@flexilivre.com']], 'next_page' => ['offset' => 'abc']])
                 ->push($this->page([['gid' => 'u2', 'name' => 'Léa Martin', 'email' => 'lea@flexilivre.com']])),
             "{$api}/users/u9*" => Http::response(['errors' => [['message' => 'Not found']]], 404),
-            "{$api}/projects?*" => Http::response($this->page([[
+            "{$api}/projects?*" => fn () => Http::response($this->page([[
                 'gid' => 'p1', 'name' => 'Catalogue 2027', 'notes' => 'Refonte', 'color' => 'dark-green',
                 'start_on' => '2026-11-01', 'due_on' => '2026-12-15', 'archived' => false,
                 'owner' => ['gid' => 'u1'], 'members' => [['gid' => 'u1'], ['gid' => 'u2']],
+                ...$this->asanaProject,
             ]])),
             "{$api}/projects/p1/sections*" => Http::response($this->page([
                 ['gid' => 's0', 'name' => 'Untitled section'],
@@ -91,8 +95,9 @@ class AsanaImportTest extends TestCase
         ]);
     }
 
-    private function import(): void
+    private function import(array $project = []): void
     {
+        $this->asanaProject = $project;
         $this->fakeAsana();
         $this->artisan('asana:import', ['--token' => 'secret'])
             ->expectsOutputToContain('Import terminé')
@@ -172,6 +177,35 @@ class AsanaImportTest extends TestCase
         $this->assertSame('Maquette couverture', Task::where('asana_gid', 't1')->value('title'));
     }
 
+    public function test_imports_the_project_status(): void
+    {
+        $this->import();
+        $this->assertSame('active', Project::first()->status());
+
+        $this->import(['completed' => true, 'completed_at' => '2026-02-13T09:01:06.000Z']);
+        $project = Project::first();
+        $this->assertSame('done', $project->status());
+        $this->assertSame('2026-02-13', $project->completed_at->toDateString());
+    }
+
+    public function test_a_project_reopened_in_asana_is_in_progress_again(): void
+    {
+        $this->import(['archived' => true]);
+        $this->assertTrue(Project::first()->isCompleted());
+
+        $this->import();
+        $this->assertFalse(Project::first()->isCompleted());
+    }
+
+    public function test_complete_status_update_means_finished(): void
+    {
+        $this->import(['current_status_update' => ['status_type' => 'complete']]);
+        $this->assertTrue(Project::first()->isCompleted());
+
+        $this->import(['current_status_update' => ['status_type' => 'on_hold']]);
+        $this->assertFalse(Project::first()->isCompleted());
+    }
+
     public function test_invite_option_sends_invitations_to_new_users(): void
     {
         $this->fakeAsana();
@@ -233,5 +267,37 @@ class AsanaImportTest extends TestCase
         $this->artisan('data:reset')->expectsConfirmation('Confirmer la suppression ?', 'no')->assertSuccessful();
 
         $this->assertSame(1, Project::count());
+    }
+
+    public function test_reset_option_wipes_data_before_importing(): void
+    {
+        $old = Project::factory()->create(['owner_id' => $this->admin->id]);
+        Task::factory()->in($old)->create();
+        $guest = User::factory()->create();
+        $this->fakeAsana();
+
+        $this->artisan('asana:import', ['--token' => 'secret', '--reset' => true])
+            ->expectsConfirmation('Supprimer tous les projets, tâches, règles et collaborateurs (hors administrateurs) avant l\'import ?', 'yes')
+            ->expectsOutputToContain('Import terminé')
+            ->assertSuccessful();
+
+        $this->assertNull($old->fresh());
+        $this->assertNull($guest->fresh());
+        $this->assertNotNull($this->admin->fresh());
+        $this->assertSame(['Catalogue 2027'], Project::pluck('name')->all());
+        $this->assertSame(4, Task::count());
+    }
+
+    public function test_reset_option_can_be_cancelled(): void
+    {
+        $old = Project::factory()->create(['owner_id' => $this->admin->id]);
+        $this->fakeAsana();
+
+        $this->artisan('asana:import', ['--token' => 'secret', '--reset' => true])
+            ->expectsConfirmation('Supprimer tous les projets, tâches, règles et collaborateurs (hors administrateurs) avant l\'import ?', 'no')
+            ->assertSuccessful();
+
+        $this->assertNotNull($old->fresh());
+        Http::assertNothingSent();
     }
 }

@@ -21,7 +21,9 @@ class ImportAsana extends Command
         {--owner= : E-mail du compte administrateur qui reçoit les éléments sans auteur connu}
         {--invite : Envoyer une invitation par e-mail aux collaborateurs créés}
         {--without-comments : Ne pas importer les commentaires}
-        {--without-attachments : Ne pas télécharger les pièces jointes}';
+        {--without-attachments : Ne pas télécharger les pièces jointes}
+        {--reset : Tout supprimer avant l\'import (projets, tâches, règles, collaborateurs non administrateurs)}
+        {--force : Avec --reset, ne pas demander de confirmation}';
 
     protected $description = 'Importe les projets, tâches, commentaires, pièces jointes et membres d\'un compte Asana';
 
@@ -41,6 +43,16 @@ class ImportAsana extends Command
             $this->error('Jeton Asana manquant.');
 
             return self::FAILURE;
+        }
+
+        if ($this->option('reset')) {
+            if (! $this->option('force') && ! $this->confirm('Supprimer tous les projets, tâches, règles et collaborateurs (hors administrateurs) avant l\'import ?')) {
+                $this->info('Import annulé : rien n\'a été supprimé.');
+
+                return self::SUCCESS;
+            }
+            $this->call('data:reset', ['--force' => true]);
+            $this->newLine();
         }
 
         $importer = new AsanaImporter(
