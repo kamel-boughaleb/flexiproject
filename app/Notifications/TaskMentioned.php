@@ -19,18 +19,22 @@ class TaskMentioned extends TaskNotification
 
     protected function message(): string
     {
-        $where = $this->inComment ? 'un commentaire sur' : 'la description de';
+        $key = $this->inComment
+            ? ':name vous a mentionné dans un commentaire sur « :task »'
+            : ':name vous a mentionné dans la description de « :task »';
 
-        return "{$this->actor->name} vous a mentionné dans {$where} « {$this->task->title} »";
+        return __($key, ['name' => $this->actor->name, 'task' => $this->task->title]);
     }
 
     protected function mail(MailMessage $mail): MailMessage
     {
-        $where = $this->inComment ? 'un commentaire sur la tâche' : 'la description de la tâche';
+        $key = $this->inComment
+            ? ':name vous a mentionné dans un commentaire sur la tâche **:task** :'
+            : ':name vous a mentionné dans la description de la tâche **:task** :';
         $text = Str::limit(RichText::toText($this->html), 1500);
 
         return $mail
-            ->line("{$this->actor->name} vous a mentionné dans {$where} **{$this->task->title}** :")
+            ->line(__($key, ['name' => $this->actor->name, 'task' => $this->task->title]))
             ->line('> '.str_replace("\n", "\n> ", $text));
     }
 }

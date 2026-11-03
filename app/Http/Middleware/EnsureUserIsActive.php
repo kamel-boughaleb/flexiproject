@@ -19,7 +19,7 @@ class EnsureUserIsActive
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return to_route('login')->withErrors(['account' => User::INACTIVE_MESSAGE]);
+            return to_route('login')->withErrors(['account' => __(User::INACTIVE_MESSAGE)]);
         }
 
         return $next($request);

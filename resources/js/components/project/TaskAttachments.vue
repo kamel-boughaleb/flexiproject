@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import { FILE_ICONS as ICONS, FILE_TILES as TILES, fileSize } from '@/lib/files';
+import { t } from '@/lib/i18n';
 import { shortDate } from '@/lib/labels';
 import type { Attachment, SharedData } from '@/types';
 import { router, useForm, usePage } from '@inertiajs/vue3';
@@ -40,7 +41,7 @@ function onDrop(e: DragEvent) {
 }
 
 function destroy(a: Attachment) {
-    if (confirm(`Supprimer « ${a.name} » ?`)) {
+    if (confirm(t('Supprimer « :name » ?', { name: a.name }))) {
         router.delete(route('attachments.destroy', a.id), { preserveScroll: true, preserveState: true });
     }
 }
@@ -59,7 +60,7 @@ defineExpose({ pick: () => input.value?.click() });
         @drop.prevent="onDrop"
     >
         <h3 id="attachments-title" class="mb-3 flex items-baseline gap-2 text-base font-bold">
-            Pièces jointes <span class="text-sm font-semibold text-ink-soft">{{ attachments.length }}</span>
+            {{ $t('Pièces jointes') }} <span class="text-sm font-semibold text-ink-soft">{{ attachments.length }}</span>
         </h3>
         <input v-if="canEdit" ref="input" type="file" multiple class="hidden" @change="onPick" />
 
@@ -74,7 +75,7 @@ defineExpose({ pick: () => input.value?.click() });
                 :key="a.id"
                 class="group relative w-40 shrink-0 overflow-hidden rounded-2xl border border-app-border bg-background transition-shadow hover:shadow-hover md:w-auto"
             >
-                <button class="block w-full text-left" :aria-label="`Ouvrir ${a.name}`" @click="viewing = i">
+                <button class="block w-full text-left" :aria-label="$t('Ouvrir :name', { name: a.name })" @click="viewing = i">
                     <span class="flex h-[110px] items-center justify-center" :class="TILES[a.kind]">
                         <img v-if="a.kind === 'image'" :src="route('attachments.show', a.id)" alt="" loading="lazy" class="size-full object-cover" />
                         <span v-else-if="a.kind === 'pdf'" class="text-xl font-bold">PDF</span>
@@ -88,7 +89,7 @@ defineExpose({ pick: () => input.value?.click() });
                 <button
                     v-if="canDelete(a)"
                     class="absolute right-2 top-2 flex size-8 items-center justify-center rounded-icon bg-background/90 text-brand-active opacity-0 shadow-soft transition focus-visible:opacity-100 group-hover:opacity-100"
-                    :aria-label="`Supprimer ${a.name}`"
+                    :aria-label="$t('Supprimer :name', { name: a.name })"
                     @click="destroy(a)"
                 >
                     <Trash2 class="size-4" />
@@ -102,11 +103,11 @@ defineExpose({ pick: () => input.value?.click() });
                     @click="input?.click()"
                 >
                     <Plus class="size-5" />
-                    {{ form.processing ? 'Envoi…' : 'Glisser un fichier' }}
+                    {{ form.processing ? $t('Envoi…') : $t('Glisser un fichier') }}
                 </button>
             </li>
         </ul>
-        <p v-if="!canEdit && !attachments.length" class="text-sm text-ink-soft">Aucune pièce jointe.</p>
+        <p v-if="!canEdit && !attachments.length" class="text-sm text-ink-soft">{{ $t('Aucune pièce jointe.') }}</p>
 
         <AttachmentViewer
             v-if="viewing !== null && attachments[viewing]"

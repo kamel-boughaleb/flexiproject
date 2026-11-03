@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Section;
 use App\Models\Task;
 use App\Models\User;
+use App\Support\Msg;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -114,7 +115,7 @@ class AsanaImporter
             }
         }
         if ($isNew) {
-            $project->log('a importé ce projet depuis Asana', $this->fallbackOwner);
+            $project->log(Msg::make('a importé ce projet depuis Asana'), $this->fallbackOwner);
         }
 
         $sections = $this->asana->all("projects/{$data['gid']}/sections", ['opt_fields' => 'name']);

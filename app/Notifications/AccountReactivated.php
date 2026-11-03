@@ -21,11 +21,11 @@ class AccountReactivated extends Notification
         $app = config('app.name');
 
         return (new MailMessage)
-            ->subject("Votre accès à {$app} est rétabli")
-            ->greeting('Bonjour,')
-            ->line("{$this->by->name} a réactivé votre compte sur {$app}.")
-            ->line('Vous retrouvez vos projets, vos tâches et tout votre historique. Connectez-vous comme avant (mot de passe ou Google).')
-            ->action('Se connecter', route('login'))
-            ->salutation("À bientôt,\nL'équipe {$app}");
+            ->subject(__('Votre accès à :app est rétabli', ['app' => $app]))
+            ->greeting(__('Bonjour,'))
+            ->line(__(':name a réactivé votre compte sur :app.', ['name' => $this->by->name, 'app' => $app]))
+            ->line(__('Vous retrouvez vos projets, vos tâches et tout votre historique. Connectez-vous comme avant (mot de passe ou Google).'))
+            ->action(__('Se connecter'), route('login'))
+            ->salutation(__("À bientôt,\nL'équipe :app", ['app' => $app]));
     }
 }

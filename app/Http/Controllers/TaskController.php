@@ -6,12 +6,12 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Services\RuleEngine;
 use App\Services\TaskNotifier;
+use App\Support\Msg;
 use App\Support\RichText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Exists;
 
@@ -22,7 +22,7 @@ class TaskController extends Controller
     public function store(Request $request, Project $project): RedirectResponse
     {
         Gate::authorize('edit', $project);
-        abort_if($project->isCompleted(), 403, 'Ce projet est terminé : on ne peut plus y ajouter de tâches.');
+        abort_if($project->isCompleted(), 403, __('Ce projet est terminé : on ne peut plus y ajouter de tâches.'));
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:60000'],
@@ -43,7 +43,7 @@ class TaskController extends Controller
             ->where('parent_id', $data['parent_id'] ?? null)->max('position') ?? 0) + 1;
 
         $task = $project->tasks()->create($data);
-        $project->log("a créé la tâche « {$task->title} »", $request->user(), $task);
+        $project->log(Msg::make('a créé la tâche « :task »', ['task' => $task->title]), $request->user(), $task);
         $this->notifier->assigned($task, $request->user());
         $this->rules->fire('task_created', $task, $request->user());
 
@@ -74,7 +74,7 @@ class TaskController extends Controller
 
         $actor = $request->user();
         $changes = $this->notifier->describe($task, $before, $changed);
-        $project->log(Str::limit("a modifié « {$task->title} » : ".implode(', ', $changes), 250), $actor, $task);
+        $project->log(Msg::make('a modifié « :task » : :changes', ['task' => $task->title, 'changes' => $changes]), $actor, $task);
 
         // Les personnes nouvellement mentionnées dans la description reçoivent un avis de mention.
         $mentioned = [];
@@ -130,7 +130,7 @@ class TaskController extends Controller
 
         if ($fromSection !== $toSection) {
             $task->refresh();
-            $project->log("a déplacé « {$task->title} » vers « {$task->section->name} »", $request->user(), $task);
+            $project->log(Msg::make('a déplacé « :task » vers « :section »', ['task' => $task->title, 'section' => $task->section->name]), $request->user(), $task);
             $this->notifier->updated($task, $this->notifier->describe($task, ['section_id' => $fromSection], ['section_id']), $request->user());
             $this->rules->fire('task_moved', $task, $request->user(), $toSection);
         }
@@ -142,8 +142,8 @@ class TaskController extends Controller
     {
         Gate::authorize('edit', $task->project);
         $task->markCompleted(! $task->completed);
-        $task->project->log(($task->completed ? 'a terminé' : 'a rouvert')." « {$task->title} »", $request->user(), $task);
-        $this->notifier->updated($task, [$task->completed ? 'tâche marquée comme terminée' : 'tâche rouverte'], $request->user());
+        $task->project->log(Msg::make($task->completed ? 'a terminé « :task »' : 'a rouvert « :task »', ['task' => $task->title]), $request->user(), $task);
+        $this->notifier->updated($task, [Msg::make($task->completed ? 'tâche marquée comme terminée' : 'tâche rouverte')], $request->user());
         if ($task->completed) {
             $this->rules->fire('task_completed', $task, $request->user());
         }
@@ -154,7 +154,7 @@ class TaskController extends Controller
     public function destroy(Request $request, Task $task): RedirectResponse
     {
         Gate::authorize('edit', $task->project);
-        $task->project->log("a supprimé la tâche « {$task->title} »", $request->user());
+        $task->project->log(Msg::make('a supprimé la tâche « :task »', ['task' => $task->title]), $request->user());
         $task->delete();
 
         return back();

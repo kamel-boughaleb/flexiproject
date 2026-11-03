@@ -2,13 +2,15 @@
 
 namespace App\Notifications;
 
+use App\Support\Msg;
 use Illuminate\Notifications\Notification;
 
-/** Notification interne à l'application (cloche), enregistrée en base. */
+/** Notification interne à l'application (cloche), enregistrée en base dans la langue du destinataire. */
 class ProjectNotification extends Notification
 {
+    /** @param  string|array  $message  texte, ou message Msg::make() traduit pour chaque destinataire */
     public function __construct(
-        public string $message,
+        public string|array $message,
         public ?int $projectId = null,
         public ?int $taskId = null,
     ) {}
@@ -21,7 +23,7 @@ class ProjectNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => $this->message,
+            'message' => Msg::render($this->message),
             'project_id' => $this->projectId,
             'task_id' => $this->taskId,
         ];

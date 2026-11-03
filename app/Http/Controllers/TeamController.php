@@ -38,27 +38,27 @@ class TeamController extends Controller
 
         if ($existing = User::where('email', $email)->first()) {
             if ($existing->isActive()) {
-                return back()->withErrors(['email' => 'Cette personne fait déjà partie de l\'équipe.']);
+                return back()->withErrors(['email' => __('Cette personne fait déjà partie de l\'équipe.')]);
             }
             // Ancien collaborateur désactivé ou supprimé : on réactive son compte avec tout son historique.
             $existing->reactivate($request->user());
 
-            return back()->with('success', "Le compte de {$existing->name} est réactivé.");
+            return back()->with('success', __('Le compte de :name est réactivé.', ['name' => $existing->name]));
         }
 
         $user = User::create(['email' => $email, 'name' => $data['name'] ?: strstr($email, '@', true)]);
         $user->invite($request->user());
 
-        return back()->with('success', "Invitation envoyée à {$email}.");
+        return back()->with('success', __('Invitation envoyée à :email.', ['email' => $email]));
     }
 
     public function resend(Request $request, User $user): RedirectResponse
     {
         Gate::authorize('invite');
-        abort_unless($user->isPending(), 422, 'Cette personne a déjà accepté son invitation.');
+        abort_unless($user->isPending(), 422, __('Cette personne a déjà accepté son invitation.'));
         $user->invite($request->user());
 
-        return back()->with('success', "Invitation renvoyée à {$user->email}.");
+        return back()->with('success', __('Invitation renvoyée à :email.', ['email' => $user->email]));
     }
 
     /**
@@ -78,7 +78,7 @@ class TeamController extends Controller
         $this->ensureCanDisable($request, $user);
         $user->removeFromTeam();
 
-        return back()->with('success', "{$user->name} a été supprimé de l'équipe. Son historique est conservé.");
+        return back()->with('success', __(":name a été supprimé de l'équipe. Son historique est conservé.", ['name' => $user->name]));
     }
 
     /** Désactive un collaborateur : même effet que la suppression, mais il reste affiché dans l'équipe. */
@@ -88,7 +88,7 @@ class TeamController extends Controller
         $this->ensureCanDisable($request, $user);
         $user->deactivate();
 
-        return back()->with('success', "Le compte de {$user->name} est désactivé.");
+        return back()->with('success', __('Le compte de :name est désactivé.', ['name' => $user->name]));
     }
 
     public function reactivate(Request $request, User $user): RedirectResponse
@@ -96,12 +96,12 @@ class TeamController extends Controller
         Gate::authorize('invite');
         $user->reactivate($request->user());
 
-        return back()->with('success', "Le compte de {$user->name} est réactivé.");
+        return back()->with('success', __('Le compte de :name est réactivé.', ['name' => $user->name]));
     }
 
     private function ensureCanDisable(Request $request, User $user): void
     {
-        abort_if($user->is($request->user()), 422, 'Vous ne pouvez pas désactiver votre propre compte.');
+        abort_if($user->is($request->user()), 422, __('Vous ne pouvez pas désactiver votre propre compte.'));
         abort_if(
             $user->is_admin && User::active()->where('is_admin', true)->whereKeyNot($user->id)->doesntExist(),
             422, 'Impossible : il ne resterait aucun administrateur actif.',

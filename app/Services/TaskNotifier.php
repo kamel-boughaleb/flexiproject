@@ -10,7 +10,7 @@ use App\Notifications\TaskAssigned;
 use App\Notifications\TaskCommented;
 use App\Notifications\TaskMentioned;
 use App\Notifications\TaskUpdated;
-use Illuminate\Support\Carbon;
+use App\Support\Msg;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
 
@@ -65,7 +65,7 @@ class TaskNotifier
     }
 
     /**
-     * @param  list<string>  $changes
+     * @param  list<array>  $changes  messages Msg (voir describe())
      * @param  list<int|null>  $also  personnes à prévenir en plus des participants (ex. l'ancien responsable)
      * @param  list<int|null>  $except  personnes déjà prévenues autrement (ex. le nouveau responsable)
      */
@@ -83,7 +83,7 @@ class TaskNotifier
      *
      * @param  array<string, mixed>  $before
      * @param  list<string>  $changed
-     * @return list<string>
+     * @return list<array> messages Msg à traduire dans la langue de chaque destinataire
      */
     public function describe(Task $task, array $before, array $changed): array
     {
@@ -91,8 +91,12 @@ class TaskNotifier
         foreach (array_intersect(array_keys(self::FIELDS), $changed) as $field) {
             $label = self::FIELDS[$field];
             $lines[] = $field === 'description'
-                ? 'description mise à jour'
-                : "{$label} : {$this->format($field, $before[$field] ?? null)} → {$this->format($field, $task->getAttribute($field))}";
+                ? Msg::make('description mise à jour')
+                : Msg::make(':field : :from → :to', [
+                    'field' => Msg::make($label),
+                    'from' => $this->format($field, $before[$field] ?? null),
+                    'to' => $this->format($field, $task->getAttribute($field)),
+                ]);
         }
 
         return $lines;
@@ -109,18 +113,18 @@ class TaskNotifier
         return $task->project->members()->whereIn('users.id', $ids)->get();
     }
 
-    private function format(string $field, mixed $value): string
+    private function format(string $field, mixed $value): string|array
     {
         if ($value === null || $value === '') {
-            return 'aucun'.(in_array($field, ['start_date', 'due_date'], true) ? 'e' : '');
+            return Msg::make(in_array($field, ['start_date', 'due_date'], true) ? 'aucune' : 'aucun');
         }
 
         return match ($field) {
-            'title' => "« {$value} »",
-            'assignee_id' => User::find($value)?->name ?? 'aucun',
+            'title' => Msg::make('« :title »', ['title' => $value]),
+            'assignee_id' => User::find($value)?->name ?? Msg::make('aucun'),
             'section_id' => Section::find($value)?->name ?? '?',
-            'priority' => self::PRIORITIES[$value] ?? $value,
-            'start_date', 'due_date' => Carbon::parse($value)->format('d/m/Y'),
+            'priority' => isset(self::PRIORITIES[$value]) ? Msg::make(self::PRIORITIES[$value]) : (string) $value,
+            'start_date', 'due_date' => Msg::date($value),
             default => (string) $value,
         };
     }

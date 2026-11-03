@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
+import { intlLocale } from '@/lib/i18n';
 import type { MiniUser } from '@/types';
 import { router } from '@inertiajs/vue3';
 import { Check, CornerDownRight, Loader2, Search, X } from 'lucide-vue-next';
@@ -168,7 +169,7 @@ function highlight(text: string): { text: string; match: boolean }[] {
         .map((part) => ({ text: part, match: words.some((w) => new RegExp(`^${w}$`, 'i').test(part)) }));
 }
 
-const dueLabel = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+const dueLabel = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString(intlLocale(), { day: 'numeric', month: 'short' });
 const indexOf = (item: Item) => items.value.indexOf(item);
 </script>
 
@@ -183,12 +184,12 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                 v-model="query"
                 type="search"
                 role="combobox"
-                aria-label="Rechercher des tâches ou des projets"
+                :aria-label="$t('Rechercher des tâches ou des projets')"
                 aria-autocomplete="list"
                 aria-controls="global-search-results"
                 :aria-expanded="showPanel"
                 :aria-activedescendant="showPanel && items.length ? `global-search-${active}` : undefined"
-                placeholder="Rechercher une tâche ou un projet"
+                :placeholder="$t('Rechercher une tâche ou un projet')"
                 autocomplete="off"
                 class="h-full min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-soft [&::-webkit-search-cancel-button]:hidden"
                 @focus="open = true"
@@ -196,7 +197,13 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                 @keydown="onKeydown"
             />
             <Loader2 v-if="loading" class="size-4 shrink-0 animate-spin text-app-muted" />
-            <button v-else-if="query" type="button" class="shrink-0 text-app-muted hover:text-ink" aria-label="Effacer la recherche" @click="clear">
+            <button
+                v-else-if="query"
+                type="button"
+                class="shrink-0 text-app-muted hover:text-ink"
+                :aria-label="$t('Effacer la recherche')"
+                @click="clear"
+            >
                 <X class="size-4" />
             </button>
             <kbd
@@ -212,13 +219,15 @@ const indexOf = (item: Item) => items.value.indexOf(item);
             role="listbox"
             class="absolute inset-x-0 top-full z-50 mt-2 max-h-[min(70vh,560px)] overflow-y-auto rounded-2xl border border-app-border bg-background p-1.5 shadow-product"
         >
-            <p v-if="!items.length && (loading || searched !== query.trim())" class="px-3 py-6 text-center text-sm text-ink-soft">Recherche…</p>
+            <p v-if="!items.length && (loading || searched !== query.trim())" class="px-3 py-6 text-center text-sm text-ink-soft">
+                {{ $t('Recherche…') }}
+            </p>
             <p v-else-if="!items.length" class="px-3 py-6 text-center text-sm text-ink-soft">
-                Aucune tâche ni projet ne correspond à « {{ searched }} ».
+                {{ $t('Aucune tâche ni projet ne correspond à « :query ».', { query: searched }) }}
             </p>
 
             <template v-if="projects.length">
-                <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-ink-soft">Projets</p>
+                <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-ink-soft">{{ $t('Projets') }}</p>
                 <button
                     v-for="item in items.filter((i) => i.kind === 'project')"
                     :id="`global-search-${indexOf(item)}`"
@@ -240,10 +249,12 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                             >
                         </span>
                         <span class="block truncate text-[13px] text-ink-soft">
-                            {{ item.data.tasks_done }}/{{ item.data.tasks_total }} tâche{{ item.data.tasks_total > 1 ? 's' : '' }} terminée{{
-                                item.data.tasks_done > 1 ? 's' : ''
+                            {{
+                                $tc(':done/:count tâche terminée|:done/:count tâches terminées', item.data.tasks_total, {
+                                    done: item.data.tasks_done,
+                                })
                             }}
-                            <template v-if="item.data.status === 'done'"> · Terminé</template>
+                            <template v-if="item.data.status === 'done'"> {{ $t('· Terminé') }}</template>
                         </span>
                     </span>
                     <span class="flex shrink-0 -space-x-1.5">
@@ -260,7 +271,7 @@ const indexOf = (item: Item) => items.value.indexOf(item);
             </template>
 
             <template v-if="tasks.length">
-                <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-ink-soft">Tâches</p>
+                <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-ink-soft">{{ $t('Tâches') }}</p>
                 <button
                     v-for="item in items.filter((i) => i.kind === 'task')"
                     :id="`global-search-${indexOf(item)}`"
@@ -278,7 +289,7 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                         :class="
                             item.kind === 'task' && item.data.completed ? 'border-success bg-success text-white' : 'border-app-muted text-app-muted'
                         "
-                        :title="item.kind === 'task' && item.data.completed ? 'Terminée' : 'À faire'"
+                        :title="item.kind === 'task' && item.data.completed ? $t('Terminée') : $t('À faire')"
                     >
                         <Check class="size-3" :stroke-width="3" />
                     </span>
@@ -293,11 +304,11 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                             <span
                                 v-if="item.data.completed"
                                 class="shrink-0 rounded-full bg-success-tint px-2 py-px text-[11px] font-bold text-success-text"
-                                >Terminée</span
+                                >{{ $t('Terminée') }}</span
                             >
                         </span>
                         <span v-if="item.data.parent" class="flex items-center gap-1 truncate text-xs text-ink-soft">
-                            <CornerDownRight class="size-3 shrink-0" /> Sous-tâche de {{ item.data.parent }}
+                            <CornerDownRight class="size-3 shrink-0" /> {{ $t('Sous-tâche de :name', { name: item.data.parent }) }}
                         </span>
                         <span class="mt-0.5 flex min-w-0 items-center gap-2 text-[13px] text-ink-soft">
                             <span class="size-2.5 shrink-0 rounded-[3px]" :style="{ backgroundColor: item.data.project.color }" />

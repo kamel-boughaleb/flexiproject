@@ -24,7 +24,7 @@ class DailyDigest extends Notification
     public function toMail(User $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Vos tâches du jour ({$this->total})")
+            ->subject(__('Vos tâches du jour (:count)', ['count' => $this->total]))
             ->markdown('mail.daily-digest', [
                 'name' => strtok($notifiable->name, ' '),
                 'groups' => $this->groups,

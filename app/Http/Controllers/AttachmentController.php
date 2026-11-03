@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attachment;
 use App\Models\Task;
+use App\Support\Msg;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -37,9 +38,9 @@ class AttachmentController extends Controller
                 'mime' => $file->getMimeType(),
                 'size' => $file->getSize(),
             ]);
-            $names[] = "« {$file->getClientOriginalName()} »";
+            $names[] = Msg::make('« :name »', ['name' => $file->getClientOriginalName()]);
         }
-        $task->project->log('a joint '.implode(', ', $names)." à « {$task->title} »", $request->user(), $task);
+        $task->project->log(Msg::make('a joint :files à « :task »', ['files' => $names, 'task' => $task->title]), $request->user(), $task);
 
         return back();
     }
@@ -130,7 +131,7 @@ class AttachmentController extends Controller
         // L'auteur (s'il peut encore modifier le projet) ou un administrateur.
         Gate::authorize($attachment->user_id === $request->user()->id ? 'edit' : 'manage', $project);
         $attachment->delete();
-        $project->log("a retiré « {$attachment->name} » de « {$attachment->task->title} »", $request->user(), $attachment->task);
+        $project->log(Msg::make('a retiré « :file » de « :task »', ['file' => $attachment->name, 'task' => $attachment->task->title]), $request->user(), $attachment->task);
 
         return back();
     }

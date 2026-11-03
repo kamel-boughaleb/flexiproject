@@ -39,8 +39,8 @@ const field = (error: boolean) => [
 </script>
 
 <template>
-    <AuthBase title="Bon retour parmi nous" description="Connectez-vous pour retrouver vos projets et vos tâches.">
-        <Head title="Connexion" />
+    <AuthBase :title="$t('Bon retour parmi nous')" :description="$t('Connectez-vous pour retrouver vos projets et vos tâches.')">
+        <Head :title="$t('Connexion')" />
 
         <div v-if="status" role="status" class="rounded-2xl bg-success-tint px-4 py-3 text-sm font-bold text-success-text">
             {{ status }}
@@ -53,12 +53,12 @@ const field = (error: boolean) => [
         <GoogleButton />
         <InputError :message="googleError" class="-mt-3 text-center" />
         <div class="flex items-center gap-3 text-xs font-bold tracking-[.04em] text-ink-soft">
-            <span class="h-px flex-1 bg-app-border" />OU AVEC VOTRE E-MAIL<span class="h-px flex-1 bg-app-border" />
+            <span class="h-px flex-1 bg-app-border" />{{ $t('OU AVEC VOTRE E-MAIL') }}<span class="h-px flex-1 bg-app-border" />
         </div>
 
         <form class="flex flex-col gap-5" @submit.prevent="submit">
             <div>
-                <label for="email" class="mb-1.5 block text-sm font-bold">Adresse e-mail</label>
+                <label for="email" class="mb-1.5 block text-sm font-bold">{{ $t('Adresse e-mail') }}</label>
                 <div class="relative">
                     <Mail class="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-ink-soft" />
                     <input
@@ -68,7 +68,7 @@ const field = (error: boolean) => [
                         required
                         autofocus
                         autocomplete="email"
-                        placeholder="prenom@flexilivre.com"
+                        :placeholder="$t('prenom@flexilivre.com')"
                         :aria-invalid="failed"
                         :class="field(failed)"
                     />
@@ -77,13 +77,13 @@ const field = (error: boolean) => [
 
             <div>
                 <div class="mb-1.5 flex items-center justify-between">
-                    <label for="password" class="text-sm font-bold">Mot de passe</label>
+                    <label for="password" class="text-sm font-bold">{{ $t('Mot de passe') }}</label>
                     <TextLink
                         v-if="canResetPassword"
                         :href="route('password.request')"
                         class="text-sm font-bold text-info-active no-underline hover:underline"
                     >
-                        Mot de passe oublié ?
+                        {{ $t('Mot de passe oublié ?') }}
                     </TextLink>
                 </div>
                 <div class="relative">
@@ -94,14 +94,14 @@ const field = (error: boolean) => [
                         :type="showPassword ? 'text' : 'password'"
                         required
                         autocomplete="current-password"
-                        placeholder="Votre mot de passe"
+                        :placeholder="$t('Votre mot de passe')"
                         :aria-invalid="failed"
                         :class="[field(failed), 'pr-12']"
                     />
                     <button
                         type="button"
                         class="absolute right-1.5 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-icon text-ink-soft hover:bg-app-hover"
-                        :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                        :aria-label="showPassword ? $t('Masquer le mot de passe') : $t('Afficher le mot de passe')"
                         :aria-pressed="showPassword"
                         @click="showPassword = !showPassword"
                     >
@@ -112,14 +112,14 @@ const field = (error: boolean) => [
 
             <label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-semibold">
                 <input v-model="form.remember" type="checkbox" class="size-5 rounded accent-[var(--primary-active)]" />
-                Se souvenir de moi
+                {{ $t('Se souvenir de moi') }}
             </label>
 
             <Button type="submit" size="lg" class="h-14 w-full disabled:bg-brand-hover disabled:opacity-100" :disabled="form.processing">
-                {{ form.processing ? 'Connexion…' : 'Se connecter' }}
+                {{ form.processing ? $t('Connexion…') : $t('Se connecter') }}
             </Button>
 
-            <p class="text-center text-sm text-ink-soft">Pas encore de compte ? L'accès se fait sur invitation d'un administrateur.</p>
+            <p class="text-center text-sm text-ink-soft">{{ $t("Pas encore de compte ? L'accès se fait sur invitation d'un administrateur.") }}</p>
         </form>
     </AuthBase>
 </template>

@@ -24,7 +24,7 @@ const pick = (e: Event) => (photo.value = (e.target as HTMLInputElement).files?.
 
 <template>
     <div class="flex items-center gap-4">
-        <button type="button" class="group relative rounded-full" title="Choisir une photo" @click="input?.click()">
+        <button type="button" class="group relative rounded-full" :title="$t('Choisir une photo')" @click="input?.click()">
             <UserAvatar :user="shown" :src="preview" size="xl" />
             <span
                 class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 text-white opacity-0 transition group-hover:opacity-100"
@@ -34,10 +34,12 @@ const pick = (e: Event) => (photo.value = (e.target as HTMLInputElement).files?.
         </button>
         <div class="space-y-1.5">
             <div class="flex gap-2">
-                <Button type="button" variant="outline" size="sm" @click="input?.click()">{{ photo ? 'Changer' : 'Ajouter ma photo' }}</Button>
-                <Button v-if="photo" type="button" variant="ghost" size="sm" @click="photo = null">Retirer</Button>
+                <Button type="button" variant="outline" size="sm" @click="input?.click()">{{
+                    photo ? $t('Changer') : $t('Ajouter ma photo')
+                }}</Button>
+                <Button v-if="photo" type="button" variant="ghost" size="sm" @click="photo = null">{{ $t('Retirer') }}</Button>
             </div>
-            <p class="text-xs text-muted-foreground">{{ hint ?? 'Facultatif. Sans photo, cet avatar vous représente.' }}</p>
+            <p class="text-xs text-muted-foreground">{{ hint ?? $t('Facultatif. Sans photo, cet avatar vous représente.') }}</p>
         </div>
         <input ref="input" type="file" accept="image/*" class="hidden" @change="pick" />
     </div>

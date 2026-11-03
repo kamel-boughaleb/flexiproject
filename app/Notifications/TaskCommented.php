@@ -19,13 +19,13 @@ class TaskCommented extends TaskNotification
 
     protected function message(): string
     {
-        return "{$this->actor->name} a commenté « {$this->task->title} »";
+        return __(':name a commenté « :task »', ['name' => $this->actor->name, 'task' => $this->task->title]);
     }
 
     protected function mail(MailMessage $mail): MailMessage
     {
         return $mail
-            ->line("{$this->actor->name} a commenté la tâche **{$this->task->title}** :")
+            ->line(__(':name a commenté la tâche **:task** :', ['name' => $this->actor->name, 'task' => $this->task->title]))
             ->line('> '.str_replace("\n", "\n> ", RichText::toText($this->comment->body)));
     }
 }

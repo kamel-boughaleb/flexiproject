@@ -22,7 +22,7 @@ function open() {
         <button
             type="button"
             :disabled="disabled"
-            :aria-label="`${label} : ${model ? dueLabel(model) : 'aucune'}`"
+            :aria-label="`${label} : ${model ? dueLabel(model) : $t('aucune')}`"
             class="rounded-full px-1.5 py-0.5 text-sm font-bold transition enabled:hover:bg-app-hover disabled:cursor-default"
             :class="model ? (danger ? 'text-brand-active' : 'text-ink') : 'font-semibold text-ink-soft'"
             @click="open"

@@ -1,31 +1,35 @@
 <script setup lang="ts">
+import LocaleSwitcher from '@/components/LocaleSwitcher.vue';
+import { t } from '@/lib/i18n';
 import { Link } from '@inertiajs/vue3';
 import { Check } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 defineProps<{
     title?: string;
     description?: string;
 }>();
 
-const features = [
-    'Tableau, liste, calendrier et planning',
-    'Règles automatiques « quand… alors… »',
-    'Collaborateurs, commentaires et notifications',
-    'Dates de début et de fin pour chaque tâche',
-];
+const features = computed(() => [
+    t('Tableau, liste, calendrier et planning'),
+    t('Règles automatiques « quand… alors… »'),
+    t('Collaborateurs, commentaires et notifications'),
+    t('Dates de début et de fin pour chaque tâche'),
+]);
 
 // Aperçu décoratif d'un tableau Kanban, dans le style de l'application.
-const columns = [
+type Card = { w: string; tag: string; label: string; done?: boolean };
+const columns = computed<{ name: string; cards: Card[] }[]>(() => [
     {
-        name: 'À faire',
+        name: t('À faire'),
         cards: [
-            { w: 'w-4/5', tag: 'bg-brand-tint text-brand-active', label: 'Haute' },
-            { w: 'w-3/5', tag: 'bg-warning-tint text-warning-text', label: 'Moyenne' },
+            { w: 'w-4/5', tag: 'bg-brand-tint text-brand-active', label: t('Haute') },
+            { w: 'w-3/5', tag: 'bg-warning-tint text-warning-text', label: t('Moyenne') },
         ],
     },
-    { name: 'En cours', cards: [{ w: 'w-full', tag: 'bg-info-tint text-info-deep', label: 'Basse' }] },
-    { name: 'Terminé', cards: [{ w: 'w-2/3', tag: 'bg-success-tint text-success-text', label: 'Terminée', done: true }] },
-];
+    { name: t('En cours'), cards: [{ w: 'w-full', tag: 'bg-info-tint text-info-deep', label: t('Basse') }] },
+    { name: t('Terminé'), cards: [{ w: 'w-2/3', tag: 'bg-success-tint text-success-text', label: t('Terminée'), done: true }] },
+]);
 </script>
 
 <template>
@@ -44,8 +48,8 @@ const columns = [
             </Link>
 
             <div class="relative mt-auto max-w-lg">
-                <p class="font-script text-lg text-brand-active">Vos projets, bien rangés</p>
-                <h2 class="mt-3 text-[35px] font-bold leading-tight">Tous les projets Flexilivre, au même endroit.</h2>
+                <p class="font-script text-lg text-brand-active">{{ $t('Vos projets, bien rangés') }}</p>
+                <h2 class="mt-3 text-[35px] font-bold leading-tight">{{ $t('Tous les projets Flexilivre, au même endroit.') }}</h2>
                 <ul class="mt-6 space-y-3">
                     <li v-for="f in features" :key="f" class="flex items-center gap-3 text-[15px] font-semibold">
                         <span class="flex size-6 items-center justify-center rounded-full bg-success text-white"
@@ -86,11 +90,14 @@ const columns = [
                         <div class="text-xs text-ink-soft">Flexilivre</div>
                     </div>
                 </Link>
-                <p class="mt-6 font-script text-sm text-brand-active">Vos projets, bien rangés</p>
-                <p class="mt-1.5 text-[26px] font-bold leading-tight">Tous les projets Flexilivre, au même endroit.</p>
+                <p class="mt-6 font-script text-sm text-brand-active">{{ $t('Vos projets, bien rangés') }}</p>
+                <p class="mt-1.5 text-[26px] font-bold leading-tight">{{ $t('Tous les projets Flexilivre, au même endroit.') }}</p>
             </div>
 
             <div class="w-full max-w-[420px] px-6 py-8 lg:p-0">
+                <div class="mb-6 flex justify-end">
+                    <LocaleSwitcher />
+                </div>
                 <div class="mb-7 space-y-1.5">
                     <h1 v-if="title" class="text-[26px] font-bold leading-tight lg:text-[32px]">{{ title }}</h1>
                     <p v-if="description" class="text-[15px] text-ink-soft">{{ description }}</p>

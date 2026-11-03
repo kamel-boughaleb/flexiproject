@@ -17,20 +17,20 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthLayout title="Vérifier l'e-mail" description="Vérifiez votre adresse en cliquant sur le lien que nous venons de vous envoyer.">
-        <Head title="Vérification de l'e-mail" />
+    <AuthLayout :title="$t(`Vérifier l'e-mail`)" :description="$t('Vérifiez votre adresse en cliquant sur le lien que nous venons de vous envoyer.')">
+        <Head :title="$t(`Vérification de l'e-mail`)" />
 
         <div v-if="status === 'verification-link-sent'" class="mb-4 text-center text-sm font-medium text-green-600">
-            Un nouveau lien de vérification a été envoyé à l'adresse indiquée lors de l'inscription.
+            {{ $t("Un nouveau lien de vérification a été envoyé à l'adresse indiquée lors de l'inscription.") }}
         </div>
 
         <form @submit.prevent="submit" class="space-y-6 text-center">
             <Button :disabled="form.processing" variant="secondary">
                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                Renvoyer l'e-mail de vérification
+                {{ $t("Renvoyer l'e-mail de vérification") }}
             </Button>
 
-            <TextLink :href="route('logout')" method="post" as="button" class="mx-auto block text-sm"> Se déconnecter </TextLink>
+            <TextLink :href="route('logout')" method="post" as="button" class="mx-auto block text-sm"> {{ $t('Se déconnecter') }} </TextLink>
         </form>
     </AuthLayout>
 </template>

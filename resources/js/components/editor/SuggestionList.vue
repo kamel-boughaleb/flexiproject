@@ -45,7 +45,7 @@ defineExpose({ onKeyDown });
 
 <template>
     <div class="max-h-72 w-64 overflow-y-auto rounded-md border bg-popover p-1 text-sm text-popover-foreground shadow-lg">
-        <p v-if="!items.length" class="px-2 py-1.5 text-muted-foreground">Aucun résultat</p>
+        <p v-if="!items.length" class="px-2 py-1.5 text-muted-foreground">{{ $t('Aucun résultat') }}</p>
         <button
             v-for="(item, i) in items"
             :key="isMember(item) ? `u${item.id}` : item.title"

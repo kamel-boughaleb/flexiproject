@@ -57,10 +57,14 @@ defineEmits<{ open: [id: number] }>();
             <span v-if="task.comments_count" class="flex items-center gap-1" :title="`${task.comments_count} commentaire(s)`">
                 <MessageCircle class="size-3.5" />{{ task.comments_count }}
             </span>
-            <span v-if="task.subtasks_count" class="flex items-center gap-1" title="Sous-tâches terminées">
+            <span v-if="task.subtasks_count" class="flex items-center gap-1" :title="$t('Sous-tâches terminées')">
                 <ListChecks class="size-3.5" />{{ task.subtasks_done_count ?? 0 }}/{{ task.subtasks_count }}
             </span>
-            <span v-if="task.attachments_count" class="flex items-center gap-1" :title="`${task.attachments_count} pièce(s) jointe(s)`">
+            <span
+                v-if="task.attachments_count"
+                class="flex items-center gap-1"
+                :title="$tc(':count pièce jointe|:count pièces jointes', task.attachments_count)"
+            >
                 <Paperclip class="size-3.5" />{{ task.attachments_count }}
             </span>
             <UserAvatar v-if="task.assignee" class="ml-auto" :user="task.assignee" size="xs" />

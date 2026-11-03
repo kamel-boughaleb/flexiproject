@@ -51,7 +51,7 @@ class RuleController extends Controller
         $data['actions'] = $this->cleanActions($data['actions']);
         Rule::create($data);
 
-        return back()->with('success', 'Règle créée : elle s\'applique à tous les projets.');
+        return back()->with('success', __('Règle créée : elle s\'applique à tous les projets.'));
     }
 
     public function update(Request $request, Rule $rule): RedirectResponse

@@ -27,27 +27,33 @@ const show = () => {
 </script>
 
 <template>
-    <Button variant="outline" @click="show"><MailPlus class="size-4" /> Inviter un collaborateur</Button>
+    <Button variant="outline" @click="show"><MailPlus class="size-4" /> {{ $t('Inviter un collaborateur') }}</Button>
     <Dialog v-model:open="open">
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Inviter un collaborateur</DialogTitle>
+                <DialogTitle>{{ $t('Inviter un collaborateur') }}</DialogTitle>
                 <DialogDescription>
-                    La personne reçoit un e-mail pour créer son compte, ajouter sa photo et choisir un mot de passe (ou se connecter avec Google).
+                    {{
+                        $t(
+                            'La personne reçoit un e-mail pour créer son compte, ajouter sa photo et choisir un mot de passe (ou se connecter avec Google).',
+                        )
+                    }}
                 </DialogDescription>
             </DialogHeader>
             <form class="space-y-4" @submit.prevent="submit">
                 <div class="grid gap-2">
-                    <Label for="invite-email">E-mail</Label>
+                    <Label for="invite-email">{{ $t('E-mail') }}</Label>
                     <Input id="invite-email" v-model="form.email" type="email" required placeholder="collegue@flexilivre.com" />
                     <InputError :message="form.errors.email" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="invite-name">Nom (facultatif)</Label>
-                    <Input id="invite-name" v-model="form.name" placeholder="Prénom Nom" />
+                    <Label for="invite-name">{{ $t('Nom (facultatif)') }}</Label>
+                    <Input id="invite-name" v-model="form.name" :placeholder="$t('Prénom Nom')" />
                 </div>
-                <p v-if="sent" class="text-sm font-bold text-success-text">Invitation envoyée à {{ sent }}. Vous pouvez en envoyer une autre.</p>
-                <Button type="submit" :disabled="form.processing">Envoyer l'invitation</Button>
+                <p v-if="sent" class="text-sm font-bold text-success-text">
+                    {{ $t('Invitation envoyée à :email. Vous pouvez en envoyer une autre.', { email: sent }) }}
+                </p>
+                <Button type="submit" :disabled="form.processing">{{ $t("Envoyer l'invitation") }}</Button>
             </form>
         </DialogContent>
     </Dialog>

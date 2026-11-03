@@ -24,15 +24,15 @@ const items = computed(() => {
 <template>
     <section aria-labelledby="activity-title">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h3 id="activity-title" class="text-base font-bold">Activité</h3>
+            <h3 id="activity-title" class="text-base font-bold">{{ $t('Activité') }}</h3>
             <SegmentedControl
                 v-model="filter"
-                label="Filtrer l'activité"
+                :label="$t(`Filtrer l'activité`)"
                 size="sm"
                 :options="[
-                    { value: 'comments', label: 'Commentaires', count: task.comments.length },
-                    { value: 'all', label: 'Tout' },
-                    { value: 'history', label: 'Historique' },
+                    { value: 'comments', label: $t('Commentaires'), count: task.comments.length },
+                    { value: 'all', label: $t('Tout') },
+                    { value: 'history', label: $t('Historique') },
                 ]"
             />
         </div>
@@ -53,13 +53,13 @@ const items = computed(() => {
                     <span class="size-2 shrink-0 translate-y-[-1px] rounded-full bg-ink-medium" aria-hidden="true" />
                     <span>
                         <strong v-if="item.event.user" class="text-app-strong">{{ item.event.user.name }}</strong
-                        ><strong v-else class="text-app-strong">Règle automatique</strong> {{ item.event.message }} ·
+                        ><strong v-else class="text-app-strong">{{ $t('Règle automatique') }}</strong> {{ item.event.message }} ·
                         {{ dateTime(item.event.created_at) }}
                     </span>
                 </div>
             </li>
             <li v-if="!items.length" class="text-sm text-ink-soft">
-                {{ filter === 'history' ? 'Aucun historique pour le moment.' : 'Aucun commentaire pour le moment.' }}
+                {{ filter === 'history' ? $t('Aucun historique pour le moment.') : $t('Aucun commentaire pour le moment.') }}
             </li>
         </ol>
     </section>

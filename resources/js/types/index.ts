@@ -18,6 +18,8 @@ export interface NavItem {
 
 export interface SharedData {
     name: string;
+    locale: 'fr' | 'en';
+    locales: Record<string, string>;
     auth: Auth;
     sidebarProjects: SidebarProject[];
     unreadNotifications: number;
@@ -37,6 +39,7 @@ export interface User {
     email: string;
     avatar?: string | null;
     color: string;
+    locale?: string | null;
     is_admin: boolean;
     email_verified_at: string | null;
     created_at: string;

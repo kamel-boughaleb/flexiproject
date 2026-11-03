@@ -2,6 +2,7 @@
 import RichContent from '@/components/editor/RichContent.vue';
 import RichEditor from '@/components/editor/RichEditor.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { t } from '@/lib/i18n';
 import { dateTime, sectionColor } from '@/lib/labels';
 import type { Member, Project, Section, TaskDetail } from '@/types';
 import { router, useForm } from '@inertiajs/vue3';
@@ -80,7 +81,7 @@ function addSubtask() {
 }
 
 function destroy() {
-    if (confirm(`Supprimer « ${props.task.title} » ?`)) {
+    if (confirm(t('Supprimer « :name » ?', { name: props.task.title }))) {
         router.delete(route('tasks.destroy', props.task.id), { ...opts, onSuccess: () => emit('close') });
     }
 }
@@ -92,7 +93,7 @@ async function copyLink() {
         copied.value = true;
         setTimeout(() => (copied.value = false), 2000);
     } catch {
-        window.prompt('Lien de la tâche :', window.location.href);
+        window.prompt(t('Lien de la tâche :'), window.location.href);
     }
 }
 
@@ -143,7 +144,7 @@ const iconBtn =
 
 <template>
     <aside
-        :aria-label="`Tâche : ${task.title}`"
+        :aria-label="$t('Tâche : :name', { name: task.title })"
         class="flex flex-col bg-background"
         :class="
             full
@@ -172,39 +173,49 @@ const iconBtn =
                 @click="toggleDone"
             >
                 <Check class="size-4" :stroke-width="2.5" />
-                {{ done ? 'Terminée' : 'Marquer comme terminée' }}
+                {{ done ? $t('Terminée') : $t('Marquer comme terminée') }}
             </button>
             <div class="flex items-center gap-0.5" :class="{ 'ml-auto': !full }">
-                <span v-if="copied" role="status" class="mr-1 text-xs font-bold text-success-text">Lien copié</span>
-                <button :class="iconBtn" aria-label="Copier le lien de la tâche" title="Copier le lien" @click="copyLink"><Link2 /></button>
-                <button v-if="canEdit && !full" :class="iconBtn" aria-label="Joindre un fichier" title="Joindre un fichier" @click="pickFiles">
+                <span v-if="copied" role="status" class="mr-1 text-xs font-bold text-success-text">{{ $t('Lien copié') }}</span>
+                <button :class="iconBtn" :aria-label="$t('Copier le lien de la tâche')" :title="$t('Copier le lien')" @click="copyLink">
+                    <Link2 />
+                </button>
+                <button
+                    v-if="canEdit && !full"
+                    :class="iconBtn"
+                    :aria-label="$t('Joindre un fichier')"
+                    :title="$t('Joindre un fichier')"
+                    @click="pickFiles"
+                >
                     <Paperclip />
                 </button>
                 <button
                     :class="[iconBtn, 'max-md:hidden']"
-                    :aria-label="full ? 'Réduire en panneau' : 'Ouvrir en plein écran'"
-                    :title="full ? 'Réduire' : 'Plein écran'"
+                    :aria-label="full ? $t('Réduire en panneau') : $t('Ouvrir en plein écran')"
+                    :title="full ? $t('Réduire') : $t('Plein écran')"
                     @click="full = !full"
                 >
                     <Minimize2 v-if="full" /><Maximize2 v-else />
                 </button>
                 <DropdownMenu>
-                    <DropdownMenuTrigger :class="iconBtn" aria-label="Plus d'actions"><Ellipsis /></DropdownMenuTrigger>
+                    <DropdownMenuTrigger :class="iconBtn" :aria-label="$t(`Plus d'actions`)"><Ellipsis /></DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-52 rounded-2xl p-1.5">
                         <DropdownMenuItem class="rounded-icon font-semibold" @select="copyLink"
-                            ><Link2 class="size-4" /> Copier le lien</DropdownMenuItem
+                            ><Link2 class="size-4" /> {{ $t('Copier le lien') }}</DropdownMenuItem
                         >
                         <template v-if="canEdit">
                             <DropdownMenuSeparator />
                             <DropdownMenuItem class="rounded-icon font-semibold text-brand-active focus:text-brand-active" @select="destroy">
-                                <Trash2 class="size-4" /> Supprimer la tâche
+                                <Trash2 class="size-4" /> {{ $t('Supprimer la tâche') }}
                             </DropdownMenuItem>
                         </template>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <template v-if="!full">
                     <span class="mx-1 h-6 w-px bg-app-border" aria-hidden="true" />
-                    <button :class="iconBtn" aria-label="Fermer la tâche" title="Fermer (Échap)" @click="emit('close')"><ArrowRightToLine /></button>
+                    <button :class="iconBtn" :aria-label="$t('Fermer la tâche')" :title="$t('Fermer (Échap)')" @click="emit('close')">
+                        <ArrowRightToLine />
+                    </button>
                 </template>
             </div>
         </header>
@@ -228,7 +239,7 @@ const iconBtn =
                         :class="done ? 'border-success bg-success-tint text-success-text' : 'border-app-border-strong text-app-strong'"
                         @click="toggleDone"
                     >
-                        <Check class="size-4" :stroke-width="2.5" /> {{ done ? 'Terminée' : 'Marquer comme terminée' }}
+                        <Check class="size-4" :stroke-width="2.5" /> {{ done ? $t('Terminée') : $t('Marquer comme terminée') }}
                     </button>
 
                     <p
@@ -237,11 +248,15 @@ const iconBtn =
                         class="flex items-center gap-2 rounded-2xl bg-success-tint px-4 py-2.5 text-[13px] font-bold text-success-text"
                     >
                         <Check class="size-4" :stroke-width="2.5" />
-                        Tâche terminée<template v-if="task.completed_at"> · {{ dateTime(task.completed_at) }}</template>
+                        {{ $t('Tâche terminée') }}<template v-if="task.completed_at"> · {{ dateTime(task.completed_at) }}</template>
                     </p>
 
                     <div>
-                        <nav v-if="!full" aria-label="Emplacement" class="mb-2 flex flex-wrap items-center gap-1.5 text-xs font-medium text-ink-soft">
+                        <nav
+                            v-if="!full"
+                            :aria-label="$t('Emplacement')"
+                            class="mb-2 flex flex-wrap items-center gap-1.5 text-xs font-medium text-ink-soft"
+                        >
                             <span class="size-2 rounded-[2px]" :style="{ backgroundColor: project.color }" />{{ project.name }}
                             <ChevronRight class="size-3" aria-hidden="true" />
                             <span class="flex items-center gap-1"
@@ -263,7 +278,7 @@ const iconBtn =
                             :value="task.title"
                             :disabled="!canEdit"
                             rows="1"
-                            aria-label="Nom de la tâche"
+                            :aria-label="$t('Nom de la tâche')"
                             class="-mx-2 block w-[calc(100%+1rem)] resize-none overflow-hidden rounded-field border-2 border-transparent bg-transparent px-2 py-0.5 font-bold leading-tight outline-none transition focus:border-info enabled:hover:border-app-border disabled:bg-transparent"
                             :class="[full ? 'text-[28px] md:text-[35px]' : 'text-[22px] md:text-[26px]', { 'text-ink-soft line-through': done }]"
                             @input="autosize"
@@ -283,7 +298,7 @@ const iconBtn =
                     />
 
                     <section aria-labelledby="desc-title">
-                        <h3 id="desc-title" class="mb-2 text-base font-bold" :class="{ 'sr-only': full }">Description</h3>
+                        <h3 id="desc-title" class="mb-2 text-base font-bold" :class="{ 'sr-only': full }">{{ $t('Description') }}</h3>
                         <RichEditor
                             v-if="canEdit"
                             :key="`desc-${task.id}`"
@@ -291,18 +306,18 @@ const iconBtn =
                             :model-value="task.description"
                             :project-id="task.project_id"
                             :members="mentionable"
-                            placeholder="Ajoutez des détails… Saisissez « / » pour afficher le menu"
+                            :placeholder="$t('Ajoutez des détails… Saisissez « / » pour afficher le menu')"
                             min-height="2.5rem"
                             :onChange="descriptionSaver(task.id)"
                             class="-mx-1.5"
                         />
                         <RichContent v-else-if="task.description" :html="task.description" class="text-[15px]" />
-                        <p v-else class="text-sm text-ink-soft">Aucune description.</p>
+                        <p v-else class="text-sm text-ink-soft">{{ $t('Aucune description.') }}</p>
                     </section>
 
                     <section v-if="!task.parent_id" aria-labelledby="subtasks-title">
                         <div class="mb-3 flex items-center gap-3">
-                            <h3 id="subtasks-title" class="text-base font-bold">Sous-tâches</h3>
+                            <h3 id="subtasks-title" class="text-base font-bold">{{ $t('Sous-tâches') }}</h3>
                             <template v-if="task.subtasks.length">
                                 <span class="text-sm font-semibold text-ink-soft">{{ subDoneCount }}/{{ task.subtasks.length }}</span>
                                 <span
@@ -311,7 +326,7 @@ const iconBtn =
                                     :aria-valuenow="subDoneCount"
                                     aria-valuemin="0"
                                     :aria-valuemax="task.subtasks.length"
-                                    aria-label="Avancement des sous-tâches"
+                                    :aria-label="$t('Avancement des sous-tâches')"
                                 >
                                     <span
                                         class="block h-full rounded-full bg-success transition-all"
@@ -344,8 +359,8 @@ const iconBtn =
                                     <Plus class="size-[18px] shrink-0 text-ink-soft" />
                                     <input
                                         v-model="subtask.title"
-                                        aria-label="Nouvelle sous-tâche"
-                                        placeholder="Ajouter une sous-tâche"
+                                        :aria-label="$t('Nouvelle sous-tâche')"
+                                        :placeholder="$t('Ajouter une sous-tâche')"
                                         class="h-11 w-full bg-transparent text-sm font-semibold outline-none placeholder:text-ink-soft"
                                     />
                                 </form>
@@ -371,7 +386,7 @@ const iconBtn =
                 <!-- Plein écran : colonne de droite -->
                 <div v-if="full" class="space-y-4 lg:sticky lg:top-8">
                     <section class="rounded-card border border-app-border p-5 shadow-soft" aria-labelledby="details-title">
-                        <h3 id="details-title" class="mb-1 text-xs font-bold uppercase tracking-[.04em] text-ink-soft">Détails</h3>
+                        <h3 id="details-title" class="mb-1 text-xs font-bold uppercase tracking-[.04em] text-ink-soft">{{ $t('Détails') }}</h3>
                         <TaskFields
                             stacked
                             :task="task"
@@ -383,14 +398,14 @@ const iconBtn =
                         />
                     </section>
                     <section class="rounded-card border border-app-border p-5 shadow-soft" aria-labelledby="people-title">
-                        <h3 id="people-title" class="mb-3 text-xs font-bold uppercase tracking-[.04em] text-ink-soft">Collaborateurs</h3>
+                        <h3 id="people-title" class="mb-3 text-xs font-bold uppercase tracking-[.04em] text-ink-soft">{{ $t('Collaborateurs') }}</h3>
                         <div class="flex flex-wrap gap-1.5">
                             <UserAvatar v-for="p in participants" :key="p.id" :user="p" size="md" />
-                            <span v-if="!participants.length" class="text-sm text-ink-soft">Personne pour l'instant.</span>
+                            <span v-if="!participants.length" class="text-sm text-ink-soft">{{ $t("Personne pour l'instant.") }}</span>
                         </div>
                         <p class="mt-3 text-xs leading-5 text-ink-soft">
-                            <template v-if="task.created_at">Créée le {{ dateTime(task.created_at) }}<br /></template>
-                            <template v-if="task.updated_at">Modifiée le {{ dateTime(task.updated_at) }}</template>
+                            <template v-if="task.created_at">{{ $t('Créée le :date', { date: dateTime(task.created_at) }) }}<br /></template>
+                            <template v-if="task.updated_at">{{ $t('Modifiée le :date', { date: dateTime(task.updated_at) }) }}</template>
                         </p>
                     </section>
                 </div>

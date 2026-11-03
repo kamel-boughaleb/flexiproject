@@ -40,6 +40,9 @@ class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             ...parent::share($request),
             'name' => config('app.name'),
+            // Langue de l'interface (traductions dans lang/{locale}.json) et langues proposées.
+            'locale' => app()->getLocale(),
+            'locales' => config('app.locales'),
             'auth' => [
                 'user' => $user,
             ],

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SegmentedControl from '@/components/design/SegmentedControl.vue';
+import { dateLocale, t } from '@/lib/i18n';
 import { PRIORITIES, isOverdue, toDate } from '@/lib/labels';
 import type { Project, Task } from '@/types';
 import {
@@ -19,7 +20,6 @@ import {
     startOfMonth,
     startOfWeek,
 } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import PriorityBadge from './PriorityBadge.vue';
@@ -40,8 +40,8 @@ function move(step: number) {
 }
 const title = computed(() =>
     scale.value === 'month'
-        ? format(cursor.value, 'MMMM yyyy', { locale: fr })
-        : `${format(startOfWeek(cursor.value, week), 'd MMM', { locale: fr })} – ${format(endOfWeek(cursor.value, week), 'd MMM yyyy', { locale: fr })}`,
+        ? format(cursor.value, 'MMMM yyyy', { locale: dateLocale() })
+        : `${format(startOfWeek(cursor.value, week), t('d MMM'), { locale: dateLocale() })} – ${format(endOfWeek(cursor.value, week), t('d MMM yyyy'), { locale: dateLocale() })}`,
 );
 
 const visible = computed(() => props.tasks.filter((t) => showDone.value || !t.completed));
@@ -120,19 +120,19 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                 class="h-9 rounded-full border border-app-border-strong px-4 text-sm font-bold text-app-strong hover:bg-app-hover"
                 @click="((cursor = startOfDay(new Date())), (selectedDay = startOfDay(new Date())))"
             >
-                Aujourd'hui
+                {{ $t("Aujourd'hui") }}
             </button>
             <div class="flex gap-0.5">
                 <button
                     class="flex size-9 items-center justify-center rounded-full hover:bg-app-hover"
-                    aria-label="Période précédente"
+                    :aria-label="$t('Période précédente')"
                     @click="move(-1)"
                 >
                     <ChevronLeft class="size-5" />
                 </button>
                 <button
                     class="flex size-9 items-center justify-center rounded-full hover:bg-app-hover"
-                    aria-label="Période suivante"
+                    :aria-label="$t('Période suivante')"
                     @click="move(1)"
                 >
                     <ChevronRight class="size-5" />
@@ -142,16 +142,16 @@ const agenda = computed(() => tasksOn(selectedDay.value));
             <div class="ml-auto flex flex-wrap items-center gap-3">
                 <label class="flex cursor-pointer items-center gap-2 text-[13px] font-semibold text-ink-soft">
                     <input v-model="showDone" type="checkbox" class="size-4 rounded accent-[var(--primary-active)]" />
-                    Afficher les tâches terminées
+                    {{ $t('Afficher les tâches terminées') }}
                 </label>
                 <SegmentedControl
                     v-model="scale"
                     class="max-md:hidden"
-                    label="Échelle"
+                    :label="$t('Échelle')"
                     size="sm"
                     :options="[
-                        { value: 'week', label: 'Semaine' },
-                        { value: 'month', label: 'Mois' },
+                        { value: 'week', label: $t('Semaine') },
+                        { value: 'month', label: $t('Mois') },
                     ]"
                 />
             </div>
@@ -192,9 +192,11 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                                       : 'text-app-strong'
                             "
                         >
-                            {{ day.getDate() === 1 ? format(day, 'd MMM', { locale: fr }) : format(day, 'd') }}
+                            {{ day.getDate() === 1 ? format(day, $t('d MMM'), { locale: dateLocale() }) : format(day, 'd') }}
                         </span>
-                        <span v-if="w.hidden[i]" class="mt-[94px] block text-xs font-bold text-ink-soft">+ {{ w.hidden[i] }} autre(s)</span>
+                        <span v-if="w.hidden[i]" class="mt-[94px] block text-xs font-bold text-ink-soft">{{
+                            $tc('+ :count autre|+ :count autres', w.hidden[i])
+                        }}</span>
                     </div>
                     <button
                         v-for="b in w.bars"
@@ -226,7 +228,7 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                     :key="day.toISOString()"
                     type="button"
                     :aria-pressed="isSameDay(day, selectedDay)"
-                    :aria-label="format(day, 'EEEE d MMMM', { locale: fr })"
+                    :aria-label="format(day, $t('EEEE d MMMM'), { locale: dateLocale() })"
                     class="mx-auto flex size-11 flex-col items-center justify-center rounded-full text-sm font-bold"
                     :class="
                         isSameDay(day, selectedDay)
@@ -250,7 +252,9 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                     </span>
                 </button>
             </div>
-            <h3 class="mb-2 mt-5 text-base font-bold first-letter:uppercase">{{ format(selectedDay, 'EEEE d MMMM', { locale: fr }) }}</h3>
+            <h3 class="mb-2 mt-5 text-base font-bold first-letter:uppercase">
+                {{ format(selectedDay, $t('EEEE d MMMM'), { locale: dateLocale() }) }}
+            </h3>
             <ul class="space-y-2.5">
                 <li v-for="t in agenda" :key="t.id">
                     <button
@@ -265,7 +269,7 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                         <PriorityBadge :priority="t.priority" />
                     </button>
                 </li>
-                <li v-if="!agenda.length" class="text-sm text-ink-soft">Aucune tâche ce jour-là.</li>
+                <li v-if="!agenda.length" class="text-sm text-ink-soft">{{ $t('Aucune tâche ce jour-là.') }}</li>
             </ul>
         </div>
     </div>

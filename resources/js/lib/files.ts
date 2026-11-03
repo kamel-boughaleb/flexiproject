@@ -1,3 +1,4 @@
+import { intlLocale, t } from '@/lib/i18n';
 import type { AttachmentKind } from '@/types';
 import { FileCode, FileIcon, FileText, Film, Image, Music } from 'lucide-vue-next';
 
@@ -22,15 +23,15 @@ export const FILE_ICONS: Record<AttachmentKind, typeof FileIcon> = {
 
 /** Taille lisible : 1,2 Mo, 340 Ko… */
 export function fileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} o`;
-    const units = ['Ko', 'Mo', 'Go'];
+    if (bytes < 1024) return `${bytes} ${t('o')}`;
+    const units = [t('Ko'), t('Mo'), t('Go')];
     let value = bytes / 1024;
     let i = 0;
     while (value >= 1024 && i < units.length - 1) {
         value /= 1024;
         i++;
     }
-    return `${value.toLocaleString('fr-FR', { maximumFractionDigits: value < 10 ? 1 : 0 })} ${units[i]}`;
+    return `${value.toLocaleString(intlLocale(), { maximumFractionDigits: value < 10 ? 1 : 0 })} ${units[i]}`;
 }
 
 /** Langage highlight.js correspondant à une extension de fichier. */

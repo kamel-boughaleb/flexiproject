@@ -17,12 +17,12 @@ const href = (n: Notification) =>
 </script>
 
 <template>
-    <Head title="Notifications" />
-    <AppLayout :breadcrumbs="[{ title: 'Notifications', href: route('notifications.index') }]">
+    <Head :title="$t('Notifications')" />
+    <AppLayout :breadcrumbs="[{ title: $t('Notifications'), href: route('notifications.index') }]">
         <div class="p-6">
             <div class="flex items-center">
-                <h1 class="text-2xl font-semibold">Notifications</h1>
-                <Button variant="ghost" class="ml-auto" @click="router.post(route('notifications.read'))">Tout marquer comme lu</Button>
+                <h1 class="text-2xl font-semibold">{{ $t('Notifications') }}</h1>
+                <Button variant="ghost" class="ml-auto" @click="router.post(route('notifications.read'))">{{ $t('Tout marquer comme lu') }}</Button>
             </div>
             <ul class="mt-6 divide-y rounded-lg border">
                 <li
@@ -35,7 +35,7 @@ const href = (n: Notification) =>
                     <Link :href="href(n)" class="flex-1 hover:underline">{{ n.data.message }}</Link>
                     <span class="text-xs text-muted-foreground">{{ dateTime(n.created_at) }}</span>
                 </li>
-                <li v-if="!notifications.length" class="px-4 py-8 text-center text-sm text-muted-foreground">Aucune notification</li>
+                <li v-if="!notifications.length" class="px-4 py-8 text-center text-sm text-muted-foreground">{{ $t('Aucune notification') }}</li>
             </ul>
         </div>
     </AppLayout>
