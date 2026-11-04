@@ -13,8 +13,6 @@ class SendDailyDigest extends Command
 {
     public const TIMEZONE = 'Europe/Paris';
 
-    private const GROUPS = ['En retard', 'Aujourd’hui', 'Dans les 7 prochains jours', 'Plus tard', 'Sans échéance'];
-
     protected $signature = 'notifications:daily-digest';
 
     protected $description = 'Envoie à chaque collaborateur le récapitulatif de ses tâches en cours';
@@ -23,7 +21,6 @@ class SendDailyDigest extends Command
     {
         // Dates comparées au format AAAA-MM-JJ, dans le fuseau de Paris.
         $today = Carbon::now(self::TIMEZONE)->toDateString();
-        $inAWeek = Carbon::now(self::TIMEZONE)->addDays(7)->toDateString();
         $sent = 0;
 
         $users = User::active()->whereHas('assignedTasks', fn ($q) => $this->open($q))->get();
@@ -33,6 +30,7 @@ class SendDailyDigest extends Command
             }
             $tasks = $this->open($user->assignedTasks())
                 ->with('project:id,name')
+                // Par date d'échéance : les tâches en retard arrivent donc en premier, celles sans échéance à la fin.
                 ->orderByRaw('due_date is null')->orderBy('due_date')->orderBy('id')
                 ->get()
                 // Seulement les projets dont la personne est encore membre.
@@ -42,20 +40,7 @@ class SendDailyDigest extends Command
                 continue;
             }
 
-            $groups = $tasks->groupBy(function (Task $task) use ($today, $inAWeek) {
-                $due = $task->due_date?->toDateString();
-
-                return match (true) {
-                    $due === null => 'Sans échéance',
-                    $due < $today => 'En retard',
-                    $due === $today => 'Aujourd’hui',
-                    $due <= $inAWeek => 'Dans les 7 prochains jours',
-                    default => 'Plus tard',
-                };
-            });
-            $groups = collect(self::GROUPS)->mapWithKeys(fn ($title) => [$title => $groups->get($title)])->filter()->all();
-
-            $user->notify(new DailyDigest($groups, $tasks->count()));
+            $user->notify(new DailyDigest($tasks->values(), $today));
             $sent++;
         }
 
