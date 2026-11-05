@@ -65,7 +65,21 @@ Ajoutez enfin **une** ligne à la crontab de l'utilisateur du serveur web (`cron
 * * * * * cd /chemin/vers/flexiproject && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Pour tester le récapitulatif sans attendre le lendemain : `php artisan notifications:daily-digest`.
+Pour tester le récapitulatif sans attendre le lendemain : `php artisan notifications:daily-digest` (l'envoie à tout le monde).
+
+Pour tester l'envoi des e-mails à une seule personne, sans file d'attente (une erreur SMTP s'affiche tout de suite) :
+
+```bash
+# Récapitulatif du matin de ce collaborateur (même s'il l'a désactivé) ; --to l'envoie à une autre adresse
+php artisan mail:test-digest marie@flexilivre.com
+php artisan mail:test-digest marie@flexilivre.com --to=moi@flexilivre.com
+
+# Notification de tâche : --type=assigned (par défaut), comment, update ou mention ; --task=<id> pour choisir la tâche
+php artisan mail:test-notification marie@flexilivre.com
+php artisan mail:test-notification moi@flexilivre.com --type=comment --task=42
+```
+
+Ces commandes n'enregistrent rien : pas de notification dans la cloche, pas de commentaire ni de modification.
 
 Faites pointer le serveur web (Nginx ou Apache) sur le dossier `public/`, et donnez à l'utilisateur du serveur web les droits d'écriture sur `storage/` et `bootstrap/cache/`.
 

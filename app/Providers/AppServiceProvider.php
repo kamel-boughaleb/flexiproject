@@ -28,8 +28,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Aucune notification (application ou e-mail) pour un compte désactivé ou supprimé de l'équipe,
         // y compris celles déjà en file d'attente au moment de la désactivation.
+        // Un destinataire non enregistré (e-mail de test des commandes mail:test-*) n'est pas concerné.
         Event::listen(function (NotificationSending $event) {
-            if ($event->notifiable instanceof User && ! $event->notifiable->fresh()?->isActive()) {
+            if ($event->notifiable instanceof User && $event->notifiable->exists && ! $event->notifiable->fresh()?->isActive()) {
                 return false;
             }
         });
