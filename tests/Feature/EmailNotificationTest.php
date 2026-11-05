@@ -148,11 +148,39 @@ class EmailNotificationTest extends TestCase
         $this->artisan('notifications:daily-digest')->assertSuccessful();
 
         Notification::assertSentTo($marie, DailyDigest::class, fn (DailyDigest $n) => $n->total === 4
-            && array_keys($n->groups) === ['En retard', 'Aujourd’hui', 'Dans les 7 prochains jours', 'Sans échéance']);
+            && $n->today === '2026-11-02'
+            && $n->tasks->map(fn ($t) => $t->due_date?->toDateString())->all() === ['2026-10-30', '2026-11-02', '2026-11-05', null]
+            && $n->overdueCount() === 1);
         Notification::assertNotSentTo([$silent, $idle, $project->owner], DailyDigest::class);
+    }
 
-        $html = (string) (new DailyDigest(['En retard' => Task::with('project')->limit(1)->get()], 1))->toMail($marie)->render();
+    public function test_daily_digest_shows_the_logo_and_overdue_tasks_in_red(): void
+    {
+        $project = Project::factory()->create(['name' => 'Catalogue']);
+        $marie = $this->member($project);
+        Task::factory()->in($project)->create(['title' => 'Couverture', 'assignee_id' => $marie->id, 'due_date' => '2026-10-30']);
+        Task::factory()->in($project)->create(['title' => 'Maquette', 'assignee_id' => $marie->id, 'due_date' => '2026-11-05']);
+
+        $html = (string) (new DailyDigest(Task::with('project')->orderBy('due_date')->get(), '2026-11-02'))->toMail($marie)->render();
+
         $this->assertStringContainsString('Bonjour', $html);
+        $this->assertStringContainsString(asset('images/email-logo.png'), $html);
+        $this->assertStringContainsString('3 j de retard', $html);
+        $this->assertMatchesRegularExpression('/task-overdue[^>]*>.*?Couverture/s', $html);
+        $this->assertLessThan(strpos($html, 'Maquette'), strpos($html, 'Couverture'));
+    }
+
+    public function test_task_email_shows_the_logo_task_card_and_settings_link(): void
+    {
+        $project = Project::factory()->create(['name' => 'Catalogue']);
+        $task = Task::factory()->in($project)->create(['title' => 'Couverture']);
+        $marie = $this->member($project);
+
+        $html = (string) (new TaskUpdated($task, $project->owner, []))->toMail($marie)->render();
+
+        $this->assertStringContainsString(asset('images/email-logo.png'), $html);
+        $this->assertStringContainsString('task-card', $html);
+        $this->assertStringContainsString(route('notifications.settings'), $html);
     }
 
     public function test_daily_digest_is_scheduled_at_8am_paris_time(): void

@@ -59,7 +59,8 @@ abstract class TaskNotification extends Notification implements ShouldQueue
         return $this->mail($mail)
             ->action(__('Ouvrir la tâche'), self::taskUrl($this->task))
             ->salutation(__('À bientôt sur :app !', ['app' => config('app.name')]))
-            ->line('['.__('Régler mes notifications').']('.route('notifications.settings').')');
+            // Fiche de la tâche et lien vers les réglages, affichés par resources/views/vendor/notifications/email.blade.php.
+            ->markdown('notifications::email', ['task' => $this->task, 'settingsUrl' => route('notifications.settings')]);
     }
 
     public static function taskUrl(Task $task): string

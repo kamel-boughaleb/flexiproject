@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -13,12 +14,25 @@ class DailyDigest extends Notification
 {
     use Queueable;
 
-    /** @param array<string, Collection> $groups titre du groupe => tâches */
-    public function __construct(public array $groups, public int $total) {}
+    public int $total;
+
+    /**
+     * @param  Collection<int, Task>  $tasks  tâches en cours, triées par échéance (en retard d'abord, sans échéance à la fin)
+     * @param  string  $today  date du jour (AAAA-MM-JJ, heure de Paris)
+     */
+    public function __construct(public Collection $tasks, public string $today)
+    {
+        $this->total = $tasks->count();
+    }
 
     public function via(User $notifiable): array
     {
         return ['mail'];
+    }
+
+    public function overdueCount(): int
+    {
+        return $this->tasks->filter(fn (Task $task) => $task->due_date && $task->due_date->toDateString() < $this->today)->count();
     }
 
     public function toMail(User $notifiable): MailMessage
@@ -27,8 +41,11 @@ class DailyDigest extends Notification
             ->subject(__('Vos tâches du jour (:count)', ['count' => $this->total]))
             ->markdown('mail.daily-digest', [
                 'name' => strtok($notifiable->name, ' '),
-                'groups' => $this->groups,
+                'tasks' => $this->tasks,
+                'today' => $this->today,
                 'total' => $this->total,
+                'overdue' => $this->overdueCount(),
+                'dueToday' => $this->tasks->filter(fn (Task $task) => $task->due_date?->toDateString() === $this->today)->count(),
             ]);
     }
 }
