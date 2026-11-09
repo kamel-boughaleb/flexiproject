@@ -159,8 +159,12 @@ export interface TaskDetail extends Task {
 export interface ProjectPageProps {
     project: Project;
     members: Member[];
+    /** Onglets du projet dans l'ordre choisi ; le premier est la vue par défaut. */
+    tabs: ProjectTab[];
     can: { edit: boolean; add: boolean; manage: boolean };
 }
+
+export type ProjectTab = 'board' | 'list' | 'calendar' | 'timeline' | 'members' | 'settings';
 
 export interface RuleAction {
     type: string;

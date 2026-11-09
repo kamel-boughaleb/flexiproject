@@ -38,7 +38,7 @@ class ProjectController extends Controller
             $project->setImage($request->file('image'));
         }
 
-        return to_route('projects.view', [$project, 'board']);
+        return redirect($project->defaultUrl());
     }
 
     public function show(Request $request, Project $project, string $view = 'board'): Response|RedirectResponse
@@ -135,6 +135,19 @@ class ProjectController extends Controller
         return back();
     }
 
+    /** Nouvel ordre des onglets du projet, après un glisser-déposer : le premier devient la vue par défaut. */
+    public function reorderTabs(Request $request, Project $project): RedirectResponse
+    {
+        Gate::authorize('edit', $project);
+        $data = $request->validate([
+            'tabs' => ['required', 'array', 'size:'.count(Project::TABS)],
+            'tabs.*' => ['string', 'distinct', Rule::in(Project::TABS)],
+        ]);
+        $project->forceFill(['tabs' => $data['tabs']])->save();
+
+        return back();
+    }
+
     /** Termine le projet : il sort de la liste des projets en cours et n'accepte plus de nouvelles tâches. */
     public function complete(Request $request, Project $project): RedirectResponse
     {
@@ -208,6 +221,7 @@ class ProjectController extends Controller
                     'pending' => $m->isPending(),
                     'deactivated' => ! $m->isActive(),
                 ]),
+            'tabs' => $project->tabOrder(),
             'can' => [
                 'edit' => $user->can('edit', $project),
                 // Plus de nouvelles tâches dans un projet terminé.

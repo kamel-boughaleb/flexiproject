@@ -13,7 +13,7 @@ import { locale, t } from '@/lib/i18n';
 import { PRIORITIES, dueLabel, isOverdue, sectionColor } from '@/lib/labels';
 import type { Priority, Section, SharedData, Task } from '@/types';
 import { useForm, usePage } from '@inertiajs/vue3';
-import { ArrowUpDown, ChevronDown, ListChecks, ListFilter, MessageCircle, Rows3, Search } from 'lucide-vue-next';
+import { ArrowUpDown, ChevronDown, GripVertical, ListChecks, ListFilter, MessageCircle, Rows3, Search } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import draggable from 'vuedraggable';
 import PriorityBadge from './PriorityBadge.vue';
@@ -98,6 +98,8 @@ const groups = computed<Group[]>(() => {
 });
 
 const collapsed = ref<Record<string, boolean>>({});
+// Pendant le déplacement d'une section, les tâches sont masquées : seules les lignes de titre se déplacent.
+const draggingSection = ref(false);
 
 const form = useForm({ title: '', section_id: 0 });
 function add(sectionId: number, event: Event) {
@@ -198,11 +200,22 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                 :disabled="!canEdit || groupBy !== 'section' || renaming !== null"
                 :animation="150"
                 ghost-class="opacity-40"
+                @start="draggingSection = true"
+                @end="draggingSection = false"
                 @update:model-value="(list: Group[]) => reorder(list.map((g) => g.section!))"
             >
                 <template #item="{ element: group }">
                     <section role="rowgroup" class="mt-3">
-                        <div class="flex w-full items-center gap-2 rounded-icon px-2 py-1.5">
+                        <div class="group/section relative flex w-full items-center gap-2 rounded-icon px-2 py-1.5">
+                            <span
+                                v-if="group.section && canEdit && groupBy === 'section' && renaming !== group.section.id"
+                                data-section-handle
+                                aria-hidden="true"
+                                :title="$t('Glisser pour déplacer la section')"
+                                class="absolute -left-5 flex h-7 w-5 cursor-grab items-center justify-center text-ink-soft opacity-0 transition-opacity hover:text-ink active:cursor-grabbing group-hover/section:opacity-100 max-md:hidden"
+                            >
+                                <GripVertical class="size-4" />
+                            </span>
                             <button
                                 type="button"
                                 class="-m-1 flex items-center gap-2 rounded-icon p-1 hover:bg-app-hover"
@@ -247,7 +260,7 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                             </button>
                             <span class="text-xs font-semibold text-ink-soft">{{ group.tasks.length }}</span>
                         </div>
-                        <template v-if="!collapsed[group.key]">
+                        <template v-if="!collapsed[group.key] && !draggingSection">
                             <div
                                 v-for="task in group.tasks"
                                 :key="task.id"
