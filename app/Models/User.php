@@ -104,6 +104,12 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->belongsToMany(Project::class)->withPivot('role', 'sidebar_position')->withTimestamps();
     }
 
+    /** Fils d'actualité auxquels l'utilisateur est abonné. */
+    public function feeds(): BelongsToMany
+    {
+        return $this->belongsToMany(Feed::class)->withTimestamps();
+    }
+
     /**
      * Projets dans l'ordre du menu de gauche : d'abord ceux jamais placés par l'utilisateur
      * (les nouveaux, du plus récent au plus ancien), puis l'ordre choisi par glisser-déposer.

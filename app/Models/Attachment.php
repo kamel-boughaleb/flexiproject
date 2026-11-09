@@ -19,7 +19,7 @@ class Attachment extends Model
         'py', 'rb', 'java', 'c', 'h', 'cpp', 'cs', 'go', 'rs', 'swift', 'kt',
     ];
 
-    protected $fillable = ['task_id', 'user_id', 'name', 'path', 'mime', 'size'];
+    protected $fillable = ['task_id', 'feed_post_id', 'user_id', 'name', 'path', 'mime', 'size'];
 
     protected $appends = ['kind', 'extension'];
 
@@ -50,6 +50,11 @@ class Attachment extends Model
     public function task(): BelongsTo
     {
         return $this->belongsTo(Task::class);
+    }
+
+    public function post(): BelongsTo
+    {
+        return $this->belongsTo(FeedPost::class, 'feed_post_id');
     }
 
     public function user(): BelongsTo

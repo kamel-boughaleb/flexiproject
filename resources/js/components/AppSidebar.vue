@@ -21,7 +21,7 @@ import {
 import { t } from '@/lib/i18n';
 import { type ProjectStatus, type SharedData, type SidebarProject } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { CheckSquare, ListFilter, Plus } from 'lucide-vue-next';
+import { CheckSquare, ListFilter, Newspaper, Plus } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import draggable from 'vuedraggable';
 import AppLogo from './AppLogo.vue';
@@ -185,6 +185,29 @@ const projectLinks = (id: number) => [
                             <Link :href="`${route('dashboard')}?new=1`" class="text-ink-soft">
                                 <Plus />
                                 <span>{{ $t('Nouveau projet') }}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarGroup>
+
+            <!-- Fils d'actualité auxquels l'utilisateur est abonné ; « Tous les fils » pour en découvrir ou en créer. -->
+            <SidebarGroup class="px-2 pt-5">
+                <SidebarGroupLabel>{{ $t("Fils d'actualité") }}</SidebarGroupLabel>
+                <SidebarMenu>
+                    <SidebarMenuItem v-for="f in page.props.sidebarFeeds" :key="f.id">
+                        <SidebarMenuButton as-child :is-active="path === `/feeds/${f.id}` || path.startsWith(`/feeds/${f.id}/`)" :tooltip="f.name">
+                            <Link :href="route('feeds.show', f.id)">
+                                <ProjectAvatar :project="f" size="xs" />
+                                <span class="truncate">{{ f.name }}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton as-child :is-active="path === '/feeds'" :tooltip="$t('Tous les fils')">
+                            <Link :href="route('feeds.index')" class="text-ink-soft">
+                                <Newspaper />
+                                <span>{{ $t('Tous les fils') }}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

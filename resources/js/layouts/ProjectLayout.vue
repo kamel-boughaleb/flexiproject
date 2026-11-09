@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PostFormDialog from '@/components/feed/PostFormDialog.vue';
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -8,8 +9,8 @@ import { t } from '@/lib/i18n';
 import { dateRange } from '@/lib/labels';
 import type { Member, Project, ProjectPageProps, SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { CircleCheck } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { CircleCheck, Newspaper } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{ project: Project; members: Member[]; title: string; canEdit?: boolean }>();
 const page = usePage<SharedData & Partial<ProjectPageProps>>();
@@ -22,6 +23,9 @@ const toggleDone = () =>
         method: done.value ? 'delete' : 'post',
         preserveScroll: true,
     });
+// Nouvelle actualité à propos du projet : choix du fil dans la fenêtre, titre pré-rempli avec le nom du projet.
+const posting = ref(false);
+
 const tabs = computed(() => [
     { label: t('Tableau'), href: route('projects.view', [props.project.id, 'board']) },
     { label: t('Liste'), href: route('projects.view', [props.project.id, 'list']) },
@@ -56,6 +60,15 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                         @click="toggleDone"
                     >
                         <CircleCheck class="size-5" />
+                    </button>
+                    <button
+                        type="button"
+                        class="flex size-8 shrink-0 items-center justify-center rounded-icon text-ink-soft transition-colors hover:bg-app-hover hover:text-ink"
+                        :aria-label="$t('Publier une actualité sur ce projet')"
+                        :title="$t('Publier une actualité sur ce projet')"
+                        @click="posting = true"
+                    >
+                        <Newspaper class="size-5" />
                     </button>
                     <span
                         v-if="done"
@@ -112,5 +125,6 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                 <slot name="aside" />
             </div>
         </div>
+        <PostFormDialog v-model:open="posting" :initial-title="project.name" />
     </AppLayout>
 </template>

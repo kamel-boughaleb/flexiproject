@@ -3,18 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attachment;
+use App\Models\FeedPost;
 use App\Models\Task;
 use App\Support\Msg;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Pièces jointes des tâches : les éditeurs et administrateurs en ajoutent,
- * tous les membres les consultent. Les fichiers restent sur le disque privé
+ * Pièces jointes des tâches et des actualités. Tâches : les éditeurs et administrateurs en ajoutent,
+ * tous les membres du projet les consultent. Actualités : toute l'équipe les consulte ; l'auteur,
+ * le créateur du fil ou un administrateur en ajoute. Les fichiers restent sur le disque privé
  * et ne sont servis qu'après vérification des droits.
  */
 class AttachmentController extends Controller
@@ -22,22 +26,11 @@ class AttachmentController extends Controller
     public function store(Request $request, Task $task): RedirectResponse
     {
         Gate::authorize('edit', $task->project);
-        $request->validate([
-            'files' => ['required', 'array', 'max:20'],
-            'files.*' => ['file', 'max:'.Attachment::MAX_SIZE_KB],
-        ], [
-            'files.*.max' => 'Chaque fichier doit faire moins de '.(Attachment::MAX_SIZE_KB / 1024).' Mo.',
-        ]);
+        self::validateFiles($request);
 
         $names = [];
         foreach ($request->file('files') as $file) {
-            $task->attachments()->create([
-                'user_id' => $request->user()->id,
-                'name' => $file->getClientOriginalName(),
-                'path' => $file->store("attachments/{$task->project_id}/{$task->id}", 'local'),
-                'mime' => $file->getMimeType(),
-                'size' => $file->getSize(),
-            ]);
+            self::attach($task->attachments(), $file, $request, "attachments/{$task->project_id}/{$task->id}");
             $names[] = Msg::make('« :name »', ['name' => $file->getClientOriginalName()]);
         }
         $task->project->log(Msg::make('a joint :files à « :task »', ['files' => $names, 'task' => $task->title]), $request->user(), $task);
@@ -45,10 +38,51 @@ class AttachmentController extends Controller
         return back();
     }
 
+    public function storeForPost(Request $request, FeedPost $post): RedirectResponse
+    {
+        abort_unless($post->canBeManagedBy($request->user()), 403);
+        self::validateFiles($request);
+        foreach ($request->file('files') as $file) {
+            self::attach($post->attachments(), $file, $request, $post->attachmentsDirectory());
+        }
+
+        return back();
+    }
+
+    /** Règles communes aux envois de fichiers (champ « files », 20 fichiers au plus). */
+    public static function validateFiles(Request $request, bool $required = true): void
+    {
+        $request->validate([
+            'files' => [$required ? 'required' : 'nullable', 'array', 'max:20'],
+            'files.*' => ['file', 'max:'.Attachment::MAX_SIZE_KB],
+        ], [
+            'files.*.max' => __('Chaque fichier doit faire moins de :size Mo.', ['size' => Attachment::MAX_SIZE_KB / 1024]),
+        ]);
+    }
+
+    public static function attach(HasMany $relation, UploadedFile $file, Request $request, string $directory): Attachment
+    {
+        return $relation->create([
+            'user_id' => $request->user()->id,
+            'name' => $file->getClientOriginalName(),
+            'path' => $file->store($directory, 'local'),
+            'mime' => $file->getMimeType(),
+            'size' => $file->getSize(),
+        ]);
+    }
+
+    /** Une pièce jointe de tâche est visible des membres du projet, une pièce jointe d'actualité de toute l'équipe. */
+    private function authorizeView(Attachment $attachment): void
+    {
+        if ($attachment->task_id) {
+            Gate::authorize('view', $attachment->task->project);
+        }
+    }
+
     /** Affichage dans la visionneuse (lecteur vidéo, image, PDF, code). */
     public function show(Attachment $attachment): BinaryFileResponse
     {
-        Gate::authorize('view', $attachment->task->project);
+        $this->authorizeView($attachment);
         $disk = Storage::disk('local');
         abort_unless($disk->exists($attachment->path), 404);
 
@@ -72,7 +106,7 @@ class AttachmentController extends Controller
      */
     public function thumbnail(Attachment $attachment): BinaryFileResponse
     {
-        Gate::authorize('view', $attachment->task->project);
+        $this->authorizeView($attachment);
         abort_unless($attachment->kind === 'image', 404);
         $disk = Storage::disk('local');
         abort_unless($disk->exists($attachment->path), 404);
@@ -121,13 +155,20 @@ class AttachmentController extends Controller
 
     public function download(Attachment $attachment): StreamedResponse
     {
-        Gate::authorize('view', $attachment->task->project);
+        $this->authorizeView($attachment);
 
         return Storage::disk('local')->download($attachment->path, $attachment->name);
     }
 
     public function destroy(Request $request, Attachment $attachment): RedirectResponse
     {
+        if (! $attachment->task_id) {
+            abort_unless($attachment->user_id === $request->user()->id || $attachment->post?->canBeManagedBy($request->user()), 403);
+            $attachment->delete();
+
+            return back();
+        }
+
         $project = $attachment->task->project;
         // L'auteur (s'il peut encore modifier le projet) ou un administrateur.
         Gate::authorize($attachment->user_id === $request->user()->id ? 'edit' : 'manage', $project);

@@ -363,6 +363,14 @@ img {
     font-weight: bold;
 }
 
+.post-card-excerpt {
+    color: #121212;
+    display: block;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 12px;
+}
+
 /* Liste des tâches (récapitulatif du matin) */
 
 .task-list {

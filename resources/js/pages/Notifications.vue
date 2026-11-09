@@ -8,12 +8,15 @@ type Notification = {
     id: string;
     read_at: string | null;
     created_at: string;
-    data: { message: string; project_id: number | null; task_id: number | null };
+    data: { message: string; project_id: number | null; task_id: number | null; url?: string };
 };
 defineProps<{ notifications: Notification[] }>();
 
 const href = (n: Notification) =>
-    n.data.project_id ? route('projects.view', [n.data.project_id, 'list']) + (n.data.task_id ? `?task=${n.data.task_id}` : '') : route('dashboard');
+    n.data.url ??
+    (n.data.project_id
+        ? route('projects.view', [n.data.project_id, 'list']) + (n.data.task_id ? `?task=${n.data.task_id}` : '')
+        : route('dashboard'));
 </script>
 
 <template>

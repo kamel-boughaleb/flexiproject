@@ -35,8 +35,8 @@ class RichText
     /** Propriétés CSS conservées (couleurs et taille du texte). */
     private const STYLES = ['color', 'background-color', 'font-size'];
 
-    /** Images envoyées depuis l'éditeur (voir EditorImageController). */
-    public const IMAGE_PATH = '#^/projects/\d+/images/[A-Za-z0-9]+\.(png|jpe?g|gif|webp)$#';
+    /** Images envoyées depuis l'éditeur, dans un projet ou un fil d'actualité (voir EditorImageController). */
+    public const IMAGE_PATH = '#^/(projects|feeds)/\d+/images/[A-Za-z0-9]+\.(png|jpe?g|gif|webp)$#';
 
     /** Nettoie le HTML de l'éditeur. Un texte qui ne commence pas par une balise (ancienne saisie, règle…) devient des paragraphes. */
     public static function sanitize(?string $html): ?string

@@ -21,6 +21,11 @@
 <x-mail::task-card :task="$task" />
 @endisset
 
+{{-- Fiche de l'actualité (nouvelle actualité dans un fil) --}}
+@isset($post)
+<x-mail::post-card :post="$post" :excerpt="$excerpt ?? ''" />
+@endisset
+
 {{-- Bouton --}}
 @isset($actionText)
 <?php
@@ -52,7 +57,7 @@
 @if (isset($actionText) || isset($settingsUrl))
 <x-slot:subcopy>
 @isset($settingsUrl)
-{{ __('Vous recevez cet e-mail car vous participez à cette tâche.') }} [{{ __('Régler mes notifications') }}]({{ $settingsUrl }})
+{{ $reason ?? __('Vous recevez cet e-mail car vous participez à cette tâche.') }} [{{ $settingsLabel ?? __('Régler mes notifications') }}]({{ $settingsUrl }})
 
 @endisset
 @isset($actionText)
