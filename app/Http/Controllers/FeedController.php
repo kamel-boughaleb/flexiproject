@@ -7,6 +7,7 @@ use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -90,6 +91,32 @@ class FeedController extends Controller
         $feed->delete();
 
         return to_route('feeds.index');
+    }
+
+    /** Nouvel ordre des fils suivis dans le menu de gauche (ids dans l'ordre affiché). */
+    public function reorder(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $current = $user->sidebarFeeds()->pluck('feeds.id')->all();
+        $ids = array_map('intval', $request->validate([
+            'ids' => ['required', 'array', 'max:'.count($current)],
+            'ids.*' => ['integer', 'distinct', Rule::in($current)],
+        ])['ids']);
+
+        // Les fils absents de la liste envoyée gardent leur place ; les autres prennent l'ordre reçu.
+        $queue = $ids;
+        $order = [];
+        foreach ($current as $id) {
+            $order[] = in_array($id, $ids, true) ? array_shift($queue) : $id;
+        }
+
+        DB::transaction(function () use ($user, $order) {
+            foreach ($order as $i => $id) {
+                DB::table('feed_user')->where('user_id', $user->id)->where('feed_id', $id)->update(['sidebar_position' => $i + 1]);
+            }
+        });
+
+        return back();
     }
 
     public function subscribe(Request $request, Feed $feed): RedirectResponse

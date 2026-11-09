@@ -107,7 +107,20 @@ class User extends Authenticatable implements HasLocalePreference
     /** Fils d'actualité auxquels l'utilisateur est abonné. */
     public function feeds(): BelongsToMany
     {
-        return $this->belongsToMany(Feed::class)->withTimestamps();
+        return $this->belongsToMany(Feed::class)->withPivot('sidebar_position')->withTimestamps();
+    }
+
+    /**
+     * Fils suivis dans l'ordre du menu de gauche : d'abord ceux jamais placés (les derniers abonnements
+     * en premier), puis l'ordre choisi par glisser-déposer.
+     */
+    public function sidebarFeeds(): BelongsToMany
+    {
+        return $this->feeds()
+            ->orderByRaw('feed_user.sidebar_position is null desc')
+            ->orderBy('feed_user.sidebar_position')
+            ->orderByDesc('feed_user.created_at')
+            ->orderByDesc('feeds.id');
     }
 
     /**

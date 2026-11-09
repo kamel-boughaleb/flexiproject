@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Attachment;
 use App\Models\Feed;
 use App\Models\FeedPost;
+use App\Models\Project;
 use App\Models\User;
 use App\Notifications\FeedPostPublished;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -196,5 +197,38 @@ class FeedTest extends TestCase
         $this->actingAs($user)->getJson('/feeds/options')->assertOk()
             ->assertJsonPath('0.name', 'Zébulon')->assertJsonPath('0.subscribed', true)
             ->assertJsonPath('1.name', 'Autre')->assertJsonPath('1.subscribed', false);
+    }
+
+    public function test_followed_feeds_can_be_reordered_in_the_sidebar(): void
+    {
+        $user = User::factory()->create();
+        [$a, $b, $c] = Feed::factory()->count(3)->create();
+        $user->feeds()->attach([$a->id, $b->id, $c->id]);
+        $other = Feed::factory()->create();
+
+        $this->actingAs($user)->post('/feeds/reorder', ['ids' => [$c->id, $a->id, $b->id]])->assertRedirect();
+        $this->assertSame([$c->id, $a->id, $b->id], $user->sidebarFeeds()->pluck('feeds.id')->all());
+
+        $this->actingAs($user)->post('/feeds/reorder', ['ids' => [$other->id]])->assertSessionHasErrors('ids.0');
+    }
+
+    public function test_dashboard_shows_latest_posts_of_followed_feeds_then_most_active_projects(): void
+    {
+        $user = User::factory()->create();
+        $followed = Feed::factory()->create();
+        $followed->subscribers()->attach($user);
+        $post = FeedPost::factory()->create(['feed_id' => $followed->id, 'title' => 'Suivie', 'published_on' => today()]);
+        FeedPost::factory()->create(['title' => 'Autre fil']);
+
+        $old = Project::factory()->create(['owner_id' => $user->id, 'created_at' => now()->subMonth()]);
+        $recent = Project::factory()->create(['owner_id' => $user->id, 'created_at' => now()->subWeek()]);
+        $old->log('a modifié le projet', $user);
+
+        $this->actingAs($user)->get('/dashboard')->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Dashboard')
+                ->has('posts', 1)
+                ->where('posts.0.id', $post->id)
+                ->where('projects.0.id', $old->id)
+                ->where('projects.1.id', $recent->id));
     }
 }

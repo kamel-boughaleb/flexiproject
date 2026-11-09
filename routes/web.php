@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function () {
 
     // Fils d'actualité
     Route::get('feeds', [FeedController::class, 'index'])->name('feeds.index');
+    Route::post('feeds/reorder', [FeedController::class, 'reorder'])->name('feeds.reorder');
     Route::get('feeds/options', [FeedController::class, 'options'])->name('feeds.options');
     Route::post('feeds', [FeedController::class, 'store'])->name('feeds.store');
     Route::get('feeds/{feed}', [FeedController::class, 'show'])->name('feeds.show');
