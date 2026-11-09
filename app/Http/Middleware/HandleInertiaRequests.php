@@ -49,8 +49,8 @@ class HandleInertiaRequests extends Middleware
             // Barre latérale : projets de l'utilisateur dans son ordre (avec leur statut, filtrable) et notifications non lues.
             'sidebarProjects' => fn () => $user?->sidebarProjects()->get(['projects.id', 'name', 'color', 'icon', 'image_path', 'start_date', 'completed_at'])
                 ->map(fn ($p) => $p->summary()),
-            // Fils d'actualité auxquels l'utilisateur est abonné, par ordre alphabétique.
-            'sidebarFeeds' => fn () => $user?->feeds()->orderBy('name')->get(['feeds.id', 'name', 'color'])
+            // Fils d'actualité auxquels l'utilisateur est abonné, dans son ordre (glisser-déposer).
+            'sidebarFeeds' => fn () => $user?->sidebarFeeds()->get(['feeds.id', 'name', 'color'])
                 ->map(fn ($feed) => $feed->summary()) ?? [],
             'unreadNotifications' => fn () => $user?->unreadNotifications()->count() ?? 0,
             'flash' => [

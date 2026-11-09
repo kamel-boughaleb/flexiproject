@@ -9,13 +9,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { dateRange } from '@/lib/labels';
-import type { MiniUser, Project, SharedData } from '@/types';
+import { dateRange, dueLabel } from '@/lib/labels';
+import type { FeedBadge, MiniUser, Project, SharedData } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { Plus } from 'lucide-vue-next';
+import { Paperclip, Plus } from 'lucide-vue-next';
 import { ref } from 'vue';
 
+type LatestPost = {
+    id: number;
+    title: string;
+    published_on: string;
+    excerpt: string;
+    attachments_count: number;
+    feed: FeedBadge;
+    user: MiniUser | null;
+};
 defineProps<{
+    posts: LatestPost[];
     projects: (Project & { members: MiniUser[]; tasks_total: number; tasks_done: number })[];
     colors: string[];
 }>();
@@ -42,7 +52,39 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
                 </div>
             </div>
 
-            <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <!-- Dernières actualités des fils suivis, puis les projets les plus actifs. -->
+            <section v-if="posts.length" class="mt-6">
+                <div class="flex items-baseline gap-3">
+                    <h2 class="text-lg font-bold">{{ $t('Dernières actualités') }}</h2>
+                    <Link :href="route('feeds.index')" class="text-sm font-semibold text-ink-soft hover:text-ink">{{ $t('Tous les fils') }}</Link>
+                </div>
+                <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <Link
+                        v-for="n in posts"
+                        :key="n.id"
+                        :href="route('posts.show', [n.feed.id, n.id])"
+                        class="flex flex-col rounded-xl border p-4 transition hover:shadow-md"
+                    >
+                        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide" :style="{ color: n.feed.color }">
+                            <ProjectAvatar :project="n.feed" size="xs" />
+                            <span class="truncate">{{ n.feed.name }}</span>
+                        </div>
+                        <h3 class="mt-2 font-semibold">{{ n.title }}</h3>
+                        <p v-if="n.excerpt" class="mt-1 line-clamp-3 text-sm text-muted-foreground">{{ n.excerpt }}</p>
+                        <div class="mt-auto flex items-center gap-2 pt-3 text-xs text-muted-foreground">
+                            <UserAvatar v-if="n.user" :user="n.user" size="xs" />
+                            <span class="truncate">{{ n.user?.name }}</span>
+                            <span v-if="n.attachments_count" class="flex items-center gap-0.5"
+                                ><Paperclip class="size-3" />{{ n.attachments_count }}</span
+                            >
+                            <span class="ml-auto shrink-0">{{ dueLabel(n.published_on) }}</span>
+                        </div>
+                    </Link>
+                </div>
+            </section>
+
+            <h2 class="mt-8 text-lg font-bold">{{ $t('Projets actifs') }}</h2>
+            <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <Link v-for="p in projects" :key="p.id" :href="route('projects.show', p.id)" class="rounded-xl border p-4 transition hover:shadow-md">
                     <div class="flex items-center gap-2">
                         <ProjectAvatar :project="p" size="md" />
