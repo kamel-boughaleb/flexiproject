@@ -4,7 +4,7 @@ import UserAvatar from '@/components/project/UserAvatar.vue';
 import { intlLocale } from '@/lib/i18n';
 import type { MiniUser } from '@/types';
 import { router } from '@inertiajs/vue3';
-import { Check, CornerDownRight, Loader2, Search, X } from 'lucide-vue-next';
+import { Check, CornerDownRight, Loader2, Newspaper, Search, X } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 interface ProjectResult {
@@ -34,14 +34,24 @@ interface TaskResult {
     url: string;
 }
 
-type Item = { kind: 'project'; data: ProjectResult } | { kind: 'task'; data: TaskResult };
+interface PostResult {
+    id: number;
+    title: string;
+    published_on: string;
+    feed: { id: number; name: string; color: string };
+    user: MiniUser | null;
+    url: string;
+}
 
-/** Barre de recherche globale : tâches et projets, résultats proposés au fil de la frappe. */
+type Item = { kind: 'project'; data: ProjectResult } | { kind: 'task'; data: TaskResult } | { kind: 'post'; data: PostResult };
+
+/** Barre de recherche globale : tâches, projets et actualités, résultats proposés au fil de la frappe. */
 const query = ref('');
 const open = ref(false);
 const loading = ref(false);
 const projects = ref<ProjectResult[]>([]);
 const tasks = ref<TaskResult[]>([]);
+const posts = ref<PostResult[]>([]);
 const active = ref(0);
 const searched = ref('');
 const input = ref<HTMLInputElement>();
@@ -50,6 +60,7 @@ const root = ref<HTMLElement>();
 const items = computed<Item[]>(() => [
     ...projects.value.map((data) => ({ kind: 'project' as const, data })),
     ...tasks.value.map((data) => ({ kind: 'task' as const, data })),
+    ...posts.value.map((data) => ({ kind: 'post' as const, data })),
 ]);
 const showPanel = computed(() => open.value && query.value.trim() !== '');
 
@@ -62,6 +73,7 @@ watch(query, (q) => {
         controller?.abort();
         projects.value = [];
         tasks.value = [];
+        posts.value = [];
         searched.value = '';
         loading.value = false;
         return;
@@ -79,9 +91,10 @@ async function search(q: string) {
             signal: controller.signal,
         });
         if (!response.ok) throw new Error(String(response.status));
-        const data = (await response.json()) as { projects: ProjectResult[]; tasks: TaskResult[] };
+        const data = (await response.json()) as { projects: ProjectResult[]; tasks: TaskResult[]; posts?: PostResult[] };
         projects.value = data.projects;
         tasks.value = data.tasks;
+        posts.value = data.posts ?? [];
         searched.value = q;
         active.value = 0;
         loading.value = false;
@@ -184,12 +197,12 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                 v-model="query"
                 type="search"
                 role="combobox"
-                :aria-label="$t('Rechercher des tâches ou des projets')"
+                :aria-label="$t('Rechercher des tâches, des projets ou des actualités')"
                 aria-autocomplete="list"
                 aria-controls="global-search-results"
                 :aria-expanded="showPanel"
                 :aria-activedescendant="showPanel && items.length ? `global-search-${active}` : undefined"
-                :placeholder="$t('Rechercher une tâche ou un projet')"
+                :placeholder="$t('Rechercher une tâche, un projet ou une actualité')"
                 autocomplete="off"
                 class="h-full min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-soft [&::-webkit-search-cancel-button]:hidden"
                 @focus="open = true"
@@ -223,7 +236,7 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                 {{ $t('Recherche…') }}
             </p>
             <p v-else-if="!items.length" class="px-3 py-6 text-center text-sm text-ink-soft">
-                {{ $t('Aucune tâche ni projet ne correspond à « :query ».', { query: searched }) }}
+                {{ $t('Aucune tâche, aucun projet ni aucune actualité ne correspond à « :query ».', { query: searched }) }}
             </p>
 
             <template v-if="projects.length">
@@ -331,6 +344,40 @@ const indexOf = (item: Item) => items.value.indexOf(item);
                             >+{{ item.data.participants_count - item.data.participants.length }}</span
                         >
                     </span>
+                </button>
+            </template>
+
+            <template v-if="posts.length">
+                <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-ink-soft">{{ $t('Actualités') }}</p>
+                <button
+                    v-for="item in items.filter((i) => i.kind === 'post')"
+                    :id="`global-search-${indexOf(item)}`"
+                    :key="`n${item.data.id}`"
+                    type="button"
+                    role="option"
+                    :aria-selected="indexOf(item) === active"
+                    :data-active="indexOf(item) === active"
+                    class="flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left data-[active=true]:bg-app-hover"
+                    @mouseenter="active = indexOf(item)"
+                    @click="go(item)"
+                >
+                    <Newspaper class="mt-0.5 size-5 shrink-0 text-app-muted" />
+                    <span v-if="item.kind === 'post'" class="min-w-0 flex-1">
+                        <span class="block truncate text-[15px] font-semibold text-ink">
+                            <template v-for="(part, i) in highlight(item.data.title)" :key="i"
+                                ><mark v-if="part.match" class="bg-transparent font-bold text-brand-active">{{ part.text }}</mark
+                                ><template v-else>{{ part.text }}</template></template
+                            >
+                        </span>
+                        <span class="mt-0.5 flex min-w-0 items-center gap-2 text-[13px] text-ink-soft">
+                            <span class="size-2.5 shrink-0 rounded-[3px]" :style="{ backgroundColor: item.data.feed.color }" />
+                            <span class="truncate">{{ item.data.feed.name }}</span>
+                            <span aria-hidden="true">·</span><span class="shrink-0">{{ dueLabel(item.data.published_on) }}</span>
+                        </span>
+                    </span>
+                    <span v-if="item.kind === 'post' && item.data.user" class="shrink-0 self-center rounded-full ring-2 ring-background"
+                        ><UserAvatar :user="item.data.user" size="xs"
+                    /></span>
                 </button>
             </template>
         </div>

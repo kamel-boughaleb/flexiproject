@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Feed;
+use App\Models\FeedPost;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -62,11 +64,29 @@ class SearchTest extends TestCase
 
         $this->actingAs($project->owner)->getJson('/search?q=%25')->assertJsonCount(1, 'tasks');
         $this->actingAs($project->owner)->getJson('/search?q=_')->assertJsonCount(0, 'tasks');
-        $this->actingAs($project->owner)->getJson('/search?q=%20%20')->assertExactJson(['projects' => [], 'tasks' => []]);
+        $this->actingAs($project->owner)->getJson('/search?q=%20%20')->assertExactJson(['projects' => [], 'tasks' => [], 'posts' => []]);
     }
 
     public function test_guests_cannot_search(): void
     {
         $this->getJson('/search?q=a')->assertUnauthorized();
+    }
+
+    public function test_finds_posts_by_title_or_text_for_the_whole_team(): void
+    {
+        $feed = Feed::factory()->create(['name' => 'Production', 'color' => '#0ea5e9']);
+        $post = FeedPost::factory()->create(['feed_id' => $feed->id, 'title' => 'Nouvelle presse', 'body' => '<p>Installation lundi matin</p>', 'published_on' => '2026-11-09']);
+        FeedPost::factory()->create(['feed_id' => $feed->id, 'title' => 'Autre sujet', 'body' => '<p>Rien à voir</p>']);
+        $reader = User::factory()->create();
+
+        $this->actingAs($reader)->getJson('/search?q=presse lundi')
+            ->assertOk()
+            ->assertJsonCount(1, 'posts')
+            ->assertJsonPath('posts.0.title', 'Nouvelle presse')
+            ->assertJsonPath('posts.0.feed.name', 'Production')
+            ->assertJsonPath('posts.0.published_on', '2026-11-09')
+            ->assertJsonPath('posts.0.url', "/feeds/{$feed->id}/posts/{$post->id}");
+
+        $this->actingAs($reader)->getJson('/search?q=introuvable')->assertJsonCount(0, 'posts');
     }
 }

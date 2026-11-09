@@ -44,7 +44,7 @@ const editing = computed({ get: () => editingId.value !== null, set: (v) => !v &
             { title: feed.name, href: route('feeds.show', feed.id) },
         ]"
     >
-        <div class="mx-auto w-full max-w-3xl p-6">
+        <div class="w-full max-w-3xl p-6">
             <div class="flex flex-wrap items-start gap-4">
                 <ProjectAvatar :project="feed" size="lg" />
                 <div class="min-w-0 flex-1">

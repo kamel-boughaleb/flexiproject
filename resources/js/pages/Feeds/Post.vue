@@ -19,7 +19,7 @@ const editing = ref(false);
             { title: post.title, href: route('posts.show', [feed.id, post.id]) },
         ]"
     >
-        <div class="mx-auto w-full max-w-3xl p-6">
+        <div class="w-full max-w-3xl p-6">
             <Link :href="route('feeds.show', feed.id)" class="text-sm font-semibold text-ink-soft hover:text-ink">
                 ← {{ $t('Toutes les actualités de :feed', { feed: feed.name }) }}
             </Link>

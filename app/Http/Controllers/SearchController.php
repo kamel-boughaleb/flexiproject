@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\Comment;
+use App\Models\FeedPost;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -14,7 +15,8 @@ use Illuminate\Support\Collection;
 
 /**
  * Recherche globale (barre en haut de l'écran) : tâches et projets dont le nom contient
- * tous les mots saisis, limités aux projets dont l'utilisateur est collaborateur.
+ * tous les mots saisis, limités aux projets dont l'utilisateur est collaborateur, et
+ * actualités (visibles par toute l'équipe) dont le titre ou le texte contient chaque mot.
  */
 class SearchController extends Controller
 {
@@ -24,11 +26,13 @@ class SearchController extends Controller
 
     private const PARTICIPANT_LIMIT = 4;
 
+    private const POST_LIMIT = 5;
+
     public function __invoke(Request $request): JsonResponse
     {
         $terms = $this->terms((string) $request->query('q', ''));
         if ($terms === []) {
-            return response()->json(['projects' => [], 'tasks' => []]);
+            return response()->json(['projects' => [], 'tasks' => [], 'posts' => []]);
         }
 
         $user = $request->user();
@@ -37,6 +41,7 @@ class SearchController extends Controller
         return response()->json([
             'projects' => $this->projects($projectIds, $terms),
             'tasks' => $this->tasks($projectIds, $terms),
+            'posts' => $this->posts($terms),
         ]);
     }
 
@@ -48,16 +53,41 @@ class SearchController extends Controller
         return array_slice(array_values(array_unique($words)), 0, 5);
     }
 
-    /** Chaque mot doit apparaître dans la colonne (les jokers % et _ saisis sont pris au pied de la lettre). */
-    private function matching(Builder $query, string $column, array $terms): Builder
+    /**
+     * Chaque mot doit apparaître dans la colonne, ou dans l'une des colonnes données
+     * (les jokers % et _ saisis sont pris au pied de la lettre).
+     */
+    private function matching(Builder $query, string|array $columns, array $terms): Builder
     {
         foreach ($terms as $term) {
             // « ! » comme caractère d'échappement : il se comporte pareil sous MySQL et SQLite (contrairement à « \ »).
             $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term);
-            $query->whereRaw("{$column} like ? escape '!'", ["%{$escaped}%"]);
+            $query->where(function (Builder $q) use ($columns, $escaped) {
+                foreach ((array) $columns as $column) {
+                    $q->orWhereRaw("{$column} like ? escape '!'", ["%{$escaped}%"]);
+                }
+            });
         }
 
         return $query;
+    }
+
+    private function posts(array $terms): Collection
+    {
+        return $this->matching(FeedPost::query(), ['title', 'body'], $terms)
+            ->with(['feed:id,name,color', 'user:id,name,color,avatar'])
+            ->orderByDesc('published_on')
+            ->orderByDesc('id')
+            ->limit(self::POST_LIMIT)
+            ->get()
+            ->map(fn (FeedPost $p) => [
+                'id' => $p->id,
+                'title' => $p->title,
+                'published_on' => $p->published_on->format('Y-m-d'),
+                'feed' => $p->feed->only(['id', 'name', 'color']),
+                'user' => $p->user?->only(['id', 'name', 'color', 'avatar']),
+                'url' => route('posts.show', [$p->feed_id, $p->id], false),
+            ]);
     }
 
     private function projects(Collection $projectIds, array $terms): Collection
