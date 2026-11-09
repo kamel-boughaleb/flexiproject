@@ -7,8 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { fileSize } from '@/lib/files';
-import type { FeedPost } from '@/types';
-import { useForm } from '@inertiajs/vue3';
+import type { FeedBadge, FeedPost } from '@/types';
+import { Link, useForm } from '@inertiajs/vue3';
 import { format } from 'date-fns';
 import { Paperclip, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -16,9 +16,33 @@ import { computed, ref, watch } from 'vue';
 /**
  * Rédaction d'une actualité : titre, date, texte riche (images collées ou glissées, liens…)
  * et pièces jointes. En modification, les pièces jointes sont envoyées ou retirées tout de suite.
+ * Sans feedId (bouton d'un projet), le fil est choisi dans la fenêtre : ceux suivis d'abord.
  */
-const props = defineProps<{ feedId: number; post?: FeedPost | null }>();
+const props = defineProps<{ feedId?: number; post?: FeedPost | null; initialTitle?: string }>();
 const open = defineModel<boolean>('open', { required: true });
+
+type FeedOption = FeedBadge & { subscribed: boolean };
+const feeds = ref<FeedOption[] | null>(null);
+const chosenFeed = ref<number | null>(props.feedId ?? null);
+const targetFeed = computed(() => props.feedId ?? chosenFeed.value);
+const LAST_FEED_KEY = 'last-post-feed';
+async function loadFeeds() {
+    if (props.feedId) return;
+    try {
+        const response = await fetch(route('feeds.options'), { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+        feeds.value = (await response.json()) as FeedOption[];
+    } catch {
+        feeds.value = [];
+    }
+    let last: number | null = null;
+    try {
+        last = Number(localStorage.getItem(LAST_FEED_KEY)) || null;
+    } catch {
+        // Sans stockage, on propose le premier fil suivi.
+    }
+    const list = feeds.value ?? [];
+    chosenFeed.value = list.find((f) => f.id === last)?.id ?? list[0]?.id ?? null;
+}
 
 const today = () => format(new Date(), 'yyyy-MM-dd');
 const form = useForm<{ title: string; published_on: string; body: string; files: File[] }>({ title: '', published_on: today(), body: '', files: [] });
@@ -28,7 +52,8 @@ watch(
     (value) => {
         if (!value) return;
         form.clearErrors();
-        form.title = props.post?.title ?? '';
+        form.title = props.post?.title ?? props.initialTitle ?? '';
+        loadFeeds();
         form.published_on = props.post?.published_on?.slice(0, 10) ?? today();
         form.body = props.post?.body ?? '';
         form.files = [];
@@ -55,7 +80,13 @@ function submit() {
     if (props.post) {
         form.transform(({ title, published_on, body }) => ({ title, published_on, body })).patch(route('posts.update', props.post.id), options);
     } else {
-        form.transform((data) => data).post(route('posts.store', props.feedId), { ...options, forceFormData: true });
+        if (!targetFeed.value) return;
+        try {
+            localStorage.setItem(LAST_FEED_KEY, String(targetFeed.value));
+        } catch {
+            // Choix non mémorisé.
+        }
+        form.transform((data) => data).post(route('posts.store', targetFeed.value), { ...options, forceFormData: true });
     }
 }
 </script>
@@ -66,7 +97,24 @@ function submit() {
             <DialogHeader>
                 <DialogTitle>{{ post ? $t("Modifier l'actualité") : $t('Nouvelle actualité') }}</DialogTitle>
             </DialogHeader>
-            <form class="space-y-4" @submit.prevent="submit">
+            <p v-if="!feedId && feeds && !feeds.length" class="text-sm text-muted-foreground">
+                {{ $t("Aucun fil d'actualité pour le moment.") }}
+                <Link :href="`${route('feeds.index')}?new=1`" class="font-bold text-brand-active hover:underline">{{ $t('Créer un fil') }}</Link>
+            </p>
+            <form v-else class="space-y-4" @submit.prevent="submit">
+                <div v-if="!feedId" class="grid gap-2">
+                    <Label for="post-feed">{{ $t("Fil d'actualité") }}</Label>
+                    <select
+                        id="post-feed"
+                        v-model="chosenFeed"
+                        required
+                        :disabled="!feeds"
+                        class="h-10 rounded-md border bg-background px-3 text-sm font-semibold"
+                    >
+                        <option v-if="!feeds" :value="null">{{ $t('Chargement…') }}</option>
+                        <option v-for="f in feeds ?? []" :key="f.id" :value="f.id">{{ f.name }}</option>
+                    </select>
+                </div>
                 <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
                     <div class="grid gap-2">
                         <Label for="post-title">{{ $t('Titre') }}</Label>
@@ -82,9 +130,10 @@ function submit() {
                 <div class="grid gap-2">
                     <Label>{{ $t('Texte') }}</Label>
                     <RichEditor
-                        :key="editorKey"
+                        v-if="targetFeed"
+                        :key="`${editorKey}-${targetFeed}`"
                         v-model="form.body"
-                        :upload-url="route('feed-images.store', feedId)"
+                        :upload-url="route('feed-images.store', targetFeed)"
                         min-height="10rem"
                         :placeholder="$t('Écrivez votre actualité… Collez ou glissez des images, ajoutez des liens. « / » affiche le menu.')"
                     />
@@ -129,7 +178,7 @@ function submit() {
                     <div class="h-full rounded-full bg-success transition-all" :style="{ width: `${form.progress.percentage}%` }" />
                 </div>
                 <div class="flex items-center gap-3">
-                    <Button type="submit" :disabled="form.processing">{{ post ? $t('Enregistrer') : $t('Publier') }}</Button>
+                    <Button type="submit" :disabled="form.processing || !targetFeed">{{ post ? $t('Enregistrer') : $t('Publier') }}</Button>
                     <span v-if="!post" class="text-xs text-muted-foreground">{{ $t('Les abonnés du fil sont prévenus par e-mail.') }}</span>
                 </div>
             </form>

@@ -185,4 +185,16 @@ class FeedTest extends TestCase
         $this->assertSame('[Production] Nouvelle presse', end($messages)->getOriginalMessage()->getSubject());
         $this->assertSame(0, DB::table('notifications')->count());
     }
+
+    public function test_feed_options_list_subscribed_feeds_first(): void
+    {
+        $user = User::factory()->create();
+        Feed::factory()->create(['name' => 'Autre']);
+        $followed = Feed::factory()->create(['name' => 'Zébulon']);
+        $followed->subscribers()->attach($user);
+
+        $this->actingAs($user)->getJson('/feeds/options')->assertOk()
+            ->assertJsonPath('0.name', 'Zébulon')->assertJsonPath('0.subscribed', true)
+            ->assertJsonPath('1.name', 'Autre')->assertJsonPath('1.subscribed', false);
+    }
 }

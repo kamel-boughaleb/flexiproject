@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Feed;
 use App\Models\Project;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -34,6 +35,16 @@ class FeedController extends Controller
                 ]),
             'colors' => Project::COLORS,
         ]);
+    }
+
+    /** Liste courte des fils (choix du fil dans la fenêtre « Nouvelle actualité » d'un projet), ceux suivis en premier. */
+    public function options(Request $request): JsonResponse
+    {
+        $subscribed = $request->user()->feeds()->pluck('feeds.id')->all();
+
+        return response()->json(Feed::orderBy('name')->get(['id', 'name', 'color'])
+            ->map(fn (Feed $feed) => [...$feed->summary(), 'subscribed' => in_array($feed->id, $subscribed, true)])
+            ->sortByDesc('subscribed')->values());
     }
 
     public function store(Request $request): RedirectResponse
