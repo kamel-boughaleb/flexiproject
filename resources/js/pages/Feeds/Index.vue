@@ -22,7 +22,7 @@ const toggle = (f: FeedRow) =>
 <template>
     <Head :title="$t('Fils d\'actualité')" />
     <AppLayout :breadcrumbs="[{ title: $t('Fils d\'actualité'), href: route('feeds.index') }]">
-        <div class="mx-auto w-full max-w-4xl p-6">
+        <div class="w-full max-w-4xl p-6">
             <div class="flex items-start gap-4">
                 <div class="flex-1">
                     <h1 class="text-2xl font-semibold">{{ $t("Fils d'actualité") }}</h1>
