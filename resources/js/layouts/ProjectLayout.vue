@@ -7,10 +7,11 @@ import UserMenu from '@/components/UserMenu.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { t } from '@/lib/i18n';
 import { dateRange } from '@/lib/labels';
-import type { Member, Project, ProjectPageProps, SharedData } from '@/types';
+import type { Member, Project, ProjectPageProps, ProjectTab, SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { CircleCheck, Newspaper } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import draggable from 'vuedraggable';
 
 const props = defineProps<{ project: Project; members: Member[]; title: string; canEdit?: boolean }>();
 const page = usePage<SharedData & Partial<ProjectPageProps>>();
@@ -26,14 +27,31 @@ const toggleDone = () =>
 // Nouvelle actualité à propos du projet : choix du fil dans la fenêtre, titre pré-rempli avec le nom du projet.
 const posting = ref(false);
 
-const tabs = computed(() => [
-    { label: t('Tableau'), href: route('projects.view', [props.project.id, 'board']) },
-    { label: t('Liste'), href: route('projects.view', [props.project.id, 'list']) },
-    { label: t('Calendrier'), href: route('projects.view', [props.project.id, 'calendar']) },
-    { label: t('Planning'), href: route('projects.view', [props.project.id, 'timeline']) },
-    { label: t('Collaborateurs'), href: route('projects.members', props.project.id) },
-    { label: t('Paramètres'), href: route('projects.settings', props.project.id) },
-]);
+const TABS: Record<ProjectTab, { label: () => string; href: () => string }> = {
+    board: { label: () => t('Tableau'), href: () => route('projects.view', [props.project.id, 'board']) },
+    list: { label: () => t('Liste'), href: () => route('projects.view', [props.project.id, 'list']) },
+    calendar: { label: () => t('Calendrier'), href: () => route('projects.view', [props.project.id, 'calendar']) },
+    timeline: { label: () => t('Planning'), href: () => route('projects.view', [props.project.id, 'timeline']) },
+    members: { label: () => t('Collaborateurs'), href: () => route('projects.members', props.project.id) },
+    settings: { label: () => t('Paramètres'), href: () => route('projects.settings', props.project.id) },
+};
+
+// Onglets réordonnables par glisser-déposer (éditeurs et administrateurs) ; le premier devient la vue par défaut.
+// Copie locale pour que le nouvel ordre s'affiche aussitôt ; resynchronisée à chaque réponse du serveur.
+const order = ref<ProjectTab[]>([]);
+watch(
+    () => page.props.tabs,
+    (tabs) => (order.value = tabs?.length ? [...tabs] : (Object.keys(TABS) as ProjectTab[])),
+    { immediate: true },
+);
+const tabs = computed(() => order.value.map((key) => ({ key, label: TABS[key].label(), href: TABS[key].href() })));
+
+function reorderTabs(list: { key: ProjectTab }[]) {
+    const keys = list.map((tab) => tab.key);
+    if (keys.every((k, i) => k === order.value[i])) return;
+    order.value = keys;
+    router.post(route('projects.tabs', props.project.id), { tabs: keys }, { preserveScroll: true, preserveState: true, only: ['tabs'] });
+}
 
 const isActive = (href: string) => page.url.split('?')[0] === new URL(href).pathname;
 
@@ -103,20 +121,36 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                         <UserMenu />
                     </div>
                 </div>
-                <nav :aria-label="$t('Vues du projet')" class="-mb-px mt-3 flex gap-1 overflow-x-auto md:gap-2">
-                    <Link
-                        v-for="tab in tabs"
-                        :key="tab.label"
-                        :href="tab.href"
-                        :aria-current="isActive(tab.href) ? 'page' : undefined"
-                        class="whitespace-nowrap border-b-2 px-2.5 pb-2.5 pt-1.5 text-sm transition-colors md:px-3.5"
-                        :class="
-                            isActive(tab.href) ? 'border-brand font-bold text-ink' : 'border-transparent font-semibold text-ink-soft hover:text-ink'
-                        "
-                    >
-                        {{ tab.label }}
-                    </Link>
-                </nav>
+                <draggable
+                    :model-value="tabs"
+                    tag="nav"
+                    item-key="key"
+                    direction="horizontal"
+                    :disabled="!canEdit"
+                    :animation="150"
+                    :delay="250"
+                    :delay-on-touch-only="true"
+                    ghost-class="opacity-40"
+                    :aria-label="$t('Vues du projet')"
+                    class="-mb-px mt-3 flex gap-1 overflow-x-auto md:gap-2"
+                    @update:model-value="reorderTabs"
+                >
+                    <template #item="{ element: tab }">
+                        <Link
+                            :href="tab.href"
+                            :aria-current="isActive(tab.href) ? 'page' : undefined"
+                            :title="canEdit ? $t('Glisser pour réordonner : le premier onglet s’ouvre par défaut') : undefined"
+                            class="whitespace-nowrap border-b-2 px-2.5 pb-2.5 pt-1.5 text-sm transition-colors md:px-3.5"
+                            :class="
+                                isActive(tab.href)
+                                    ? 'border-brand font-bold text-ink'
+                                    : 'border-transparent font-semibold text-ink-soft hover:text-ink'
+                            "
+                        >
+                            {{ tab.label }}
+                        </Link>
+                    </template>
+                </draggable>
             </header>
             <div class="relative flex min-h-0 flex-1 overflow-hidden">
                 <div class="min-h-0 min-w-0 flex-1 overflow-auto">

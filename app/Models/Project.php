@@ -23,6 +23,9 @@ class Project extends Model
 
     public const DEFAULT_SECTIONS = ['À faire', 'En cours', 'Terminé'];
 
+    /** Onglets de la page projet, dans l'ordre par défaut ; le premier est la vue ouverte depuis le menu. */
+    public const TABS = ['board', 'list', 'calendar', 'timeline', 'members', 'settings'];
+
     protected $fillable = ['name', 'description', 'color', 'icon', 'start_date', 'end_date', 'owner_id'];
 
     protected $hidden = ['image_path'];
@@ -43,7 +46,26 @@ class Project extends Model
             'start_date' => 'date:Y-m-d',
             'end_date' => 'date:Y-m-d',
             'completed_at' => 'datetime',
+            'tabs' => 'array',
         ];
+    }
+
+    /** Ordre des onglets choisi pour ce projet, complété des onglets inconnus de l'ordre enregistré. */
+    public function tabOrder(): array
+    {
+        $saved = array_values(array_intersect($this->tabs ?? [], self::TABS));
+
+        return [...$saved, ...array_values(array_diff(self::TABS, $saved))];
+    }
+
+    /** Adresse de la vue par défaut du projet : son premier onglet. */
+    public function defaultUrl(): string
+    {
+        $tab = $this->tabOrder()[0];
+
+        return in_array($tab, ['members', 'settings'], true)
+            ? route('projects.'.$tab, $this)
+            : route('projects.view', [$this, $tab]);
     }
 
     /** Projets pas encore terminés (en cours ou non commencés). */

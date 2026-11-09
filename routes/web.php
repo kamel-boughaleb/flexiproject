@@ -50,7 +50,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::post('projects/reorder', [ProjectController::class, 'reorder'])->name('projects.reorder');
-    Route::get('projects/{project}', fn (Project $project) => to_route('projects.view', [$project, 'board']))->name('projects.show');
+    Route::get('projects/{project}', fn (Project $project) => redirect($project->defaultUrl()))->name('projects.show');
+    Route::post('projects/{project}/tabs', [ProjectController::class, 'reorderTabs'])->name('projects.tabs');
     Route::get('projects/{project}/rules', fn (Project $project) => to_route('rules.index'))->name('projects.rules');
     Route::get('projects/{project}/avatar', [ProjectController::class, 'avatar'])->name('projects.avatar');
     Route::get('projects/{project}/members', [ProjectController::class, 'members'])->name('projects.members');

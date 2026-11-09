@@ -49,6 +49,33 @@ class ProjectTest extends TestCase
             ->post("/projects/{$project->id}/sections/reorder", ['ids' => [$todo, $doing, $done]])->assertForbidden();
     }
 
+    public function test_tabs_can_be_reordered_and_the_first_one_opens_by_default(): void
+    {
+        $project = Project::factory()->create();
+        $owner = $project->owner;
+        $viewer = User::factory()->create();
+        $project->members()->attach($viewer, ['role' => 'viewer']);
+
+        $this->actingAs($owner)->get("/projects/{$project->id}")->assertRedirect("/projects/{$project->id}/board");
+        $this->get("/projects/{$project->id}/list")
+            ->assertInertia(fn (Assert $page) => $page->where('tabs', ['board', 'list', 'calendar', 'timeline', 'members', 'settings']));
+
+        $order = ['list', 'board', 'timeline', 'calendar', 'members', 'settings'];
+        $this->post("/projects/{$project->id}/tabs", ['tabs' => $order])->assertRedirect();
+        $this->assertSame($order, $project->fresh()->tabOrder());
+        // L'ordre est commun au projet : le lecteur ouvre lui aussi la Liste.
+        $this->actingAs($viewer)->get("/projects/{$project->id}")->assertRedirect("/projects/{$project->id}/list");
+        $this->get("/projects/{$project->id}/board")->assertInertia(fn (Assert $page) => $page->where('tabs', $order));
+
+        $this->actingAs($owner)->post("/projects/{$project->id}/tabs", ['tabs' => ['settings', ...array_slice($order, 0, 5)]]);
+        $this->get("/projects/{$project->id}")->assertRedirect("/projects/{$project->id}/settings");
+
+        // Une liste incomplète ou un onglet inconnu est refusé ; un lecteur ne peut pas réordonner.
+        $this->post("/projects/{$project->id}/tabs", ['tabs' => ['list', 'board']])->assertSessionHasErrors('tabs');
+        $this->post("/projects/{$project->id}/tabs", ['tabs' => ['rules', ...array_slice($order, 1)]])->assertSessionHasErrors('tabs.0');
+        $this->actingAs($viewer)->post("/projects/{$project->id}/tabs", ['tabs' => $order])->assertForbidden();
+    }
+
     public function test_end_date_cannot_be_before_start_date(): void
     {
         $this->actingAs(User::factory()->create())

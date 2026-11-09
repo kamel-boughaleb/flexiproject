@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useSectionEditing, vFocusSelect } from '@/composables/useSectionEditing';
 import type { Section, Task } from '@/types';
 import { router, useForm } from '@inertiajs/vue3';
-import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Ellipsis, GripVertical, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import draggable from 'vuedraggable';
 import TaskCard from './TaskCard.vue';
@@ -105,7 +105,16 @@ function confirmDelete() {
                         :class="{ 'max-md:hidden': section.id !== mobileColumn }"
                         data-test="column"
                     >
-                        <div class="group flex items-center gap-2 px-[18px] pb-2.5 pt-4">
+                        <div class="group relative flex items-center gap-2 px-[18px] pb-2.5 pt-4">
+                            <span
+                                v-if="canEdit && renaming !== section.id"
+                                data-section-handle
+                                aria-hidden="true"
+                                :title="$t('Glisser pour déplacer la section')"
+                                class="absolute left-0.5 flex h-7 w-4 cursor-grab items-center justify-center text-ink-soft opacity-0 transition-opacity hover:text-ink active:cursor-grabbing group-hover:opacity-100 max-md:hidden"
+                            >
+                                <GripVertical class="size-4" />
+                            </span>
                             <input
                                 v-if="renaming === section.id"
                                 v-focus-select
