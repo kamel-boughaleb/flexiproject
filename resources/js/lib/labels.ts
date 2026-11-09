@@ -112,6 +112,12 @@ export const shortDate = (d: string | null | undefined) => {
     return date ? format(date, t('d MMM'), { locale: dateLocale() }) : '';
 };
 
+/** Date complète : « lundi 9 novembre 2026 ». */
+export const longDate = (d: string | null | undefined) => {
+    const date = toDate(d);
+    return date ? format(date, t('EEEE d MMMM yyyy'), { locale: dateLocale() }) : '';
+};
+
 export const dateTime = (d: string) => format(parseISO(d), t("d MMM 'à' HH:mm"), { locale: dateLocale() });
 
 export const dateRange = (start: string | null, due: string | null) => {

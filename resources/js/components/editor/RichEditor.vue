@@ -49,8 +49,12 @@ import { mentionExtension, slashExtension, slashItems } from './suggestion';
 const props = withDefaults(
     defineProps<{
         modelValue: string | null;
-        projectId: number;
-        members: MiniUser[];
+        /** Projet dont les images sont envoyées (editor-images.store), sauf si uploadUrl est donné. */
+        projectId?: number;
+        /** Adresse d'envoi des images insérées (ex. fil d'actualité). */
+        uploadUrl?: string;
+        /** Collaborateurs proposés avec « @ » ; sans collaborateurs, le bouton de mention est masqué. */
+        members?: MiniUser[];
         placeholder?: string;
         /** Affiche le bouton d'envoi (commentaires). Ctrl/⌘ + Entrée envoie aussi. */
         submittable?: boolean;
@@ -59,7 +63,7 @@ const props = withDefaults(
         /** Édition en place : pas de cadre ni de barre d'outils visibles tant que l'on ne survole ou n'édite pas. */
         bare?: boolean;
     }>(),
-    { placeholder: t('Saisissez « / » pour afficher le menu'), submittable: false, busy: false, minHeight: '4rem', bare: false },
+    { placeholder: t('Saisissez « / » pour afficher le menu'), members: () => [], submittable: false, busy: false, minHeight: '4rem', bare: false },
 );
 const emit = defineEmits<{ 'update:modelValue': [html: string]; submit: [html: string]; change: [html: string] }>();
 
@@ -188,7 +192,7 @@ async function upload(file: File) {
     data.append('image', file);
     uploading.value = true;
     try {
-        const response = await fetch(route('editor-images.store', props.projectId), {
+        const response = await fetch(props.uploadUrl ?? route('editor-images.store', props.projectId!), {
             method: 'POST',
             body: data,
             credentials: 'same-origin',
@@ -455,7 +459,9 @@ function mention() {
             <EmojiPicker @pick="insertEmoji">
                 <button type="button" :title="$t('Emoji')" :class="btn"><Smile class="size-4" /></button>
             </EmojiPicker>
-            <button type="button" :title="$t('Mentionner un collaborateur')" :class="btn" @click="mention"><AtSign class="size-4" /></button>
+            <button v-if="members.length" type="button" :title="$t('Mentionner un collaborateur')" :class="btn" @click="mention">
+                <AtSign class="size-4" />
+            </button>
             <span v-if="uploading" class="ml-2 text-xs text-muted-foreground">{{ $t("Envoi de l'image…") }}</span>
             <button
                 v-if="submittable"

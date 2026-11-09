@@ -9,7 +9,14 @@ import { Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import AttachmentViewer from './AttachmentViewer.vue';
 
-const props = defineProps<{ taskId: number; attachments: Attachment[]; canEdit: boolean; canManage: boolean }>();
+const props = defineProps<{
+    taskId?: number;
+    /** Adresse d'envoi des fichiers (ex. actualité), à la place de celle de la tâche. */
+    uploadUrl?: string;
+    attachments: Attachment[];
+    canEdit: boolean;
+    canManage: boolean;
+}>();
 
 const userId = computed(() => usePage<SharedData>().props.auth.user.id);
 const canDelete = (a: Attachment) => props.canManage || (props.canEdit && a.user_id === userId.value);
@@ -20,7 +27,7 @@ const errors = computed(() => Object.entries(form.errors).map(([, message]) => m
 function upload(files: FileList | File[] | null | undefined) {
     if (!files?.length || !props.canEdit) return;
     form.files = Array.from(files);
-    form.post(route('attachments.store', props.taskId), {
+    form.post(props.uploadUrl ?? route('attachments.store', props.taskId!), {
         preserveScroll: true,
         preserveState: true,
         forceFormData: true,

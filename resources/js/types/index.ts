@@ -22,6 +22,7 @@ export interface SharedData {
     locales: Record<string, string>;
     auth: Auth;
     sidebarProjects: SidebarProject[];
+    sidebarFeeds: FeedBadge[];
     unreadNotifications: number;
     flash?: { error?: string | null; success?: string | null };
     ziggy: {
@@ -182,4 +183,30 @@ export interface Rule {
     trigger_section?: { id: number; name: string } | null;
     project?: ProjectBadge | null;
     actions: RuleAction[];
+}
+
+/** Fil d'actualité (menu de gauche, avatar : pastille de couleur avec l'initiale). */
+export interface FeedBadge {
+    id: number;
+    name: string;
+    color: string;
+}
+
+export interface Feed extends FeedBadge {
+    description: string | null;
+}
+
+export interface FeedPost {
+    id: number;
+    feed_id: number;
+    user_id: number | null;
+    title: string;
+    body: string | null;
+    published_on: string;
+    created_at: string;
+    updated_at: string;
+    user: MiniUser | null;
+    attachments: Attachment[];
+    /** L'utilisateur peut modifier ou supprimer l'actualité (auteur, créateur du fil ou administrateur). */
+    can_manage: boolean;
 }

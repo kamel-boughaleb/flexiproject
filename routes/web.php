@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EditorImageController;
+use App\Http\Controllers\FeedController;
+use App\Http\Controllers\FeedPostController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MyTasksController;
@@ -82,6 +84,23 @@ Route::middleware('auth')->group(function () {
     Route::post('projects/{project}/members', [MemberController::class, 'store'])->name('members.store');
     Route::patch('projects/{project}/members/{user}', [MemberController::class, 'update'])->name('members.update');
     Route::delete('projects/{project}/members/{user}', [MemberController::class, 'destroy'])->name('members.destroy');
+
+    // Fils d'actualité
+    Route::get('feeds', [FeedController::class, 'index'])->name('feeds.index');
+    Route::post('feeds', [FeedController::class, 'store'])->name('feeds.store');
+    Route::get('feeds/{feed}', [FeedController::class, 'show'])->name('feeds.show');
+    Route::patch('feeds/{feed}', [FeedController::class, 'update'])->name('feeds.update');
+    Route::delete('feeds/{feed}', [FeedController::class, 'destroy'])->name('feeds.destroy');
+    Route::post('feeds/{feed}/subscription', [FeedController::class, 'subscribe'])->name('feeds.subscribe');
+    Route::delete('feeds/{feed}/subscription', [FeedController::class, 'unsubscribe'])->name('feeds.unsubscribe');
+    Route::post('feeds/{feed}/images', [EditorImageController::class, 'storeForFeed'])->name('feed-images.store');
+    Route::get('feeds/{feed}/images/{name}', [EditorImageController::class, 'showForFeed'])
+        ->where('name', '[A-Za-z0-9]+\.(png|jpg|gif|webp)')->name('feed-images.show');
+    Route::post('feeds/{feed}/posts', [FeedPostController::class, 'store'])->name('posts.store');
+    Route::get('feeds/{feed}/posts/{post}', [FeedPostController::class, 'show'])->name('posts.show');
+    Route::patch('posts/{post}', [FeedPostController::class, 'update'])->name('posts.update');
+    Route::delete('posts/{post}', [FeedPostController::class, 'destroy'])->name('posts.destroy');
+    Route::post('posts/{post}/attachments', [AttachmentController::class, 'storeForPost'])->name('posts.attachments.store');
 
     Route::get('rules', [RuleController::class, 'index'])->name('rules.index');
     Route::post('rules', [RuleController::class, 'store'])->name('rules.store');
