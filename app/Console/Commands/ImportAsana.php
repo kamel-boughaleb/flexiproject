@@ -89,6 +89,12 @@ class ImportAsana extends Command
             ['Liens externes ignorés (Drive, Dropbox…)', $stats['external_links']],
             ['Pièces jointes en échec', $stats['failed_attachments']],
         ]);
+        if ($stats['failed_projects']) {
+            $this->warn('Projets interrompus par une erreur (relancez l\'import sans --reset pour les reprendre) :');
+            foreach ($stats['failed_projects'] as $name) {
+                $this->line("  • {$name}");
+            }
+        }
         if ($stats['users_created'] && ! $this->option('invite')) {
             $this->line('Les collaborateurs créés peuvent se connecter avec Google, ou recevoir une invitation depuis la page Équipe.');
         }
