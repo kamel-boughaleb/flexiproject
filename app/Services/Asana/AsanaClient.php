@@ -47,10 +47,13 @@ class AsanaClient
         return iterator_to_array($this->each($path, $query), false);
     }
 
-    /** Télécharge un fichier joint (lien temporaire signé : on n'envoie pas le jeton). */
-    public function download(string $url): string
+    /**
+     * Télécharge un fichier joint dans $path (lien temporaire signé : on n'envoie pas le jeton).
+     * Le fichier est écrit au fil de l'eau, sans être chargé en mémoire.
+     */
+    public function download(string $url, string $path): void
     {
-        return Http::timeout(300)->retry(3, 2000, throw: true)->get($url)->throw()->body();
+        Http::timeout(600)->retry(3, 2000, throw: true)->sink($path)->get($url)->throw();
     }
 
     private function request(string $path, array $query): array

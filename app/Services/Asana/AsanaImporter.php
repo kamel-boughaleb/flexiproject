@@ -41,6 +41,7 @@ class AsanaImporter
     public array $stats = [
         'users_created' => 0, 'users_linked' => 0, 'projects' => 0, 'sections' => 0, 'tasks' => 0,
         'comments' => 0, 'attachments' => 0, 'external_links' => 0, 'failed_attachments' => 0,
+        'failed_projects' => [],
     ];
 
     /** @var callable(string): void */
@@ -77,7 +78,17 @@ class AsanaImporter
 
         foreach ($projects as $i => $asanaProject) {
             $this->say(sprintf('Projet %d/%d : %s', $i + 1, count($projects), $asanaProject['name']));
-            $this->importProject($asanaProject);
+            try {
+                $this->importProject($asanaProject);
+            } catch (Throwable $e) {
+                // Un jeton refusé arrête tout ; toute autre erreur n'arrête que ce projet.
+                if (str_starts_with($e->getMessage(), 'Jeton Asana refusé')) {
+                    throw $e;
+                }
+                $this->stats['failed_projects'][] = $asanaProject['name'];
+                $this->say("  ⚠ Projet interrompu : {$e->getMessage()}");
+                report($e);
+            }
         }
 
         return $this->stats;
@@ -141,6 +152,9 @@ class AsanaImporter
 
             foreach ($tasks as $i => $asanaTask) {
                 $this->importTask($asanaTask, $project, $section, null, $i + 1);
+                if (($i + 1) % 50 === 0) {
+                    $this->say(sprintf('  … %s : %d/%d tâches', $section->name, $i + 1, count($tasks)));
+                }
             }
         }
 
@@ -249,18 +263,20 @@ class AsanaImporter
             }
 
             $name = Str::limit(trim($data['name'] ?? '') ?: 'fichier', 250, '');
+            $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            $path = "attachments/{$task->project_id}/{$task->id}/".Str::random(40).($extension ? ".{$extension}" : '');
+            $disk = Storage::disk('local');
+            $disk->makeDirectory(dirname($path));
+            $file = $disk->path($path);
             try {
-                $content = $this->asana->download($data['download_url']);
+                $this->asana->download($data['download_url'], $file);
             } catch (Throwable $e) {
+                @unlink($file);
                 $this->stats['failed_attachments']++;
                 $this->say("  ⚠ Pièce jointe « {$name} » non téléchargée : {$e->getMessage()}");
 
                 continue;
             }
-
-            $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-            $path = "attachments/{$task->project_id}/{$task->id}/".Str::random(40).($extension ? ".{$extension}" : '');
-            Storage::disk('local')->put($path, $content);
 
             $attachment = new Attachment;
             $attachment->forceFill([
@@ -269,8 +285,8 @@ class AsanaImporter
                 'user_id' => null,
                 'name' => $name,
                 'path' => $path,
-                'mime' => (new \finfo(FILEINFO_MIME_TYPE))->buffer($content) ?: null,
-                'size' => strlen($content),
+                'mime' => (new \finfo(FILEINFO_MIME_TYPE))->file($file) ?: null,
+                'size' => filesize($file),
                 'created_at' => $this->date($data['created_at'] ?? null) ?? now(),
             ])->save();
             $this->stats['attachments']++;

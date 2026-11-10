@@ -300,4 +300,16 @@ class AsanaImportTest extends TestCase
         $this->assertNotNull($old->fresh());
         Http::assertNothingSent();
     }
+
+    public function test_an_error_on_one_project_does_not_stop_the_import(): void
+    {
+        Http::fake([AsanaClient::BASE_URL.'/projects/p1/sections*' => Http::response(['errors' => [['message' => 'Forbidden']]], 403)]);
+        $this->fakeAsana();
+
+        $this->artisan('asana:import', ['--token' => 'secret'])
+            ->expectsOutputToContain('Projet interrompu : Erreur Asana sur projects/p1/sections : Forbidden')
+            ->expectsOutputToContain('Import terminé')
+            ->expectsOutputToContain('Catalogue 2027')
+            ->assertSuccessful();
+    }
 }
