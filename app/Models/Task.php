@@ -16,7 +16,7 @@ class Task extends Model
     public const PRIORITIES = ['none', 'low', 'medium', 'high'];
 
     protected $fillable = [
-        'project_id', 'section_id', 'parent_id', 'assignee_id', 'title', 'description',
+        'project_id', 'section_id', 'parent_id', 'assignee_id', 'assigned_at', 'title', 'description',
         'start_date', 'due_date', 'priority', 'completed', 'completed_at', 'position',
     ];
 
@@ -28,11 +28,19 @@ class Task extends Model
             'due_date' => 'date:Y-m-d',
             'completed' => 'boolean',
             'completed_at' => 'datetime',
+            'assigned_at' => 'datetime',
         ];
     }
 
     protected static function booted(): void
     {
+        // Date d'affectation : sert à l'alerte du matin sur l'accueil (tâches affectées depuis la dernière visite).
+        static::saving(function (Task $task) {
+            if ($task->isDirty('assignee_id') && ! $task->isDirty('assigned_at')) {
+                $task->assigned_at = $task->assignee_id ? now() : null;
+            }
+        });
+
         // Les sous-tâches et pièces jointes sont supprimées en cascade par la base : on retire leurs fichiers.
         static::deleting(fn (Task $task) => Attachment::deleteFilesOf(
             Task::whereKey($task->id)->orWhere('parent_id', $task->id)->select('id')

@@ -5,11 +5,11 @@ namespace Tests\Feature;
 use App\Models\Attachment;
 use App\Models\Feed;
 use App\Models\FeedPost;
-use App\Models\Project;
 use App\Models\User;
 use App\Notifications\FeedPostPublished;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -38,17 +38,20 @@ class FeedTest extends TestCase
         $this->assertTrue($feed->isSubscribed($user));
     }
 
-    public function test_subscribed_feeds_are_shared_with_the_sidebar(): void
+    public function test_every_feed_is_shared_with_the_sidebar(): void
     {
         $user = User::factory()->create();
-        $feed = Feed::factory()->create(['name' => 'Production']);
-        Feed::factory()->create(['name' => 'Autre']);
+        $feed = Feed::factory()->create(['name' => 'Production', 'created_at' => now()->subDay()]);
+        $other = Feed::factory()->create(['name' => 'Autre']);
         $feed->subscribers()->attach($user);
 
         $this->actingAs($user)->get('/feeds')->assertOk()
             ->assertInertia(fn ($page) => $page->component('Feeds/Index')
                 ->has('feeds', 2)
-                ->where('sidebarFeeds', [['id' => $feed->id, 'name' => 'Production', 'color' => '#6366f1']]));
+                ->where('sidebarFeeds', [
+                    ['id' => $other->id, 'name' => 'Autre', 'color' => '#6366f1'],
+                    ['id' => $feed->id, 'name' => 'Production', 'color' => '#6366f1'],
+                ]));
     }
 
     public function test_subscribe_and_unsubscribe(): void
@@ -199,36 +202,33 @@ class FeedTest extends TestCase
             ->assertJsonPath('1.name', 'Autre')->assertJsonPath('1.subscribed', false);
     }
 
-    public function test_followed_feeds_can_be_reordered_in_the_sidebar(): void
+    public function test_feeds_can_be_reordered_in_the_sidebar(): void
     {
         $user = User::factory()->create();
         [$a, $b, $c] = Feed::factory()->count(3)->create();
-        $user->feeds()->attach([$a->id, $b->id, $c->id]);
-        $other = Feed::factory()->create();
+        $user->feeds()->attach([$a->id]);
 
+        // Fils suivis ou non : tous sont ordonnables, l'ordre est propre à chaque utilisateur.
         $this->actingAs($user)->post('/feeds/reorder', ['ids' => [$c->id, $a->id, $b->id]])->assertRedirect();
         $this->assertSame([$c->id, $a->id, $b->id], $user->sidebarFeeds()->pluck('feeds.id')->all());
+        $this->assertSame([$c->id, $b->id, $a->id], User::factory()->create()->sidebarFeeds()->pluck('feeds.id')->all());
 
-        $this->actingAs($user)->post('/feeds/reorder', ['ids' => [$other->id]])->assertSessionHasErrors('ids.0');
+        $this->actingAs($user)->post('/feeds/reorder', ['ids' => [999]])->assertSessionHasErrors('ids.0');
     }
 
-    public function test_dashboard_shows_latest_posts_of_followed_feeds_then_most_active_projects(): void
+    public function test_dashboard_shows_recent_posts_of_followed_feeds(): void
     {
+        $this->travelTo(Carbon::parse('2026-11-25 10:00', 'Europe/Paris'));
         $user = User::factory()->create();
         $followed = Feed::factory()->create();
         $followed->subscribers()->attach($user);
-        $post = FeedPost::factory()->create(['feed_id' => $followed->id, 'title' => 'Suivie', 'published_on' => today()]);
-        FeedPost::factory()->create(['title' => 'Autre fil']);
-
-        $old = Project::factory()->create(['owner_id' => $user->id, 'created_at' => now()->subMonth()]);
-        $recent = Project::factory()->create(['owner_id' => $user->id, 'created_at' => now()->subWeek()]);
-        $old->log('a modifié le projet', $user);
+        $post = FeedPost::factory()->create(['feed_id' => $followed->id, 'title' => 'Suivie', 'published_on' => '2026-11-18']);
+        FeedPost::factory()->create(['feed_id' => $followed->id, 'title' => 'Trop ancienne', 'published_on' => '2026-11-17']);
+        FeedPost::factory()->create(['title' => 'Autre fil', 'published_on' => '2026-11-25']);
 
         $this->actingAs($user)->get('/dashboard')->assertOk()
             ->assertInertia(fn ($page) => $page->component('Dashboard')
                 ->has('posts', 1)
-                ->where('posts.0.id', $post->id)
-                ->where('projects.0.id', $old->id)
-                ->where('projects.1.id', $recent->id));
+                ->where('posts.0.id', $post->id));
     }
 }

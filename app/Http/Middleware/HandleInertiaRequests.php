@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -49,9 +50,11 @@ class HandleInertiaRequests extends Middleware
             // Barre latérale : projets de l'utilisateur dans son ordre (avec leur statut, filtrable) et notifications non lues.
             'sidebarProjects' => fn () => $user?->sidebarProjects()->get(['projects.id', 'name', 'color', 'icon', 'image_path', 'start_date', 'completed_at'])
                 ->map(fn ($p) => $p->summary()),
-            // Fils d'actualité auxquels l'utilisateur est abonné, dans son ordre (glisser-déposer).
+            // Tous les fils d'actualité, dans l'ordre de l'utilisateur (glisser-déposer).
             'sidebarFeeds' => fn () => $user?->sidebarFeeds()->get(['feeds.id', 'name', 'color'])
                 ->map(fn ($feed) => $feed->summary()) ?? [],
+            // Couleurs proposées à la création d'un projet ou d'un fil (boutons « + » du menu).
+            'projectColors' => Project::COLORS,
             'unreadNotifications' => fn () => $user?->unreadNotifications()->count() ?? 0,
             'flash' => [
                 'error' => fn () => $request->session()->get('error'),
