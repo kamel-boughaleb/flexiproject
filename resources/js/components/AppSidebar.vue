@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import FeedFormDialog from '@/components/feed/FeedFormDialog.vue';
+import NewProjectDialog from '@/components/project/NewProjectDialog.vue';
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -21,7 +23,7 @@ import {
 import { t } from '@/lib/i18n';
 import { type FeedBadge, type ProjectStatus, type SharedData, type SidebarProject } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { CheckSquare, ChevronDown, ListFilter, Newspaper, Plus } from 'lucide-vue-next';
+import { CheckSquare, ChevronDown, ListFilter, Plus } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import draggable from 'vuedraggable';
 import AppLogo from './AppLogo.vue';
@@ -80,7 +82,7 @@ function reorder(list: SidebarProject[]) {
     router.post(route('projects.reorder'), { ids: list.map((p) => p.id) }, { preserveScroll: true, preserveState: true, only: ['sidebarProjects'] });
 }
 
-// Fils suivis : même glisser-déposer que les projets, ordre propre à chaque utilisateur.
+// Tous les fils : même glisser-déposer que les projets, ordre propre à chaque utilisateur.
 const feeds = ref<FeedBadge[]>([]);
 watch(
     () => page.props.sidebarFeeds,
@@ -112,6 +114,10 @@ function toggleGroup(name: string) {
     }
 }
 const isOpen = (name: string) => !collapsed.value.includes(name);
+
+// Boutons « + » : création d'un projet ou d'un fil sans quitter la page.
+const creatingProject = ref(false);
+const creatingFeed = ref(false);
 
 // Tiroir mobile : sous-liens du projet ouvert et profil en bas (maquette « M-Menu »).
 const { isMobile } = useSidebar();
@@ -152,7 +158,7 @@ const projectLinks = (id: number) => [
                 </SidebarMenu>
             </SidebarGroup>
 
-            <!-- Fils d'actualité suivis (glisser-déposer pour les ordonner) ; « Tous les fils » pour en découvrir ou en créer. -->
+            <!-- Tous les fils d'actualité (glisser-déposer pour les ordonner) ; « + » pour en créer un. -->
             <SidebarGroup class="px-2 pt-5">
                 <SidebarGroupLabel class="gap-1">
                     <button
@@ -163,6 +169,15 @@ const projectLinks = (id: number) => [
                     >
                         <ChevronDown class="size-3.5 transition-transform" :class="isOpen('feeds') ? '' : '-rotate-90'" />
                         {{ $t("Fils d'actualité") }}
+                    </button>
+                    <button
+                        type="button"
+                        class="flex size-6 items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        :aria-label="$t('Nouveau fil')"
+                        :title="$t('Nouveau fil')"
+                        @click="creatingFeed = true"
+                    >
+                        <Plus class="size-3.5" />
                     </button>
                 </SidebarGroupLabel>
                 <template v-if="isOpen('feeds')">
@@ -193,16 +208,6 @@ const projectLinks = (id: number) => [
                             </SidebarMenuItem>
                         </template>
                     </draggable>
-                    <SidebarMenu class="mt-1">
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child :is-active="path === '/feeds'" :tooltip="$t('Tous les fils')">
-                                <Link :href="route('feeds.index')" class="text-ink-soft">
-                                    <Newspaper />
-                                    <span>{{ $t('Tous les fils') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
                 </template>
             </SidebarGroup>
 
@@ -216,6 +221,15 @@ const projectLinks = (id: number) => [
                     >
                         <ChevronDown class="size-3.5 transition-transform" :class="isOpen('projects') ? '' : '-rotate-90'" />
                         {{ $t('Projets') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="flex size-6 items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        :aria-label="$t('Nouveau projet')"
+                        :title="$t('Nouveau projet')"
+                        @click="creatingProject = true"
+                    >
+                        <Plus class="size-3.5" />
                     </button>
                     <DropdownMenu>
                         <DropdownMenuTrigger
@@ -276,16 +290,6 @@ const projectLinks = (id: number) => [
                             </SidebarMenuItem>
                         </template>
                     </draggable>
-                    <SidebarMenu class="mt-1">
-                        <SidebarMenuItem>
-                            <SidebarMenuButton as-child :tooltip="$t('Nouveau projet')">
-                                <Link :href="`${route('dashboard')}?new=1`" class="text-ink-soft">
-                                    <Plus />
-                                    <span>{{ $t('Nouveau projet') }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
                 </template>
             </SidebarGroup>
         </SidebarContent>
@@ -300,5 +304,7 @@ const projectLinks = (id: number) => [
             </Link>
         </SidebarFooter>
     </Sidebar>
+    <NewProjectDialog v-model:open="creatingProject" />
+    <FeedFormDialog v-model:open="creatingFeed" :colors="page.props.projectColors" />
     <slot />
 </template>

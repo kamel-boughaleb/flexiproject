@@ -1,18 +1,13 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import InviteDialog from '@/components/InviteDialog.vue';
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
-import ProjectAvatarField from '@/components/project/ProjectAvatarField.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { dateRange, dueLabel } from '@/lib/labels';
-import type { FeedBadge, MiniUser, Project, SharedData } from '@/types';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { Paperclip, Plus } from 'lucide-vue-next';
+import { dateTime, dueLabel } from '@/lib/labels';
+import type { FeedBadge, MiniUser, ProjectBadge, SharedData } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { AlertTriangle, AtSign, CheckSquare, FolderOpen, MessageSquare, Newspaper, Paperclip } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 type LatestPost = {
@@ -24,144 +19,220 @@ type LatestPost = {
     feed: FeedBadge;
     user: MiniUser | null;
 };
-defineProps<{
+type TaskRow = { id: number; title: string; due_date: string | null; overdue: boolean; urgent: boolean; url: string; project: ProjectBadge };
+type ActiveProject = ProjectBadge & { tasks_total: number; tasks_done: number; last_comment_at: string; members: MiniUser[] };
+type Mention = {
+    id: number;
+    excerpt: string;
+    created_at: string;
+    user: MiniUser | null;
+    task: { id: number; title: string; url: string };
+    project: ProjectBadge;
+};
+
+const props = defineProps<{
     posts: LatestPost[];
-    projects: (Project & { members: MiniUser[]; tasks_total: number; tasks_done: number })[];
-    colors: string[];
+    alertTasks: TaskRow[];
+    activeTasks: TaskRow[];
+    activeProjects: ActiveProject[];
+    mentions: Mention[];
+    morningAlert: { overdue: number; urgent: number; tasks: TaskRow[] } | null;
 }>();
 
 const user = usePage<SharedData>().props.auth.user;
-const creating = ref(new URLSearchParams(window.location.search).has('new'));
-const form = useForm({ name: '', description: '', color: '#f97316', icon: '', image: null as File | null, start_date: '', end_date: '' });
-const submit = () => form.post(route('projects.store'), { forceFormData: true });
+const alertOpen = ref(!!props.morningAlert);
 const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ? Math.round((p.tasks_done / p.tasks_total) * 100) : 0);
 </script>
 
 <template>
     <Head :title="$t('Accueil')" />
-    <AppLayout :breadcrumbs="[{ title: $t('Projets'), href: route('dashboard') }]">
-        <div class="p-6">
-            <div class="flex items-center">
-                <div>
-                    <h1 class="text-2xl font-semibold">{{ $t('Bonjour :name 👋', { name: user.name.split(' ')[0] }) }}</h1>
-                    <p class="text-sm text-muted-foreground">{{ $t('Vos projets Flexilivre') }}</p>
-                </div>
-                <div class="ml-auto flex gap-2">
-                    <InviteDialog v-if="user.is_admin" />
-                    <Button @click="creating = true"><Plus class="size-4" /> {{ $t('Nouveau projet') }}</Button>
-                </div>
-            </div>
+    <AppLayout>
+        <div class="w-full max-w-6xl p-6">
+            <h1 class="text-2xl font-semibold">{{ $t('Bonjour :name 👋', { name: user.name.split(' ')[0] }) }}</h1>
 
-            <!-- Dernières actualités des fils suivis, puis les projets les plus actifs. -->
-            <section v-if="posts.length" class="mt-6">
-                <div class="flex items-baseline gap-3">
-                    <h2 class="text-lg font-bold">{{ $t('Dernières actualités') }}</h2>
-                    <Link :href="route('feeds.index')" class="text-sm font-semibold text-ink-soft hover:text-ink">{{ $t('Tous les fils') }}</Link>
-                </div>
-                <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    <Link
-                        v-for="n in posts"
-                        :key="n.id"
-                        :href="route('posts.show', [n.feed.id, n.id])"
-                        class="flex flex-col rounded-xl border p-4 transition hover:shadow-md"
-                    >
-                        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide" :style="{ color: n.feed.color }">
-                            <ProjectAvatar :project="n.feed" size="xs" />
-                            <span class="truncate">{{ n.feed.name }}</span>
-                        </div>
-                        <h3 class="mt-2 font-semibold">{{ n.title }}</h3>
-                        <p v-if="n.excerpt" class="mt-1 line-clamp-3 text-sm text-muted-foreground">{{ n.excerpt }}</p>
-                        <div class="mt-auto flex items-center gap-2 pt-3 text-xs text-muted-foreground">
-                            <UserAvatar v-if="n.user" :user="n.user" size="xs" />
-                            <span class="truncate">{{ n.user?.name }}</span>
-                            <span v-if="n.attachments_count" class="flex items-center gap-0.5"
-                                ><Paperclip class="size-3" />{{ n.attachments_count }}</span
-                            >
-                            <span class="ml-auto shrink-0">{{ dueLabel(n.published_on) }}</span>
-                        </div>
-                    </Link>
-                </div>
-            </section>
-
-            <h2 class="mt-8 text-lg font-bold">{{ $t('Projets actifs') }}</h2>
-            <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                <Link v-for="p in projects" :key="p.id" :href="route('projects.show', p.id)" class="rounded-xl border p-4 transition hover:shadow-md">
-                    <div class="flex items-center gap-2">
-                        <ProjectAvatar :project="p" size="md" />
-                        <h2 class="font-semibold">{{ p.name }}</h2>
-                    </div>
-                    <p v-if="p.description" class="mt-1 line-clamp-2 text-sm text-muted-foreground">{{ p.description }}</p>
-                    <div class="mt-4 h-1.5 rounded-full bg-muted">
-                        <div class="h-1.5 rounded-full" :style="{ width: `${pct(p)}%`, backgroundColor: p.color }" />
-                    </div>
-                    <div class="mt-2 flex justify-between text-xs text-muted-foreground">
-                        <span>{{ $tc(':done/:count tâche terminée|:done/:count tâches terminées', p.tasks_total, { done: p.tasks_done }) }}</span>
-                        <span>{{ dateRange(p.start_date, p.end_date) }}</span>
-                    </div>
-                    <div class="mt-3 flex -space-x-1.5">
-                        <span v-for="m in p.members.slice(0, 5)" :key="m.id" class="rounded-full ring-2 ring-background"
-                            ><UserAvatar :user="m"
-                        /></span>
-                    </div>
-                </Link>
-                <button
-                    v-if="!projects.length"
-                    class="rounded-xl border border-dashed p-8 text-sm text-muted-foreground hover:bg-muted/40"
-                    @click="creating = true"
+            <div class="mt-6 grid gap-6 lg:grid-cols-2">
+                <!-- Tâches en retard ou urgentes (échéance d'ici 2 jours ouvrés). -->
+                <section
+                    class="rounded-2xl border border-app-border p-4 lg:col-span-2"
+                    :class="alertTasks.length ? 'bg-brand-tint/40 border-brand' : ''"
                 >
-                    {{ $t('Créez votre premier projet') }}
-                </button>
+                    <h2 class="flex items-center gap-2 font-bold">
+                        <AlertTriangle class="size-4" :class="alertTasks.length ? 'text-brand-active' : 'text-ink-soft'" />
+                        {{ $t('Tâches en retard ou urgentes') }}
+                    </h2>
+                    <ul v-if="alertTasks.length" class="mt-3 divide-y divide-app-border">
+                        <li v-for="t in alertTasks" :key="t.id">
+                            <Link :href="t.url" class="flex items-center gap-3 py-2 hover:opacity-80">
+                                <AlertTriangle class="size-4 shrink-0 text-brand-active" />
+                                <span class="min-w-0 flex-1 truncate font-semibold">{{ t.title }}</span>
+                                <span class="hidden min-w-0 items-center gap-1.5 truncate text-xs text-ink-soft sm:flex">
+                                    <ProjectAvatar :project="t.project" size="xs" />{{ t.project.name }}
+                                </span>
+                                <span
+                                    class="shrink-0 rounded-full px-2 py-0.5 text-xs font-bold"
+                                    :class="t.overdue ? 'bg-brand text-white' : 'bg-warning-tint text-warning-text'"
+                                >
+                                    {{ t.overdue ? $t('En retard') : $t('Urgent') }} · {{ dueLabel(t.due_date) }}
+                                </span>
+                            </Link>
+                        </li>
+                    </ul>
+                    <p v-else class="mt-2 text-sm text-ink-soft">{{ $t('Aucune tâche en retard ou urgente. Bravo !') }}</p>
+                </section>
+
+                <!-- Dernières actualités (moins de 5 jours ouvrés). -->
+                <section class="rounded-2xl border border-app-border p-4">
+                    <div class="flex items-center gap-3">
+                        <h2 class="flex items-center gap-2 font-bold"><Newspaper class="size-4 text-ink-soft" />{{ $t('Dernières actualités') }}</h2>
+                        <Link :href="route('feeds.index')" class="ml-auto text-sm font-semibold text-ink-soft hover:text-ink">{{
+                            $t('Tous les fils')
+                        }}</Link>
+                    </div>
+                    <ul v-if="posts.length" class="mt-3 divide-y divide-app-border">
+                        <li v-for="n in posts" :key="n.id">
+                            <Link :href="route('posts.show', [n.feed.id, n.id])" class="block py-2.5 hover:opacity-80">
+                                <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide" :style="{ color: n.feed.color }">
+                                    <ProjectAvatar :project="n.feed" size="xs" />
+                                    <span class="truncate">{{ n.feed.name }}</span>
+                                    <span class="ml-auto shrink-0 font-semibold normal-case tracking-normal text-ink-soft">{{
+                                        dueLabel(n.published_on)
+                                    }}</span>
+                                </div>
+                                <h3 class="mt-1 font-semibold">{{ n.title }}</h3>
+                                <p v-if="n.excerpt" class="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{{ n.excerpt }}</p>
+                                <div class="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                                    <UserAvatar v-if="n.user" :user="n.user" size="xs" />
+                                    <span class="truncate">{{ n.user?.name }}</span>
+                                    <span v-if="n.attachments_count" class="flex items-center gap-0.5"
+                                        ><Paperclip class="size-3" />{{ n.attachments_count }}</span
+                                    >
+                                </div>
+                            </Link>
+                        </li>
+                    </ul>
+                    <p v-else class="mt-2 text-sm text-ink-soft">{{ $t('Aucune actualité ces 5 derniers jours ouvrés.') }}</p>
+                </section>
+
+                <!-- Commentaires de collègues qui mentionnent l'utilisateur (moins de 48 h ouvrées). -->
+                <section class="rounded-2xl border border-app-border p-4">
+                    <h2 class="flex items-center gap-2 font-bold"><AtSign class="size-4 text-ink-soft" />{{ $t('On parle de vous') }}</h2>
+                    <ul v-if="mentions.length" class="mt-3 divide-y divide-app-border">
+                        <li v-for="m in mentions" :key="m.id">
+                            <Link :href="m.task.url" class="flex gap-3 py-2.5 hover:opacity-80">
+                                <UserAvatar v-if="m.user" :user="m.user" size="md" />
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm">
+                                        <span class="font-bold">{{ m.user?.name }}</span>
+                                        <span class="text-ink-soft"> · {{ m.task.title }}</span>
+                                    </p>
+                                    <p class="line-clamp-2 text-sm text-muted-foreground">{{ m.excerpt }}</p>
+                                    <p class="mt-0.5 flex items-center gap-1.5 text-xs text-ink-soft">
+                                        <ProjectAvatar :project="m.project" size="xs" />{{ m.project.name }} · {{ dateTime(m.created_at) }}
+                                    </p>
+                                </div>
+                            </Link>
+                        </li>
+                    </ul>
+                    <p v-else class="mt-2 text-sm text-ink-soft">{{ $t('Aucune mention ces dernières 48 h.') }}</p>
+                </section>
+
+                <!-- Tâches en cours : commentées ces 5 derniers jours ouvrés. -->
+                <section class="rounded-2xl border border-app-border p-4">
+                    <h2 class="flex items-center gap-2 font-bold"><CheckSquare class="size-4 text-ink-soft" />{{ $t('Tâches en cours') }}</h2>
+                    <ul v-if="activeTasks.length" class="mt-3 divide-y divide-app-border">
+                        <li v-for="t in activeTasks" :key="t.id">
+                            <Link :href="t.url" class="flex items-center gap-3 py-2 hover:opacity-80">
+                                <AlertTriangle v-if="t.overdue || t.urgent" class="size-4 shrink-0 text-brand-active" />
+                                <MessageSquare v-else class="size-4 shrink-0 text-ink-soft" />
+                                <span class="min-w-0 flex-1 truncate font-semibold">{{ t.title }}</span>
+                                <span class="flex min-w-0 max-w-[40%] items-center gap-1.5 truncate text-xs text-ink-soft">
+                                    <ProjectAvatar :project="t.project" size="xs" /><span class="truncate">{{ t.project.name }}</span>
+                                </span>
+                            </Link>
+                        </li>
+                    </ul>
+                    <p v-else class="mt-2 text-sm text-ink-soft">{{ $t('Aucune tâche commentée ces 5 derniers jours ouvrés.') }}</p>
+                </section>
+
+                <!-- Projets en cours : une tâche commentée ces 5 derniers jours ouvrés. -->
+                <section class="rounded-2xl border border-app-border p-4">
+                    <h2 class="flex items-center gap-2 font-bold"><FolderOpen class="size-4 text-ink-soft" />{{ $t('Projets en cours') }}</h2>
+                    <ul v-if="activeProjects.length" class="mt-3 divide-y divide-app-border">
+                        <li v-for="p in activeProjects" :key="p.id">
+                            <Link :href="route('projects.show', p.id)" class="flex items-center gap-3 py-2.5 hover:opacity-80">
+                                <ProjectAvatar :project="p" size="md" />
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate font-semibold">{{ p.name }}</p>
+                                    <div class="mt-1 flex items-center gap-2">
+                                        <div class="h-1.5 flex-1 rounded-full bg-muted">
+                                            <div class="h-1.5 rounded-full" :style="{ width: `${pct(p)}%`, backgroundColor: p.color }" />
+                                        </div>
+                                        <span class="shrink-0 text-xs text-ink-soft">{{ p.tasks_done }}/{{ p.tasks_total }}</span>
+                                    </div>
+                                </div>
+                                <div class="hidden -space-x-1.5 sm:flex">
+                                    <span v-for="m in p.members" :key="m.id" class="rounded-full ring-2 ring-background"
+                                        ><UserAvatar :user="m" size="xs"
+                                    /></span>
+                                </div>
+                            </Link>
+                        </li>
+                    </ul>
+                    <p v-else class="mt-2 text-sm text-ink-soft">{{ $t('Aucun projet commenté ces 5 derniers jours ouvrés.') }}</p>
+                </section>
             </div>
         </div>
 
-        <Dialog v-model:open="creating">
+        <!-- Alerte du matin : première ouverture de la journée, tâches en retard ou urgentes affectées depuis la dernière visite. -->
+        <Dialog v-if="morningAlert" v-model:open="alertOpen">
             <DialogContent class="max-h-[90vh] overflow-y-auto">
-                <DialogHeader
-                    ><DialogTitle>{{ $t('Nouveau projet') }}</DialogTitle></DialogHeader
-                >
-                <form class="space-y-4" @submit.prevent="submit">
-                    <div class="grid gap-2">
-                        <Label for="name">{{ $t('Nom du projet') }}</Label>
-                        <Input id="name" v-model="form.name" required :placeholder="$t('Ex. Catalogue de Noël 2026')" />
-                        <InputError :message="form.errors.name" />
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="description">{{ $t('Description') }}</Label>
-                        <textarea id="description" v-model="form.description" rows="2" class="rounded-md border bg-background px-3 py-2 text-sm" />
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="grid gap-2">
-                            <Label for="start">{{ $t('Début') }}</Label>
-                            <Input id="start" v-model="form.start_date" type="date" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="end">{{ $t('Fin') }}</Label>
-                            <Input id="end" v-model="form.end_date" type="date" />
-                            <InputError :message="form.errors.end_date" />
-                        </div>
-                    </div>
-                    <div class="grid gap-2">
-                        <Label>{{ $t('Avatar') }}</Label>
-                        <ProjectAvatarField v-model:icon="form.icon" v-model:image="form.image" :name="form.name" :color="form.color" />
-                        <InputError :message="form.errors.image" />
-                    </div>
-                    <div class="flex gap-2">
-                        <button
-                            v-for="c in colors"
-                            :key="c"
-                            type="button"
-                            :aria-label="$t('Couleur :color', { color: c })"
-                            class="size-6 rounded-full ring-offset-2 ring-offset-background"
-                            :class="{ 'ring-2 ring-neutral-400': form.color === c }"
-                            :style="{ backgroundColor: c }"
-                            @click="form.color = c"
-                        />
-                    </div>
-                    <p class="text-xs text-muted-foreground">
-                        {{ $t('Le projet démarre avec les sections « À faire », « En cours » et « Terminé ».') }}
-                    </p>
-                    <Button type="submit" :disabled="form.processing">{{ $t('Créer le projet') }}</Button>
-                </form>
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2"><AlertTriangle class="size-5 text-brand-active" />{{ $t('Attention') }}</DialogTitle>
+                    <DialogDescription class="text-base text-ink">
+                        <template v-if="morningAlert.overdue && morningAlert.urgent">
+                            {{
+                                $t('Ce matin, vous avez :overdue et :urgent :', {
+                                    overdue: $tc(':count tâche en retard|:count tâches en retard', morningAlert.overdue),
+                                    urgent: $tc(':count tâche urgente|:count tâches urgentes', morningAlert.urgent),
+                                })
+                            }}
+                        </template>
+                        <template v-else-if="morningAlert.overdue">
+                            {{
+                                $t('Ce matin, vous avez :overdue :', {
+                                    overdue: $tc(':count tâche en retard|:count tâches en retard', morningAlert.overdue),
+                                })
+                            }}
+                        </template>
+                        <template v-else>
+                            {{
+                                $t('Ce matin, vous avez :overdue :', {
+                                    overdue: $tc(':count tâche urgente|:count tâches urgentes', morningAlert.urgent),
+                                })
+                            }}
+                        </template>
+                    </DialogDescription>
+                </DialogHeader>
+                <ul class="divide-y divide-app-border">
+                    <li v-for="t in morningAlert.tasks" :key="t.id">
+                        <Link :href="t.url" class="flex items-center gap-3 py-2 hover:opacity-80" @click="alertOpen = false">
+                            <AlertTriangle class="size-4 shrink-0 text-brand-active" />
+                            <span class="min-w-0 flex-1">
+                                <span class="block truncate font-semibold underline-offset-2 hover:underline">{{ t.title }}</span>
+                                <span class="block truncate text-xs text-ink-soft">{{ t.project.name }}</span>
+                            </span>
+                            <span
+                                class="shrink-0 rounded-full px-2 py-0.5 text-xs font-bold"
+                                :class="t.overdue ? 'bg-brand text-white' : 'bg-warning-tint text-warning-text'"
+                            >
+                                {{ t.overdue ? $t('En retard') : $t('Urgent') }} · {{ dueLabel(t.due_date) }}
+                            </span>
+                        </Link>
+                    </li>
+                </ul>
+                <DialogFooter>
+                    <Button @click="alertOpen = false">{{ $t('Compris') }}</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     </AppLayout>

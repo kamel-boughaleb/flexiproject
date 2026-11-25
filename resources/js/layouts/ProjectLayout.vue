@@ -3,7 +3,6 @@ import PostFormDialog from '@/components/feed/PostFormDialog.vue';
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import UserMenu from '@/components/UserMenu.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { t } from '@/lib/i18n';
 import { dateRange } from '@/lib/labels';
@@ -106,7 +105,7 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                             :href="route('projects.members', project.id)"
                             :title="$t('Voir les collaborateurs')"
                             :aria-label="$t('Voir les collaborateurs du projet')"
-                            class="hidden -space-x-1.5 border-r border-app-border pr-3 transition-opacity hover:opacity-80 sm:flex"
+                            class="hidden -space-x-1.5 transition-opacity hover:opacity-80 sm:flex"
                         >
                             <span v-for="m in others.slice(0, 5)" :key="m.id" class="rounded-full ring-2 ring-background">
                                 <UserAvatar :user="m" size="md" />
@@ -118,7 +117,6 @@ const others = computed(() => props.members.filter((m) => m.id !== page.props.au
                                 +{{ others.length - 5 }}
                             </span>
                         </Link>
-                        <UserMenu />
                     </div>
                 </div>
                 <draggable

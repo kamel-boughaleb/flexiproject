@@ -93,7 +93,7 @@ class FeedController extends Controller
         return to_route('feeds.index');
     }
 
-    /** Nouvel ordre des fils suivis dans le menu de gauche (ids dans l'ordre affiché). */
+    /** Nouvel ordre des fils dans le menu de gauche (ids dans l'ordre affiché). */
     public function reorder(Request $request): RedirectResponse
     {
         $user = $request->user();
@@ -112,7 +112,7 @@ class FeedController extends Controller
 
         DB::transaction(function () use ($user, $order) {
             foreach ($order as $i => $id) {
-                DB::table('feed_user')->where('user_id', $user->id)->where('feed_id', $id)->update(['sidebar_position' => $i + 1]);
+                DB::table('feed_sidebar_positions')->updateOrInsert(['user_id' => $user->id, 'feed_id' => $id], ['position' => $i + 1]);
             }
         });
 

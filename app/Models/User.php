@@ -64,6 +64,7 @@ class User extends Authenticatable implements HasLocalePreference
             'invited_at' => 'datetime',
             'deactivated_at' => 'datetime',
             'removed_at' => 'datetime',
+            'dashboard_seen_at' => 'datetime',
             'is_admin' => 'boolean',
             'password' => 'hashed',
             'notification_preferences' => 'array',
@@ -111,15 +112,18 @@ class User extends Authenticatable implements HasLocalePreference
     }
 
     /**
-     * Fils suivis dans l'ordre du menu de gauche : d'abord ceux jamais placés (les derniers abonnements
-     * en premier), puis l'ordre choisi par glisser-déposer.
+     * Tous les fils d'actualité dans l'ordre du menu de gauche, propre à chaque utilisateur :
+     * d'abord ceux jamais placés (les plus récents en premier), puis l'ordre choisi par glisser-déposer.
+     *
+     * @return Builder<Feed>
      */
-    public function sidebarFeeds(): BelongsToMany
+    public function sidebarFeeds(): Builder
     {
-        return $this->feeds()
-            ->orderByRaw('feed_user.sidebar_position is null desc')
-            ->orderBy('feed_user.sidebar_position')
-            ->orderByDesc('feed_user.created_at')
+        return Feed::query()
+            ->leftJoin('feed_sidebar_positions as fsp', fn ($join) => $join->on('fsp.feed_id', '=', 'feeds.id')->where('fsp.user_id', $this->id))
+            ->orderByRaw('fsp.position is null desc')
+            ->orderBy('fsp.position')
+            ->orderByDesc('feeds.created_at')
             ->orderByDesc('feeds.id');
     }
 

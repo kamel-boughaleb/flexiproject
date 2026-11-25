@@ -76,9 +76,7 @@ class ProjectStatusTest extends TestCase
             // Les plus récents en tête.
             ->where('sidebarProjects.0.status', 'done')
             ->where('sidebarProjects.1.status', 'upcoming')
-            ->where('sidebarProjects.2.status', 'active')
-            // Le tableau de bord ne montre que les projets non terminés.
-            ->has('projects', 2));
+            ->where('sidebarProjects.2.status', 'active'));
     }
 
     public function test_deleting_a_project_deletes_its_tasks(): void

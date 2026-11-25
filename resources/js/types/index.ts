@@ -23,6 +23,7 @@ export interface SharedData {
     auth: Auth;
     sidebarProjects: SidebarProject[];
     sidebarFeeds: FeedBadge[];
+    projectColors: string[];
     unreadNotifications: number;
     flash?: { error?: string | null; success?: string | null };
     ziggy: {

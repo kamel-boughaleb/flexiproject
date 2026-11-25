@@ -602,5 +602,22 @@
     "Équipe": "Team",
     "… dans n'importe quelle section": "… in any section",
     "Glisser pour réordonner : le premier onglet s’ouvre par défaut": "Drag to reorder: the first tab opens by default",
-    "Glisser pour déplacer la section": "Drag to move the section"
+    "Glisser pour déplacer la section": "Drag to move the section",
+    ":count tâche en retard|:count tâches en retard": ":count overdue task|:count overdue tasks",
+    ":count tâche urgente|:count tâches urgentes": ":count urgent task|:count urgent tasks",
+    "Aucun projet commenté ces 5 derniers jours ouvrés.": "No project commented on in the last 5 business days.",
+    "Aucune actualité ces 5 derniers jours ouvrés.": "No posts in the last 5 business days.",
+    "Aucune mention ces dernières 48 h.": "No mentions in the last 48 hours.",
+    "Aucune tâche commentée ces 5 derniers jours ouvrés.": "No task commented on in the last 5 business days.",
+    "Aucune tâche en retard ou urgente. Bravo !": "No overdue or urgent tasks. Well done!",
+    "Ce matin, vous avez :overdue :": "This morning, you have :overdue:",
+    "Ce matin, vous avez :overdue et :urgent :": "This morning, you have :overdue and :urgent:",
+    "Compris": "Got it",
+    "Mon compte": "My account",
+    "On parle de vous": "Mentions",
+    "Ouvrir le menu du compte": "Open the account menu",
+    "Projets en cours": "Ongoing projects",
+    "Tâches en cours": "Ongoing tasks",
+    "Tâches en retard ou urgentes": "Overdue or urgent tasks",
+    "Urgent": "Urgent"
 }
