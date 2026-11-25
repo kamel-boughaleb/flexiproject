@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dateTime, dueLabel } from '@/lib/labels';
 import type { FeedBadge, MiniUser, ProjectBadge, SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { AlertTriangle, AtSign, CheckSquare, FolderOpen, MessageSquare, Newspaper, Paperclip } from 'lucide-vue-next';
+import { AlertTriangle, AtSign, Newspaper, Paperclip } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 type LatestPost = {
@@ -20,7 +20,6 @@ type LatestPost = {
     user: MiniUser | null;
 };
 type TaskRow = { id: number; title: string; due_date: string | null; overdue: boolean; urgent: boolean; url: string; project: ProjectBadge };
-type ActiveProject = ProjectBadge & { tasks_total: number; tasks_done: number; last_comment_at: string; members: MiniUser[] };
 type Mention = {
     id: number;
     excerpt: string;
@@ -33,15 +32,12 @@ type Mention = {
 const props = defineProps<{
     posts: LatestPost[];
     alertTasks: TaskRow[];
-    activeTasks: TaskRow[];
-    activeProjects: ActiveProject[];
     mentions: Mention[];
     morningAlert: { overdue: number; urgent: number; tasks: TaskRow[] } | null;
 }>();
 
 const user = usePage<SharedData>().props.auth.user;
 const alertOpen = ref(!!props.morningAlert);
-const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ? Math.round((p.tasks_done / p.tasks_total) * 100) : 0);
 </script>
 
 <template>
@@ -134,51 +130,6 @@ const pct = (p: { tasks_total: number; tasks_done: number }) => (p.tasks_total ?
                         </li>
                     </ul>
                     <p v-else class="mt-2 text-sm text-ink-soft">{{ $t('Aucune mention ces dernières 48 h.') }}</p>
-                </section>
-
-                <!-- Tâches en cours : commentées ces 5 derniers jours ouvrés. -->
-                <section class="rounded-2xl border border-app-border p-4">
-                    <h2 class="flex items-center gap-2 font-bold"><CheckSquare class="size-4 text-ink-soft" />{{ $t('Tâches en cours') }}</h2>
-                    <ul v-if="activeTasks.length" class="mt-3 divide-y divide-app-border">
-                        <li v-for="t in activeTasks" :key="t.id">
-                            <Link :href="t.url" class="flex items-center gap-3 py-2 hover:opacity-80">
-                                <AlertTriangle v-if="t.overdue || t.urgent" class="size-4 shrink-0 text-brand-active" />
-                                <MessageSquare v-else class="size-4 shrink-0 text-ink-soft" />
-                                <span class="min-w-0 flex-1 truncate font-semibold">{{ t.title }}</span>
-                                <span class="flex min-w-0 max-w-[40%] items-center gap-1.5 truncate text-xs text-ink-soft">
-                                    <ProjectAvatar :project="t.project" size="xs" /><span class="truncate">{{ t.project.name }}</span>
-                                </span>
-                            </Link>
-                        </li>
-                    </ul>
-                    <p v-else class="mt-2 text-sm text-ink-soft">{{ $t('Aucune tâche commentée ces 5 derniers jours ouvrés.') }}</p>
-                </section>
-
-                <!-- Projets en cours : une tâche commentée ces 5 derniers jours ouvrés. -->
-                <section class="rounded-2xl border border-app-border p-4">
-                    <h2 class="flex items-center gap-2 font-bold"><FolderOpen class="size-4 text-ink-soft" />{{ $t('Projets en cours') }}</h2>
-                    <ul v-if="activeProjects.length" class="mt-3 divide-y divide-app-border">
-                        <li v-for="p in activeProjects" :key="p.id">
-                            <Link :href="route('projects.show', p.id)" class="flex items-center gap-3 py-2.5 hover:opacity-80">
-                                <ProjectAvatar :project="p" size="md" />
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate font-semibold">{{ p.name }}</p>
-                                    <div class="mt-1 flex items-center gap-2">
-                                        <div class="h-1.5 flex-1 rounded-full bg-muted">
-                                            <div class="h-1.5 rounded-full" :style="{ width: `${pct(p)}%`, backgroundColor: p.color }" />
-                                        </div>
-                                        <span class="shrink-0 text-xs text-ink-soft">{{ p.tasks_done }}/{{ p.tasks_total }}</span>
-                                    </div>
-                                </div>
-                                <div class="hidden -space-x-1.5 sm:flex">
-                                    <span v-for="m in p.members" :key="m.id" class="rounded-full ring-2 ring-background"
-                                        ><UserAvatar :user="m" size="xs"
-                                    /></span>
-                                </div>
-                            </Link>
-                        </li>
-                    </ul>
-                    <p v-else class="mt-2 text-sm text-ink-soft">{{ $t('Aucun projet commenté ces 5 derniers jours ouvrés.') }}</p>
                 </section>
             </div>
         </div>

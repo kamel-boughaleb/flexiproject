@@ -66,32 +66,6 @@ class DashboardTest extends TestCase
             ->where('alertTasks.1.urgent', true));
     }
 
-    public function test_active_tasks_and_projects_have_a_comment_in_the_last_five_business_days(): void
-    {
-        $this->wednesday();
-        $user = User::factory()->create();
-        $colleague = User::factory()->create();
-        [$recent, $old, $quiet] = Project::factory()->count(3)->create(['owner_id' => $user->id]);
-
-        $mine = Task::factory()->in($recent)->create(['assignee_id' => $user->id]);
-        $commented = Task::factory()->in($recent)->create(['assignee_id' => $colleague->id]);
-        $notMine = Task::factory()->in($recent)->create(['assignee_id' => $colleague->id]);
-        $stale = Task::factory()->in($old)->create(['assignee_id' => $user->id]);
-
-        // Il y a 5 jours ouvrés : mercredi précédent, 10 h.
-        $this->comment($mine, $colleague, '2026-11-24 09:00');
-        $this->comment($commented, $user, '2026-11-19 09:00');
-        $this->comment($notMine, $colleague, '2026-11-25 09:00');
-        $this->comment($stale, $user, '2026-11-18 09:00');
-
-        $this->actingAs($user)->get('/dashboard')->assertInertia(fn (Assert $page) => $page
-            ->has('activeTasks', 2)
-            ->where('activeTasks.0.id', $mine->id)
-            ->where('activeTasks.1.id', $commented->id)
-            ->has('activeProjects', 1)
-            ->where('activeProjects.0.id', $recent->id));
-    }
-
     public function test_mentions_from_colleagues_in_the_last_two_business_days(): void
     {
         $this->wednesday();

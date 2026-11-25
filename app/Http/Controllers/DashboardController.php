@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Models\FeedPost;
-use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Support\BusinessDays;
@@ -24,7 +23,7 @@ class DashboardController extends Controller
 {
     private const LIMIT = 5;
 
-    /** Actualités, tâches et projets « actifs » : 5 derniers jours ouvrés. */
+    /** Actualités : 5 derniers jours ouvrés. */
     private const RECENT_DAYS = 5;
 
     /** Mentions : moins de 48 h, soit 2 jours ouvrés. */
@@ -42,8 +41,6 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'posts' => $this->latestPosts($user, $now),
             'alertTasks' => $alertTasks->map(fn (Task $task) => $this->taskRow($task, $now)),
-            'activeTasks' => $this->activeTasks($user, $now)->map(fn (Task $task) => $this->taskRow($task, $now)),
-            'activeProjects' => $this->activeProjects($user, $now),
             'mentions' => $this->mentions($user, $now),
             'morningAlert' => $this->morningAlert($user, $alertTasks, $now),
         ]);
@@ -100,61 +97,6 @@ class DashboardController extends Controller
             ->orderBy('due_date')
             ->orderBy('id')
             ->get();
-    }
-
-    /**
-     * Tâches en cours : les 5 dernières commentées (au moins un commentaire ces 5 derniers jours ouvrés)
-     * parmi celles qui concernent l'utilisateur (affectées à lui ou qu'il a commentées).
-     */
-    private function activeTasks(User $user, Carbon $now): Collection
-    {
-        return $this->openTasks($user)
-            ->select('tasks.*')
-            ->selectSub(Comment::query()->selectRaw('max(created_at)')->whereColumn('comments.task_id', 'tasks.id'), 'last_comment_at')
-            ->where(fn ($q) => $q
-                ->where('assignee_id', $user->id)
-                ->orWhereExists(fn ($e) => $e->from('comments')->whereColumn('comments.task_id', 'tasks.id')->where('comments.user_id', $user->id)))
-            ->whereExists(fn ($e) => $e->from('comments')
-                ->whereColumn('comments.task_id', 'tasks.id')
-                ->where('comments.created_at', '>=', self::since(self::RECENT_DAYS, $now)))
-            ->orderByDesc('last_comment_at')
-            ->orderByDesc('tasks.id')
-            ->limit(self::LIMIT)
-            ->get();
-    }
-
-    /** Projets en cours : les 5 derniers dont une tâche a été commentée ces 5 derniers jours ouvrés. */
-    private function activeProjects(User $user, Carbon $now): Collection
-    {
-        $lastComment = DB::table('comments')
-            ->join('tasks', 'tasks.id', '=', 'comments.task_id')
-            ->whereColumn('tasks.project_id', 'projects.id')
-            ->selectRaw('max(comments.created_at)');
-
-        return $user->projects()
-            ->open()
-            ->select('projects.*')
-            ->selectSub($lastComment, 'last_comment_at')
-            ->with('members:id,name,color,avatar')
-            ->withCount([
-                'tasks as tasks_total' => fn ($q) => $q->whereNull('parent_id'),
-                'tasks as tasks_done' => fn ($q) => $q->whereNull('parent_id')->where('completed', true),
-            ])
-            ->whereExists(fn ($e) => $e->from('comments')
-                ->join('tasks', 'tasks.id', '=', 'comments.task_id')
-                ->whereColumn('tasks.project_id', 'projects.id')
-                ->where('comments.created_at', '>=', self::since(self::RECENT_DAYS, $now)))
-            ->orderByDesc('last_comment_at')
-            ->orderByDesc('projects.id')
-            ->limit(self::LIMIT)
-            ->get()
-            ->map(fn (Project $p) => [
-                ...$p->summary(),
-                'tasks_total' => $p->tasks_total,
-                'tasks_done' => $p->tasks_done,
-                'last_comment_at' => Carbon::parse($p->last_comment_at, config('app.timezone'))->toIso8601String(),
-                'members' => $p->members->take(5)->map->only(['id', 'name', 'color', 'avatar'])->values(),
-            ]);
     }
 
     /** Commentaires de collègues mentionnant l'utilisateur, datant de moins de 2 jours ouvrés (48 h). */
