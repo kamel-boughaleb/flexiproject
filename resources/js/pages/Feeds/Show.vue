@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FeedFormDialog from '@/components/feed/FeedFormDialog.vue';
+import FeedMembersDialog from '@/components/feed/FeedMembersDialog.vue';
 import FeedPostCard from '@/components/feed/FeedPostCard.vue';
 import PostFormDialog from '@/components/feed/PostFormDialog.vue';
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
@@ -10,7 +11,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { t } from '@/lib/i18n';
 import type { Feed, FeedPost, MiniUser } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Bell, BellOff, Ellipsis, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Bell, BellOff, Ellipsis, Pencil, Plus, Trash2, UserPlus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 type Paginated<T> = { data: T[]; current_page: number; last_page: number; prev_page_url: string | null; next_page_url: string | null };
@@ -18,7 +19,11 @@ const props = defineProps<{
     feed: Feed & { owner: MiniUser | null; subscribers: MiniUser[]; subscribed: boolean; can_manage: boolean };
     posts: Paginated<FeedPost>;
     colors: string[];
+    team: (MiniUser & { email: string })[];
 }>();
+
+// « Membres » : voir les abonnés et en ajouter (ouvert d'office avec ?members=1, depuis le menu de gauche).
+const managingMembers = ref(new URLSearchParams(window.location.search).has('members'));
 
 const toggle = () =>
     props.feed.subscribed
@@ -51,16 +56,29 @@ const editing = computed({ get: () => editingId.value !== null, set: (v) => !v &
                     <h1 class="text-2xl font-semibold">{{ feed.name }}</h1>
                     <p v-if="feed.description" class="mt-1 whitespace-pre-line text-sm text-muted-foreground">{{ feed.description }}</p>
                     <div class="mt-2 flex items-center gap-2 text-xs text-ink-soft">
-                        <span class="flex -space-x-1.5">
-                            <span v-for="s in feed.subscribers.slice(0, 6)" :key="s.id" class="rounded-full ring-2 ring-background" :title="s.name">
-                                <UserAvatar :user="s" size="xs" />
+                        <button
+                            type="button"
+                            class="flex items-center gap-2 rounded-full hover:text-ink"
+                            :title="$t('Voir et ajouter des membres')"
+                            @click="managingMembers = true"
+                        >
+                            <span class="flex -space-x-1.5">
+                                <span
+                                    v-for="s in feed.subscribers.slice(0, 6)"
+                                    :key="s.id"
+                                    class="rounded-full ring-2 ring-background"
+                                    :title="s.name"
+                                >
+                                    <UserAvatar :user="s" size="xs" />
+                                </span>
                             </span>
-                        </span>
-                        {{ $tc(':count abonné|:count abonnés', feed.subscribers.length) }}
+                            {{ $tc(':count abonné|:count abonnés', feed.subscribers.length) }}
+                        </button>
                         <template v-if="feed.owner"> · {{ $t('créé par :name', { name: feed.owner.name }) }}</template>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    <Button variant="outline" @click="managingMembers = true"> <UserPlus class="size-4" /> {{ $t('Ajouter des membres') }} </Button>
                     <Button :variant="feed.subscribed ? 'outline' : 'default'" @click="toggle">
                         <component :is="feed.subscribed ? BellOff : Bell" class="size-4" />
                         {{ feed.subscribed ? $t('Se désabonner') : $t("S'abonner") }}
@@ -107,6 +125,13 @@ const editing = computed({ get: () => editingId.value !== null, set: (v) => !v &
 
         <PostFormDialog v-model:open="composing" :feed-id="feed.id" />
         <PostFormDialog v-model:open="editing" :feed-id="feed.id" :post="editingPost" />
+        <FeedMembersDialog
+            v-model:open="managingMembers"
+            :feed-id="feed.id"
+            :subscribers="feed.subscribers"
+            :team="team"
+            :can-manage="feed.can_manage"
+        />
         <FeedFormDialog v-if="feed.can_manage" v-model:open="editingFeed" :feed="feed" :colors="colors" />
     </AppLayout>
 </template>

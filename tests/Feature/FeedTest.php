@@ -49,8 +49,8 @@ class FeedTest extends TestCase
             ->assertInertia(fn ($page) => $page->component('Feeds/Index')
                 ->has('feeds', 2)
                 ->where('sidebarFeeds', [
-                    ['id' => $other->id, 'name' => 'Autre', 'color' => '#6366f1'],
-                    ['id' => $feed->id, 'name' => 'Production', 'color' => '#6366f1'],
+                    ['id' => $other->id, 'name' => 'Autre', 'color' => '#6366f1', 'subscribed' => false],
+                    ['id' => $feed->id, 'name' => 'Production', 'color' => '#6366f1', 'subscribed' => true],
                 ]));
     }
 
@@ -65,6 +65,40 @@ class FeedTest extends TestCase
 
         $this->actingAs($user)->delete("/feeds/{$feed->id}/subscription")->assertRedirect();
         $this->assertFalse($feed->isSubscribed($user));
+    }
+
+    public function test_anyone_adds_other_people_to_a_feed_and_they_are_notified(): void
+    {
+        $feed = Feed::factory()->create();
+        [$adder, $alice, $bob, $inactive] = User::factory()->count(4)->create();
+        $inactive->deactivate();
+        $feed->subscribers()->attach($bob);
+
+        $this->actingAs($adder)->post("/feeds/{$feed->id}/members", ['user_ids' => [$alice->id, $bob->id]])->assertRedirect();
+
+        $this->assertTrue($feed->isSubscribed($alice));
+        $this->assertSame(1, $feed->subscribers()->whereKey($bob->id)->count());
+        $this->assertFalse($feed->isSubscribed($adder));
+        $this->assertSame(1, $alice->notifications()->count());
+        $this->assertSame(route('feeds.show', $feed, false), $alice->notifications()->first()->data['url']);
+        $this->assertSame(0, $bob->notifications()->count(), 'déjà abonné : pas de nouvelle notification');
+
+        $this->actingAs($adder)->post("/feeds/{$feed->id}/members", ['user_ids' => [$inactive->id]])->assertSessionHasErrors('user_ids.0');
+        $this->assertFalse($feed->isSubscribed($inactive));
+    }
+
+    public function test_only_the_person_or_a_feed_manager_removes_a_subscriber(): void
+    {
+        [$owner, $alice, $bob] = User::factory()->count(3)->create();
+        $feed = Feed::factory()->create(['owner_id' => $owner->id]);
+        $feed->subscribers()->attach([$alice->id, $bob->id]);
+
+        $this->actingAs($bob)->delete("/feeds/{$feed->id}/members/{$alice->id}")->assertForbidden();
+        $this->actingAs($alice)->delete("/feeds/{$feed->id}/members/{$alice->id}")->assertRedirect();
+        $this->actingAs($owner)->delete("/feeds/{$feed->id}/members/{$bob->id}")->assertRedirect();
+
+        $this->assertFalse($feed->isSubscribed($alice));
+        $this->assertFalse($feed->isSubscribed($bob));
     }
 
     public function test_new_post_notifies_active_subscribers_except_the_author(): void

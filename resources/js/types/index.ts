@@ -195,6 +195,8 @@ export interface FeedBadge {
     id: number;
     name: string;
     color: string;
+    /** Menu de gauche : l'utilisateur est abonné au fil. */
+    subscribed?: boolean;
 }
 
 export interface Feed extends FeedBadge {

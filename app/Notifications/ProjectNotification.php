@@ -13,6 +13,7 @@ class ProjectNotification extends Notification
         public string|array $message,
         public ?int $projectId = null,
         public ?int $taskId = null,
+        public ?string $url = null,
     ) {}
 
     public function via(object $notifiable): array
@@ -26,6 +27,7 @@ class ProjectNotification extends Notification
             'message' => Msg::render($this->message),
             'project_id' => $this->projectId,
             'task_id' => $this->taskId,
+            ...($this->url ? ['url' => $this->url] : []),
         ];
     }
 }
