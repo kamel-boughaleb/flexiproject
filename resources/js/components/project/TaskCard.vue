@@ -48,7 +48,12 @@ defineEmits<{ open: [id: number] }>();
         </div>
         <div class="flex items-start gap-2.5">
             <TaskCheck class="mt-px" :task-id="task.id" :completed="task.completed" :disabled="!canEdit" />
-            <span class="flex-1 text-sm font-semibold leading-5" :class="{ 'text-ink-soft line-through': task.completed }">{{ task.title }}</span>
+            <span
+                v-live-count="task.comments_count"
+                class="flex-1 text-sm font-semibold leading-5"
+                :class="{ 'text-ink-soft line-through': task.completed }"
+                >{{ task.title }}</span
+            >
         </div>
         <div class="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs font-medium text-ink-soft">
             <PriorityBadge :priority="task.priority" />

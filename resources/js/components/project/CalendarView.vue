@@ -201,6 +201,7 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                     <button
                         v-for="b in w.bars"
                         :key="b.t.id"
+                        v-live="b.t"
                         type="button"
                         :title="b.t.title"
                         class="relative z-[1] my-0.5 flex h-6 items-center gap-1.5 overflow-hidden whitespace-nowrap px-2.5 text-left text-xs font-bold hover:brightness-95"
@@ -213,7 +214,7 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                         @click="emit('open', b.t.id)"
                     >
                         <span class="size-2 shrink-0 rounded-full" :class="dot(b.t)" />
-                        <span class="truncate">{{ b.t.title }}</span>
+                        <span v-live-count="b.t.comments_count" class="truncate">{{ b.t.title }}</span>
                     </button>
                 </div>
             </div>
@@ -263,9 +264,12 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                         :style="{ borderLeftColor: edge(t) }"
                         @click="emit('open', t.id)"
                     >
-                        <span class="min-w-0 flex-1 truncate text-sm font-bold" :class="{ 'text-ink-soft line-through': t.completed }">{{
-                            t.title
-                        }}</span>
+                        <span
+                            v-live-count="t.comments_count"
+                            class="min-w-0 flex-1 truncate text-sm font-bold"
+                            :class="{ 'text-ink-soft line-through': t.completed }"
+                            >{{ t.title }}</span
+                        >
                         <PriorityBadge :priority="t.priority" />
                     </button>
                 </li>

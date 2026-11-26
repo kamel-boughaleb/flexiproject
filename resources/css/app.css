@@ -206,6 +206,42 @@
     animation: live-in 1.6s ease-out;
 }
 
+/* Bulle « +1 » au bout du titre d'une tâche qui reçoit un nouveau commentaire. */
+@keyframes live-plus {
+    0% {
+        opacity: 0;
+        transform: translate(0, 6px) scale(0.6);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(0, -4px) scale(1.1);
+    }
+    35% {
+        transform: translate(0, -6px) scale(1);
+    }
+    75% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(0, -22px) scale(1);
+    }
+}
+.live-plus {
+    position: fixed;
+    z-index: 60;
+    pointer-events: none;
+    border-radius: 9999px;
+    background: var(--primary-500);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 3px 6px;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.18);
+    animation: live-plus 1.6s ease-out forwards;
+}
+
 /* Accueil : apparition des blocs les uns après les autres. */
 @keyframes dash-in {
     from {
@@ -223,6 +259,7 @@
 @media (prefers-reduced-motion: reduce) {
     .live-changed,
     .live-new,
+    .live-plus,
     .dash-in {
         animation: none;
     }

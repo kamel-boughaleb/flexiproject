@@ -20,7 +20,9 @@ defineProps<{ tasks: (Task & { project: { id: number; name: string; color: strin
             <ul class="mt-6 divide-y rounded-lg border">
                 <li v-for="t in tasks" :key="t.id" v-live="t" class="flex items-center gap-3 px-4 py-2.5 text-sm">
                     <TaskCheck :task-id="t.id" :completed="t.completed" />
-                    <Link :href="`${route('projects.view', [t.project.id, 'list'])}?task=${t.id}`" class="flex-1 hover:underline">{{ t.title }}</Link>
+                    <Link :href="`${route('projects.view', [t.project.id, 'list'])}?task=${t.id}`" class="flex-1 hover:underline"
+                        ><span v-live-count="t.comments_count">{{ t.title }}</span></Link
+                    >
                     <PriorityBadge :priority="t.priority" />
                     <span class="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
                         <span class="size-2 rounded-sm" :style="{ backgroundColor: t.project.color }" /> {{ t.project.name }} · {{ t.section.name }}
