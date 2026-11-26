@@ -17,6 +17,7 @@ use App\Http\Controllers\RuleController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskFollowerController;
 use App\Http\Controllers\TeamController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Route;
@@ -76,6 +77,8 @@ Route::middleware('auth')->group(function () {
     Route::post('tasks/{task}/move', [TaskController::class, 'move'])->name('tasks.move');
     Route::post('tasks/{task}/toggle', [TaskController::class, 'toggle'])->name('tasks.toggle');
     Route::post('tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::post('tasks/{task}/followers', [TaskFollowerController::class, 'store'])->name('tasks.followers.store');
+    Route::delete('tasks/{task}/followers/{user}', [TaskFollowerController::class, 'destroy'])->name('tasks.followers.destroy');
     Route::post('tasks/{task}/attachments', [AttachmentController::class, 'store'])->name('attachments.store');
     Route::get('attachments/{attachment}', [AttachmentController::class, 'show'])->name('attachments.show');
     Route::get('attachments/{attachment}/thumbnail', [AttachmentController::class, 'thumbnail'])->name('attachments.thumbnail');
@@ -83,6 +86,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
 
     Route::post('projects/{project}/members', [MemberController::class, 'store'])->name('members.store');
+    Route::get('projects/{project}/member-candidates', [MemberController::class, 'candidates'])->name('members.candidates');
+    Route::post('projects/{project}/members/join', [MemberController::class, 'join'])->name('members.join');
     Route::patch('projects/{project}/members/{user}', [MemberController::class, 'update'])->name('members.update');
     Route::delete('projects/{project}/members/{user}', [MemberController::class, 'destroy'])->name('members.destroy');
 

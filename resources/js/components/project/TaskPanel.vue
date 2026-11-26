@@ -129,15 +129,6 @@ useEventListener('keydown', (e: KeyboardEvent) => {
     else emit('close');
 });
 
-/** Personnes qui suivent la tâche : responsable et auteurs des commentaires. */
-const participants = computed(() => {
-    const people = new Map<number, { id: number; name: string; color: string; avatar?: string | null }>();
-    const assignee = props.members.find((m) => m.id === props.task.assignee_id);
-    if (assignee) people.set(assignee.id, assignee);
-    props.task.comments.forEach((c) => people.set(c.user.id, c.user));
-    return [...people.values()];
-});
-
 const iconBtn =
     'flex size-10 items-center justify-center rounded-icon text-app-strong transition hover:bg-app-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-[18px]';
 </script>
@@ -275,7 +266,6 @@ const iconBtn =
                         <textarea
                             ref="titleInput"
                             v-live="task.title"
-                            v-live-count="task.comments.length"
                             :key="`title-${task.id}`"
                             :value="task.title"
                             :disabled="!canEdit"
@@ -401,13 +391,8 @@ const iconBtn =
                             @save="save"
                         />
                     </section>
-                    <section class="rounded-card border border-app-border p-5 shadow-soft" aria-labelledby="people-title">
-                        <h3 id="people-title" class="mb-3 text-xs font-bold uppercase tracking-[.04em] text-ink-soft">{{ $t('Collaborateurs') }}</h3>
-                        <div class="flex flex-wrap gap-1.5">
-                            <UserAvatar v-for="p in participants" :key="p.id" :user="p" size="md" />
-                            <span v-if="!participants.length" class="text-sm text-ink-soft">{{ $t("Personne pour l'instant.") }}</span>
-                        </div>
-                        <p class="mt-3 text-xs leading-5 text-ink-soft">
+                    <section class="rounded-card border border-app-border p-5 shadow-soft">
+                        <p class="text-xs leading-5 text-ink-soft">
                             <template v-if="task.created_at">{{ $t('Créée le :date', { date: dateTime(task.created_at) }) }}<br /></template>
                             <template v-if="task.updated_at">{{ $t('Modifiée le :date', { date: dateTime(task.updated_at) }) }}</template>
                         </p>

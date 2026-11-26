@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskFollower;
+use App\Notifications\ProjectNotification;
 use App\Services\RuleEngine;
 use App\Services\TaskNotifier;
 use App\Support\Msg;
@@ -12,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule as ValidationRule;
 use Illuminate\Validation\Rules\Exists;
 
@@ -44,6 +48,7 @@ class TaskController extends Controller
 
         $task = $project->tasks()->create($data);
         $project->log(Msg::make('a créé la tâche « :task »', ['task' => $task->title]), $request->user(), $task);
+        TaskFollower::link($task, [$task->assignee_id, ...RichText::mentionedIds($task->description)]);
         $this->notifier->assigned($task, $request->user());
         $this->rules->fire('task_created', $task, $request->user());
 
@@ -74,7 +79,17 @@ class TaskController extends Controller
 
         $actor = $request->user();
         $changes = $this->notifier->describe($task, $before, $changed);
-        $project->log(Msg::make('a modifié « :task » : :changes', ['task' => $task->title, 'changes' => $changes]), $actor, $task);
+        $project->log(Msg::make('a modifié « :task » : :changes', ['task' => $task->title, 'changes' => $changes]), $actor, $task, $changed);
+
+        // Le nouveau responsable et les personnes mentionnées dans la description sont liés à la tâche ;
+        // un changement de dates, de priorité ou de responsable est signalé aux autres (bulle « +1 »).
+        TaskFollower::link($task, [
+            ...(in_array('assignee_id', $changed, true) ? [$task->assignee_id] : []),
+            ...(in_array('description', $changed, true) ? RichText::mentionedIds($task->description) : []),
+        ]);
+        if (array_intersect($changed, Activity::NOTABLE_FIELDS)) {
+            TaskFollower::bump($task, $actor);
+        }
 
         // Les personnes nouvellement mentionnées dans la description reçoivent un avis de mention.
         $mentioned = [];
@@ -154,8 +169,20 @@ class TaskController extends Controller
     public function destroy(Request $request, Task $task): RedirectResponse
     {
         Gate::authorize('edit', $task->project);
-        $task->project->log(Msg::make('a supprimé la tâche « :task »', ['task' => $task->title]), $request->user());
+        $actor = $request->user();
+        $task->project->log(Msg::make('a supprimé la tâche « :task »', ['task' => $task->title]), $actor);
+
+        // Les collaborateurs liés à la tâche (responsable, commentateurs, personnes mentionnées) sont prévenus
+        // par une bulle, avant que la suppression n'efface ces liens.
+        $people = $this->notifier->participants($task, $actor);
         $task->delete();
+        Notification::send($people, new ProjectNotification(
+            Msg::make(':name a supprimé la tâche « :task »', ['name' => $actor->name, 'task' => $task->title]),
+            $task->project_id,
+            url: route('projects.show', $task->project_id, false),
+            kind: 'task_deleted',
+            actorId: $actor->id,
+        ));
 
         return back();
     }

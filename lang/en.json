@@ -650,5 +650,15 @@
     "Nouvelles actualités": "New posts",
     "Tâches en cours": "Tasks in progress",
     "Vous recevez ce récapitulatif chaque matin à :time.": "You receive this summary every morning at :time.",
-    "Actualité|Actualités": "Post|Posts"
+    "Actualité|Actualités": "Post|Posts",
+    ":count nouveauté non vue|:count nouveautés non vues": ":count unseen update|:count unseen updates",
+    ":name a supprimé la tâche « :task »": ":name deleted the task “:task”",
+    "Retirer :name de la tâche": "Remove :name from the task",
+    "Ajouter un collaborateur": "Add a collaborator",
+    "Tous les membres du projet sont déjà là.": "All project members are already here.",
+    "Nouveau": "New",
+    "Ajouter au projet et confier la tâche": "Add to the project and assign",
+    "Rechercher un collègue": "Search for a colleague",
+    "Aucun collègue trouvé.": "No colleague found.",
+    "Toute l'équipe fait déjà partie du projet.": "The whole team is already in the project."
 }

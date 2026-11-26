@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UnreadBadge from '@/components/UnreadBadge.vue';
 import FeedFormDialog from '@/components/feed/FeedFormDialog.vue';
 import NewProjectDialog from '@/components/project/NewProjectDialog.vue';
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
@@ -322,7 +323,8 @@ const projectLinks = (id: number) => [
                                 <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
                                     <Link v-live="p" :href="route('projects.show', p.id)">
                                         <ProjectAvatar :project="p" size="xs" />
-                                        <span v-live-count="p.comments_count" class="truncate">{{ p.name }}</span>
+                                        <span class="truncate">{{ p.name }}</span>
+                                        <UnreadBadge :count="p.unread" class="ml-auto" />
                                     </Link>
                                 </SidebarMenuButton>
                                 <SidebarMenuSub v-if="isMobile && path.startsWith(`/projects/${p.id}/`)">

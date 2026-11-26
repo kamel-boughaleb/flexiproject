@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attachment;
 use App\Models\FeedPost;
 use App\Models\Task;
+use App\Models\TaskFollower;
 use App\Support\Msg;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
@@ -33,7 +34,8 @@ class AttachmentController extends Controller
             self::attach($task->attachments(), $file, $request, "attachments/{$task->project_id}/{$task->id}");
             $names[] = Msg::make('« :name »', ['name' => $file->getClientOriginalName()]);
         }
-        $task->project->log(Msg::make('a joint :files à « :task »', ['files' => $names, 'task' => $task->title]), $request->user(), $task);
+        $task->project->log(Msg::make('a joint :files à « :task »', ['files' => $names, 'task' => $task->title]), $request->user(), $task, ['attachments']);
+        TaskFollower::bump($task, $request->user());
 
         return back();
     }

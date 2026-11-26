@@ -51,7 +51,7 @@ export interface User {
 
 export type BreadcrumbItemType = BreadcrumbItem;
 
-export type SidebarProject = ProjectBadge & { comments_count?: number; tasks_max_updated_at?: string | null };
+export type SidebarProject = ProjectBadge & { unread?: number; tasks_max_updated_at?: string | null };
 
 export interface MiniUser {
     id: number;
@@ -116,6 +116,8 @@ export interface Task {
     subtasks_done_count?: number;
     comments_count?: number;
     attachments_count?: number;
+    /** Nouveautés (commentaires, modifications) pas encore vues par l'utilisateur : bulle « +N ». */
+    unread?: number | null;
     /** Pièce jointe affichée en couverture de la carte (dernière image, sinon dernier fichier). */
     cover?: TaskCover | null;
 }
@@ -148,6 +150,8 @@ export interface Activity {
     message: string;
     created_at: string;
     user: { id: number; name: string } | null;
+    /** Champs concernés : start_date, due_date, priority, assignee_id, attachments… */
+    fields?: string[] | null;
 }
 
 export interface TaskDetail extends Task {
@@ -156,6 +160,8 @@ export interface TaskDetail extends Task {
     comments: Comment[];
     attachments: Attachment[];
     activities: Activity[];
+    /** Collaborateurs liés : responsable, auteurs de commentaires, personnes mentionnées. */
+    followers: MiniUser[];
 }
 
 export interface ProjectPageProps {
@@ -222,7 +228,7 @@ export interface FeedPost {
 /** Notification affichée en bulle à son arrivée (voir LiveToasts.vue). */
 export interface LiveNotification {
     id: string;
-    kind: 'mention' | 'assigned' | 'project_member' | 'feed_member';
+    kind: 'mention' | 'assigned' | 'project_member' | 'feed_member' | 'task_deleted';
     message: string;
     url: string;
     created_at: string;

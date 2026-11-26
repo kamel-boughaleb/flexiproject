@@ -2,11 +2,11 @@
 import UserAvatar from '@/components/project/UserAvatar.vue';
 import type { LiveNotification, SharedData } from '@/types';
 import { router, usePage } from '@inertiajs/vue3';
-import { AtSign, Bell, FolderPlus, Newspaper, UserCheck, X } from 'lucide-vue-next';
+import { AtSign, Bell, FolderPlus, Newspaper, Trash2, UserCheck, X } from 'lucide-vue-next';
 import { onUnmounted, ref, watch } from 'vue';
 
 /**
- * Bulles de notification en bas à droite de l'écran : une mention, une tâche affectée, un ajout à un projet
+ * Bulles de notification en bas à droite de l'écran : une mention, une tâche affectée ou supprimée, un ajout à un projet
  * ou à un fil d'actualité s'affichent 10 secondes dès que le rafraîchissement automatique les ramène,
  * avec l'avatar du collègue à l'origine et un lien vers l'élément. Chaque notification n'est montrée
  * qu'une fois (mémorisé sur cet appareil).
@@ -67,7 +67,7 @@ function open(n: LiveNotification) {
     router.visit(n.url);
 }
 
-const ICONS = { mention: AtSign, assigned: UserCheck, project_member: FolderPlus, feed_member: Newspaper } as const;
+const ICONS = { mention: AtSign, assigned: UserCheck, project_member: FolderPlus, feed_member: Newspaper, task_deleted: Trash2 } as const;
 const icon = (n: LiveNotification) => ICONS[n.kind] ?? Bell;
 </script>
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\TaskFollower;
 use App\Services\TaskNotifier;
 use App\Support\RichText;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,10 @@ class CommentController extends Controller
         $actor = $request->user();
         $mentioned = $notifier->mentioned($task, $actor, RichText::mentionedIds($comment->body), $comment->body, inComment: true);
         $notifier->commented($task, $comment, $actor, except: $mentioned);
+
+        // L'auteur et les personnes mentionnées sont liés à la tâche ; les autres voient une bulle « +1 ».
+        TaskFollower::link($task, [$actor->id, ...RichText::mentionedIds($comment->body)]);
+        TaskFollower::bump($task, $actor);
 
         return back();
     }

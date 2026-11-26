@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Notification;
 
 /**
  * Prévient les collaborateurs de ce qui se passe sur une tâche (cloche + e-mail selon leurs réglages).
- * Les participants d'une tâche sont son responsable et toutes les personnes qui l'ont créée, modifiée ou commentée.
+ * Les participants d'une tâche sont son responsable, les personnes qui y sont liées (mentionnées avec « @ »)
+ * et toutes celles qui l'ont créée, modifiée ou commentée.
  */
 class TaskNotifier
 {
@@ -108,6 +109,7 @@ class TaskNotifier
         $ids = collect([$task->assignee_id, ...$also])
             ->merge($task->activities()->whereNotNull('user_id')->pluck('user_id'))
             ->merge($task->comments()->pluck('user_id'))
+            ->merge($task->followers()->pluck('users.id'))
             ->filter()->unique()->reject(fn ($id) => $id === $actor->id);
 
         return $task->project->members()->whereIn('users.id', $ids)->get();

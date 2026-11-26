@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UnreadBadge from '@/components/UnreadBadge.vue';
 import { FILE_ICONS, FILE_TILES } from '@/lib/files';
 import { dueLabel, isOverdue } from '@/lib/labels';
 import type { Task } from '@/types';
@@ -48,12 +49,8 @@ defineEmits<{ open: [id: number] }>();
         </div>
         <div class="flex items-start gap-2.5">
             <TaskCheck class="mt-px" :task-id="task.id" :completed="task.completed" :disabled="!canEdit" />
-            <span
-                v-live-count="task.comments_count"
-                class="flex-1 text-sm font-semibold leading-5"
-                :class="{ 'text-ink-soft line-through': task.completed }"
-                >{{ task.title }}</span
-            >
+            <span class="flex-1 text-sm font-semibold leading-5" :class="{ 'text-ink-soft line-through': task.completed }">{{ task.title }}</span>
+            <UnreadBadge :count="task.unread" class="mt-px" />
         </div>
         <div class="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs font-medium text-ink-soft">
             <PriorityBadge :priority="task.priority" />

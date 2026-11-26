@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Casts\RichTextCast;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -99,6 +101,21 @@ class Task extends Model
     public function activities(): HasMany
     {
         return $this->hasMany(Activity::class)->latest('id');
+    }
+
+    /** Collaborateurs liés à la tâche : responsable, auteurs de commentaires, personnes mentionnées avec « @ ». */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)->withPivot('unread')->withTimestamps();
+    }
+
+    /** Ajoute `unread` : nouveautés (commentaires, modifications) pas encore vues par cet utilisateur. */
+    public function scopeWithUnreadFor(Builder $query, User $user): void
+    {
+        $query->addSelect(['unread' => TaskFollower::select('unread')
+            ->whereColumn('task_user.task_id', 'tasks.id')
+            ->where('task_user.user_id', $user->id)
+            ->limit(1)]);
     }
 
     public function markCompleted(bool $completed = true): void
