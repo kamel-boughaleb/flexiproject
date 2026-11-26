@@ -51,9 +51,11 @@ class HandleInertiaRequests extends Middleware
             // Barre latérale : projets de l'utilisateur dans son ordre (avec leur statut, filtrable) et notifications non lues.
             'sidebarProjects' => fn () => $user?->sidebarProjects()->get(['projects.id', 'name', 'color', 'icon', 'image_path', 'start_date', 'completed_at'])
                 ->map(fn ($p) => $p->summary()),
-            // Tous les fils d'actualité, dans l'ordre de l'utilisateur (glisser-déposer).
-            'sidebarFeeds' => fn () => $user?->sidebarFeeds()->get(['feeds.id', 'name', 'color'])
-                ->map(fn ($feed) => $feed->summary()) ?? [],
+            // Tous les fils d'actualité, dans l'ordre de l'utilisateur (glisser-déposer), avec son abonnement.
+            'sidebarFeeds' => fn () => $user?->sidebarFeeds()
+                ->withExists(['subscribers as subscribed' => fn ($q) => $q->whereKey($user->id)])
+                ->get(['feeds.id', 'name', 'color'])
+                ->map(fn ($feed) => [...$feed->summary(), 'subscribed' => (bool) $feed->subscribed]) ?? [],
             // Couleurs proposées à la création d'un projet ou d'un fil (boutons « + » du menu).
             'projectColors' => Project::COLORS,
             // Notifications à afficher en bulle dès leur arrivée (mention, affectation, ajout à un projet ou un fil).

@@ -96,6 +96,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('feeds/{feed}', [FeedController::class, 'destroy'])->name('feeds.destroy');
     Route::post('feeds/{feed}/subscription', [FeedController::class, 'subscribe'])->name('feeds.subscribe');
     Route::delete('feeds/{feed}/subscription', [FeedController::class, 'unsubscribe'])->name('feeds.unsubscribe');
+    Route::post('feeds/{feed}/members', [FeedController::class, 'addMembers'])->name('feeds.members.store');
+    Route::delete('feeds/{feed}/members/{user}', [FeedController::class, 'removeMember'])->name('feeds.members.destroy');
     Route::post('feeds/{feed}/images', [EditorImageController::class, 'storeForFeed'])->name('feed-images.store');
     Route::get('feeds/{feed}/images/{name}', [EditorImageController::class, 'showForFeed'])
         ->where('name', '[A-Za-z0-9]+\.(png|jpg|gif|webp)')->name('feed-images.show');

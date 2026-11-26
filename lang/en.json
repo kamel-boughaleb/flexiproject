@@ -625,5 +625,21 @@
     "et": "and",
     "Aujourd'hui tu as :list.": "Today you have :list.",
     "Hello :name !": "Hello :name!",
-    "Cliquez pour continuer": "Click to continue"
+    "Cliquez pour continuer": "Click to continue",
+    "Membres du fil": "Feed members",
+    "Les membres reçoivent chaque nouvelle actualité dans la cloche et par e-mail.": "Members get every new post in their notifications and by email.",
+    "Ajouter des membres": "Add members",
+    "Rechercher un collaborateur": "Search for a teammate",
+    "Aucun collaborateur trouvé.": "No teammate found.",
+    "Toute l’équipe est déjà abonnée.": "The whole team is already subscribed.",
+    "Ajouter :count personne|Ajouter :count personnes": "Add :count person|Add :count people",
+    "Ajouter": "Add",
+    "vous": "you",
+    "Retirer du fil": "Remove from feed",
+    "Désabonner :name de ce fil ?": "Unsubscribe :name from this feed?",
+    "Personne n’est encore abonné à ce fil.": "Nobody is subscribed to this feed yet.",
+    "Voir et ajouter des membres": "See and add members",
+    "Non abonné": "Not subscribed",
+    "Actions du fil": "Feed actions",
+    ":name vous a abonné au fil d'actualité « :feed »": ":name subscribed you to the news feed “:feed”"
 }
