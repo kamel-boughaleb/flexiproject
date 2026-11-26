@@ -108,14 +108,15 @@ onMounted(() => {
                 { opacity: 0, transform: `${centerTransform(1.6)}` },
                 { opacity: 1, transform: center },
             ],
-            { duration: 700, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'forwards' },
+            { duration: 500, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'forwards' },
         );
-        later(1600, () => {
+        // Durées : « Hello » 1 s, remontée du titre 0,6 s, résumé 4 s.
+        later(1000, () => {
             phase.value = 'title';
-            el.animate([{ transform: center }, { transform: 'none' }], { duration: 750, easing: 'cubic-bezier(.6,0,.2,1)', fill: 'forwards' });
+            el.animate([{ transform: center }, { transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.6,0,.2,1)', fill: 'forwards' });
         });
-        later(2500, () => (phase.value = 'recap'));
-        later(7500, finishIntro);
+        later(1600, () => (phase.value = 'recap'));
+        later(5600, finishIntro);
     });
 });
 onUnmounted(() => timers.forEach(clearTimeout));
