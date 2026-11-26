@@ -3,7 +3,14 @@ import FeedFormDialog from '@/components/feed/FeedFormDialog.vue';
 import NewProjectDialog from '@/components/project/NewProjectDialog.vue';
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Sidebar,
     SidebarContent,
@@ -23,7 +30,7 @@ import {
 import { t } from '@/lib/i18n';
 import { type FeedBadge, type ProjectStatus, type SharedData, type SidebarProject } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { CheckSquare, ChevronDown, ListFilter, Plus } from 'lucide-vue-next';
+import { Bell, BellOff, CheckSquare, ChevronDown, Ellipsis, ListFilter, Plus, UserPlus } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import draggable from 'vuedraggable';
 import AppLogo from './AppLogo.vue';
@@ -89,6 +96,14 @@ watch(
     (value) => (feeds.value = [...value]),
     { immediate: true },
 );
+/** S'abonner ou se désabonner d'un fil depuis le menu de gauche. */
+function toggleSubscription(feed: FeedBadge) {
+    feed.subscribed = !feed.subscribed;
+    const options = { preserveScroll: true, preserveState: true };
+    if (feed.subscribed) router.post(route('feeds.subscribe', feed.id), {}, options);
+    else router.delete(route('feeds.unsubscribe', feed.id), options);
+}
+
 function reorderFeeds(list: FeedBadge[]) {
     feeds.value = list;
     router.post(route('feeds.reorder'), { ids: list.map((f) => f.id) }, { preserveScroll: true, preserveState: true, only: ['sidebarFeeds'] });
@@ -202,9 +217,39 @@ const projectLinks = (id: number) => [
                                 >
                                     <Link :href="route('feeds.show', f.id)">
                                         <ProjectAvatar :project="f" size="xs" />
-                                        <span class="truncate">{{ f.name }}</span>
+                                        <span class="truncate" :class="f.subscribed ? '' : 'text-sidebar-foreground/60'">{{ f.name }}</span>
+                                        <BellOff
+                                            v-if="!f.subscribed"
+                                            class="ml-auto !size-3.5 shrink-0 text-sidebar-foreground/40"
+                                            :aria-label="$t('Non abonné')"
+                                        />
                                     </Link>
                                 </SidebarMenuButton>
+                                <!-- Actions du fil : abonnement et ajout de membres (au survol). -->
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger
+                                        :class="[
+                                            'absolute right-1 top-1.5 flex size-5 items-center justify-center rounded-md bg-sidebar text-sidebar-foreground/70 outline-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 group-data-[collapsible=icon]:hidden md:opacity-0',
+                                            `feed-actions-${f.id}`,
+                                        ]"
+                                        :aria-label="$t('Actions du fil')"
+                                        :title="$t('Actions du fil')"
+                                    >
+                                        <Ellipsis class="size-4" />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent side="right" align="start" class="w-56 rounded-2xl p-1.5">
+                                        <DropdownMenuItem class="rounded-icon font-semibold" @select="toggleSubscription(f)">
+                                            <component :is="f.subscribed ? BellOff : Bell" class="size-4" />
+                                            {{ f.subscribed ? $t('Se désabonner') : $t("S'abonner") }}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            class="rounded-icon font-semibold"
+                                            @select="router.visit(`${route('feeds.show', f.id)}?members=1`)"
+                                        >
+                                            <UserPlus class="size-4" /> {{ $t('Ajouter des membres') }}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </SidebarMenuItem>
                         </template>
                     </draggable>

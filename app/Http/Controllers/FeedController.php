@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Feed;
 use App\Models\Project;
+use App\Models\User;
+use App\Notifications\ProjectNotification;
+use App\Support\Msg;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -74,6 +77,8 @@ class FeedController extends Controller
             ],
             'posts' => $posts,
             'colors' => Project::COLORS,
+            // Collaborateurs actifs que l'on peut abonner au fil (fenêtre « Membres »).
+            'team' => fn () => User::query()->active()->inTeam()->orderBy('name')->get(['id', 'name', 'email', 'color', 'avatar']),
         ]);
     }
 
@@ -129,6 +134,37 @@ class FeedController extends Controller
     public function unsubscribe(Request $request, Feed $feed): RedirectResponse
     {
         $feed->subscribers()->detach($request->user());
+
+        return back();
+    }
+
+    /**
+     * Abonne d'autres collaborateurs au fil : tout collaborateur peut le faire.
+     * Les personnes ajoutées sont prévenues dans la cloche et peuvent se désabonner à tout moment.
+     */
+    public function addMembers(Request $request, Feed $feed): RedirectResponse
+    {
+        $ids = $request->validate([
+            'user_ids' => ['required', 'array', 'max:500'],
+            'user_ids.*' => ['integer', 'distinct', Rule::exists('users', 'id')->whereNull('deactivated_at')->whereNull('removed_at')],
+        ])['user_ids'];
+
+        $actor = $request->user();
+        $added = $feed->subscribers()->syncWithoutDetaching($ids)['attached'];
+
+        User::whereKey($added)->whereKeyNot($actor->id)->get()->each(fn (User $user) => $user->notify(new ProjectNotification(
+            Msg::make(':name vous a abonné au fil d\'actualité « :feed »', ['name' => $actor->name, 'feed' => $feed->name]),
+            url: route('feeds.show', $feed, false),
+        )));
+
+        return back();
+    }
+
+    /** Retire un abonné : la personne elle-même, le créateur du fil ou un administrateur. */
+    public function removeMember(Request $request, Feed $feed, User $user): RedirectResponse
+    {
+        abort_unless($user->is($request->user()) || $feed->canBeManagedBy($request->user()), 403);
+        $feed->subscribers()->detach($user);
 
         return back();
     }
