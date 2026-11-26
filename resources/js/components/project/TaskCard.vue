@@ -13,6 +13,7 @@ defineEmits<{ open: [id: number] }>();
 
 <template>
     <div
+        v-live="task"
         role="button"
         tabindex="0"
         :aria-current="selected ? 'true' : undefined"

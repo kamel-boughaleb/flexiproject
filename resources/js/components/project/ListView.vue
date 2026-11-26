@@ -264,6 +264,7 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                             <div
                                 v-for="task in group.tasks"
                                 :key="task.id"
+                                v-live="task"
                                 role="row"
                                 :class="[cols, task.id === selectedId ? 'bg-brand-wash' : 'hover:bg-app-surface']"
                                 class="flex cursor-pointer items-center gap-3 border-b border-app-border py-2 pl-2 pr-2 text-sm"

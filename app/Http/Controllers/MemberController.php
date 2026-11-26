@@ -41,7 +41,12 @@ class MemberController extends Controller
         }
 
         $project->members()->syncWithoutDetaching([$user->id => ['role' => $data['role']]]);
-        $user->notify(new ProjectNotification(Msg::make(':name vous a ajouté au projet « :project »', ['name' => $request->user()->name, 'project' => $project->name]), $project->id));
+        $user->notify(new ProjectNotification(
+            Msg::make(':name vous a ajouté au projet « :project »', ['name' => $request->user()->name, 'project' => $project->name]),
+            $project->id,
+            kind: 'project_member',
+            actorId: $request->user()->id,
+        ));
         $project->log(Msg::make('a ajouté :name au projet', ['name' => $user->name]), $request->user());
 
         return back();

@@ -615,5 +615,15 @@
     "On parle de vous": "Mentions",
     "Ouvrir le menu du compte": "Open the account menu",
     "Tâches en retard ou urgentes": "Overdue or urgent tasks",
-    "Urgent": "Urgent"
+    "Urgent": "Urgent",
+    "Voir": "View",
+    "Fermer": "Close",
+    ":count tâche à finir|:count tâches à finir": ":count task to finish|:count tasks to finish",
+    ":count commentaire à consulter|:count commentaires à consulter": ":count comment to read|:count comments to read",
+    ":count nouvelle actualité|:count nouvelles actualités": ":count new post|:count new posts",
+    "Aujourd'hui, rien d'urgent. Belle journée !": "Nothing urgent today. Have a great day!",
+    "et": "and",
+    "Aujourd'hui tu as :list.": "Today you have :list.",
+    "Hello :name !": "Hello :name!",
+    "Cliquez pour continuer": "Click to continue"
 }

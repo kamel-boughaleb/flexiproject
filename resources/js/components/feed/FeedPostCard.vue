@@ -21,7 +21,7 @@ function destroy() {
 </script>
 
 <template>
-    <article :id="`post-${post.id}`" class="rounded-2xl border border-app-border bg-background p-5 shadow-soft sm:p-6">
+    <article :id="`post-${post.id}`" v-live="post" class="rounded-2xl border border-app-border bg-background p-5 shadow-soft sm:p-6">
         <header class="flex items-center gap-3">
             <UserAvatar :user="post.user" size="md" />
             <div class="min-w-0 flex-1">

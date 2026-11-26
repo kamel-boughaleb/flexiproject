@@ -4,6 +4,7 @@ import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
 import GlobalSearch from '@/components/GlobalSearch.vue';
+import LiveToasts from '@/components/LiveToasts.vue';
 import MobileTabBar from '@/components/MobileTabBar.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import UserMenu from '@/components/UserMenu.vue';
@@ -43,5 +44,6 @@ useLiveRefresh();
             <slot />
         </AppContent>
         <MobileTabBar />
+        <LiveToasts />
     </AppShell>
 </template>

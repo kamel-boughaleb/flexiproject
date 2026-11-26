@@ -6,6 +6,8 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class TaskAssigned extends TaskNotification
 {
+    public const KIND = 'assigned';
+
     protected string $preference = 'assigned';
 
     protected function message(): string

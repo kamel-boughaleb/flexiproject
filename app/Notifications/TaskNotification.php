@@ -22,6 +22,9 @@ abstract class TaskNotification extends Notification implements ShouldQueue
     /** Clé de User::NOTIFICATION_DEFAULTS qui active l'e-mail. */
     protected string $preference;
 
+    /** Type affiché en bulle dans l'application à son arrivée (voir LiveNotifications), sinon null. */
+    public const KIND = null;
+
     public function __construct(public Task $task, public User $actor)
     {
         $this->afterCommit();
@@ -47,6 +50,8 @@ abstract class TaskNotification extends Notification implements ShouldQueue
             'message' => $this->message(),
             'project_id' => $this->task->project_id,
             'task_id' => $this->task->id,
+            'kind' => static::KIND,
+            'actor_id' => $this->actor->id,
         ];
     }
 

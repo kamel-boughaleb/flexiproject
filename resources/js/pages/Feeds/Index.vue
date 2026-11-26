@@ -34,7 +34,12 @@ const toggle = (f: FeedRow) =>
             </div>
 
             <ul class="mt-6 grid gap-4 sm:grid-cols-2">
-                <li v-for="f in feeds" :key="f.id" class="flex flex-col rounded-2xl border border-app-border p-4 transition hover:shadow-hover">
+                <li
+                    v-for="f in feeds"
+                    :key="f.id"
+                    v-live="[f.name, f.description, f.color, f.posts_count]"
+                    class="flex flex-col rounded-2xl border border-app-border p-4 transition hover:shadow-hover"
+                >
                     <Link :href="route('feeds.show', f.id)" class="flex-1">
                         <div class="flex items-center gap-2">
                             <ProjectAvatar :project="f" size="md" />

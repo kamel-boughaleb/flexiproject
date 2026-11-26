@@ -10,6 +10,8 @@ use Illuminate\Support\Str;
 
 class TaskMentioned extends TaskNotification
 {
+    public const KIND = 'mention';
+
     protected string $preference = 'mentions';
 
     public function __construct(Task $task, User $actor, public string $html, public bool $inComment)
