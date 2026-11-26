@@ -169,3 +169,61 @@
         content: attr(data-placeholder);
     }
 }
+
+/*
+ * Mises à jour en direct (v-live, voir resources/js/lib/liveFlash.ts) : un élément modifié par un collègue
+ * s'illumine brièvement en bleu ; un nouvel élément glisse en place.
+ */
+@keyframes live-flash {
+    0% {
+        background-color: var(--secondary-tint);
+        box-shadow: 0 0 0 2px var(--secondary-light-active);
+    }
+    60% {
+        background-color: var(--secondary-tint);
+        box-shadow: 0 0 0 2px transparent;
+    }
+    100% {
+        box-shadow: 0 0 0 2px transparent;
+    }
+}
+@keyframes live-in {
+    0% {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+        background-color: var(--secondary-tint);
+    }
+    40% {
+        opacity: 1;
+        transform: none;
+        background-color: var(--secondary-tint);
+    }
+}
+.live-changed {
+    animation: live-flash 1.8s ease-out;
+}
+.live-new {
+    animation: live-in 1.6s ease-out;
+}
+
+/* Accueil : apparition des blocs les uns après les autres. */
+@keyframes dash-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+.dash-in {
+    animation: dash-in 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+    .live-changed,
+    .live-new,
+    .dash-in {
+        animation: none;
+    }
+}

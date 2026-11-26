@@ -155,6 +155,8 @@ class FeedController extends Controller
         User::whereKey($added)->whereKeyNot($actor->id)->get()->each(fn (User $user) => $user->notify(new ProjectNotification(
             Msg::make(':name vous a abonné au fil d\'actualité « :feed »', ['name' => $actor->name, 'feed' => $feed->name]),
             url: route('feeds.show', $feed, false),
+            kind: 'feed_member',
+            actorId: $actor->id,
         )));
 
         return back();

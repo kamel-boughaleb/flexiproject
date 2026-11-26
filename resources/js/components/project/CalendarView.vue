@@ -256,7 +256,7 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                 {{ format(selectedDay, $t('EEEE d MMMM'), { locale: dateLocale() }) }}
             </h3>
             <ul class="space-y-2.5">
-                <li v-for="t in agenda" :key="t.id">
+                <li v-for="t in agenda" :key="t.id" v-live="t" class="rounded-task">
                     <button
                         type="button"
                         class="flex min-h-11 w-full items-center gap-3 rounded-task border-l-4 bg-background p-3.5 text-left shadow-soft"

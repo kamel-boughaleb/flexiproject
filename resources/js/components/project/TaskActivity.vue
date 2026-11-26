@@ -37,7 +37,7 @@ const items = computed(() => {
             />
         </div>
         <ol class="space-y-3">
-            <li v-for="item in items" :key="item.key">
+            <li v-for="item in items" :key="item.key" v-live="item.kind === 'comment' ? item.comment : item.key" class="rounded-lg">
                 <div v-if="item.kind === 'comment'" class="flex gap-2.5">
                     <UserAvatar :user="item.comment.user" size="md" />
                     <div class="min-w-0 flex-1">

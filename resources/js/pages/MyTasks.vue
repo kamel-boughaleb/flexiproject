@@ -18,7 +18,7 @@ defineProps<{ tasks: (Task & { project: { id: number; name: string; color: strin
                 {{ $tc(':count tâche ouverte, triée par échéance|:count tâches ouvertes, triées par échéance', tasks.length) }}
             </p>
             <ul class="mt-6 divide-y rounded-lg border">
-                <li v-for="t in tasks" :key="t.id" class="flex items-center gap-3 px-4 py-2.5 text-sm">
+                <li v-for="t in tasks" :key="t.id" v-live="t" class="flex items-center gap-3 px-4 py-2.5 text-sm">
                     <TaskCheck :task-id="t.id" :completed="t.completed" />
                     <Link :href="`${route('projects.view', [t.project.id, 'list'])}?task=${t.id}`" class="flex-1 hover:underline">{{ t.title }}</Link>
                     <PriorityBadge :priority="t.priority" />

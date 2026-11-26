@@ -239,6 +239,7 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                     <div
                         v-for="t in forSection(section.id)"
                         :key="t.id"
+                        v-live="t"
                         class="relative flex border-b border-app-border"
                         :style="{ height: `${ROW}px` }"
                     >

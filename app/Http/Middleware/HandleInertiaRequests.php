@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Project;
+use App\Support\LiveNotifications;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -57,6 +58,8 @@ class HandleInertiaRequests extends Middleware
                 ->map(fn ($feed) => [...$feed->summary(), 'subscribed' => (bool) $feed->subscribed]) ?? [],
             // Couleurs proposées à la création d'un projet ou d'un fil (boutons « + » du menu).
             'projectColors' => Project::COLORS,
+            // Notifications à afficher en bulle dès leur arrivée (mention, affectation, ajout à un projet ou un fil).
+            'liveNotifications' => fn () => $user ? LiveNotifications::for($user) : [],
             'unreadNotifications' => fn () => $user?->unreadNotifications()->count() ?? 0,
             'flash' => [
                 'error' => fn () => $request->session()->get('error'),

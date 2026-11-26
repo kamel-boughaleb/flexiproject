@@ -24,6 +24,7 @@ export interface SharedData {
     sidebarProjects: SidebarProject[];
     sidebarFeeds: FeedBadge[];
     projectColors: string[];
+    liveNotifications: LiveNotification[];
     unreadNotifications: number;
     flash?: { error?: string | null; success?: string | null };
     ziggy: {
@@ -216,4 +217,14 @@ export interface FeedPost {
     attachments: Attachment[];
     /** L'utilisateur peut modifier ou supprimer l'actualité (auteur, créateur du fil ou administrateur). */
     can_manage: boolean;
+}
+
+/** Notification affichée en bulle à son arrivée (voir LiveToasts.vue). */
+export interface LiveNotification {
+    id: string;
+    kind: 'mention' | 'assigned' | 'project_member' | 'feed_member';
+    message: string;
+    url: string;
+    created_at: string;
+    actor: MiniUser | null;
 }

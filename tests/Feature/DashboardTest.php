@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\TaskUpdated;
 use App\Support\BusinessDays;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -113,6 +114,48 @@ class DashboardTest extends TestCase
             ->where('morningAlert.tasks.0.id', $late->id)
             ->where('morningAlert.tasks.1.id', $urgent->id));
         $this->actingAs($user->fresh())->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('morningAlert', null));
+    }
+
+    public function test_intro_only_on_first_visit_of_the_day(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-25 08:00', 'Europe/Paris'));
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('intro', true));
+        $this->actingAs($user->fresh())->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('intro', false));
+
+        $this->travelTo(Carbon::parse('2026-11-26 08:00', 'Europe/Paris'));
+        $this->actingAs($user->fresh())->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('intro', true));
+    }
+
+    public function test_live_notifications_for_mentions_assignments_and_new_projects(): void
+    {
+        $user = User::factory()->create();
+        $alice = User::factory()->create(['name' => 'Alice']);
+        $project = Project::factory()->create(['owner_id' => $alice->id]);
+        $project->members()->attach($user, ['role' => 'editor']);
+        $task = Task::factory()->in($project)->create();
+
+        // Affectation par Alice : bulle avec son avatar et un lien vers la tâche.
+        $this->actingAs($alice)->patch("/tasks/{$task->id}", ['assignee_id' => $user->id])->assertRedirect();
+        // Une simple modification de la tâche ne fait pas de bulle.
+        $task->update(['assignee_id' => null]);
+        $user->notify(new TaskUpdated($task, $alice, ['title']));
+        // Ajout à un autre projet, une minute plus tard.
+        $this->travel(1)->minutes();
+        $other = Project::factory()->create(['owner_id' => $alice->id]);
+        $this->actingAs($alice)->post("/projects/{$other->id}/members", ['email' => $user->email, 'role' => 'editor'])->assertRedirect();
+
+        $this->actingAs($user)->get('/my-tasks')->assertInertia(fn (Assert $page) => $page
+            ->has('liveNotifications', 2)
+            ->where('liveNotifications.0.kind', 'project_member')
+            ->where('liveNotifications.0.actor.name', 'Alice')
+            ->where('liveNotifications.1.kind', 'assigned')
+            ->where('liveNotifications.1.url', "/projects/{$project->id}/list?task={$task->id}"));
+
+        // Plus de 10 minutes après, ou une fois lues, elles ne sont plus envoyées.
+        $this->travel(11)->minutes();
+        $this->actingAs($user)->get('/my-tasks')->assertInertia(fn (Assert $page) => $page->has('liveNotifications', 0));
     }
 
     public function test_assignment_date_is_recorded(): void

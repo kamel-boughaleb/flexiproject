@@ -1,3 +1,4 @@
+import { liveRefreshFinished, liveRefreshStarted } from '@/lib/liveFlash';
 import { router } from '@inertiajs/vue3';
 import { onMounted, onUnmounted } from 'vue';
 
@@ -43,10 +44,15 @@ function refresh() {
         return;
     }
     missed = false;
+    liveRefreshStarted();
     router.reload({
         // Laravel renvoie toutes les props de la page : tâches, fiche ouverte, membres, notifications…
         onCancelToken: (token) => (cancelPoll = () => token.cancel()),
-        onFinish: () => (cancelPoll = null),
+        onFinish: () => {
+            cancelPoll = null;
+            // Les éléments marqués v-live qui changent maintenant viennent d'un autre collaborateur.
+            liveRefreshFinished();
+        },
     });
 }
 

@@ -215,7 +215,7 @@ const projectLinks = (id: number) => [
                                     :is-active="path === `/feeds/${f.id}` || path.startsWith(`/feeds/${f.id}/`)"
                                     :tooltip="f.name"
                                 >
-                                    <Link :href="route('feeds.show', f.id)">
+                                    <Link v-live="f" :href="route('feeds.show', f.id)">
                                         <ProjectAvatar :project="f" size="xs" />
                                         <span class="truncate" :class="f.subscribed ? '' : 'text-sidebar-foreground/60'">{{ f.name }}</span>
                                         <BellOff
@@ -320,7 +320,7 @@ const projectLinks = (id: number) => [
                         <template #item="{ element: p }">
                             <SidebarMenuItem>
                                 <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
-                                    <Link :href="route('projects.show', p.id)">
+                                    <Link v-live="p" :href="route('projects.show', p.id)">
                                         <ProjectAvatar :project="p" size="xs" />
                                         <span class="truncate">{{ p.name }}</span>
                                     </Link>

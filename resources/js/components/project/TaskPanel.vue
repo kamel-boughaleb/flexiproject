@@ -274,6 +274,7 @@ const iconBtn =
                         </button>
                         <textarea
                             ref="titleInput"
+                            v-live="task.title"
                             :key="`title-${task.id}`"
                             :value="task.title"
                             :disabled="!canEdit"
@@ -289,6 +290,7 @@ const iconBtn =
 
                     <TaskFields
                         v-if="!full"
+                        v-live="[task.due_date, task.start_date, task.assignee_id, task.section_id, task.priority, task.completed]"
                         :task="task"
                         :project="project"
                         :members="members"
@@ -388,6 +390,7 @@ const iconBtn =
                     <section class="rounded-card border border-app-border p-5 shadow-soft" aria-labelledby="details-title">
                         <h3 id="details-title" class="mb-1 text-xs font-bold uppercase tracking-[.04em] text-ink-soft">{{ $t('Détails') }}</h3>
                         <TaskFields
+                            v-live="[task.due_date, task.start_date, task.assignee_id, task.section_id, task.priority, task.completed]"
                             stacked
                             :task="task"
                             :project="project"

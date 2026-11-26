@@ -7,6 +7,7 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { initializeTheme } from './composables/useAppearance';
 import { setLocale, t, tc } from './lib/i18n';
+import { vLive } from './lib/liveFlash';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -33,7 +34,8 @@ createInertiaApp({
 
         const app = createApp({ render: () => h(App, props) })
             .use(plugin)
-            .use(ZiggyVue);
+            .use(ZiggyVue)
+            .directive('live', vLive);
         app.config.globalProperties.$t = t;
         app.config.globalProperties.$tc = tc;
         app.mount(el);

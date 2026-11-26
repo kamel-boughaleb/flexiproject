@@ -38,11 +38,18 @@ class DashboardController extends Controller
         $now = BusinessDays::now();
         $alertTasks = $this->alertTasks($user, $now);
 
+        // Dernier affichage de l'accueil : la première ouverture de la journée joue l'animation d'accueil
+        // et affiche l'alerte du matin. Les rafraîchissements automatiques suivants n'y ont plus droit.
+        $seen = $user->dashboard_seen_at;
+        DB::table('users')->where('id', $user->id)->update(['dashboard_seen_at' => now()]);
+        $firstToday = ! $seen || $seen->copy()->setTimezone(BusinessDays::TIMEZONE)->toDateString() < $now->toDateString();
+
         return Inertia::render('Dashboard', [
             'posts' => $this->latestPosts($user, $now),
             'alertTasks' => $alertTasks->map(fn (Task $task) => $this->taskRow($task, $now)),
             'mentions' => $this->mentions($user, $now),
-            'morningAlert' => $this->morningAlert($user, $alertTasks, $now),
+            'intro' => $firstToday,
+            'morningAlert' => $firstToday ? $this->morningAlert($seen, $alertTasks, $now) : null,
         ]);
     }
 
@@ -129,15 +136,8 @@ class DashboardController extends Controller
      * Alerte du matin : à la première ouverture de l'accueil de la journée, les tâches en retard ou urgentes
      * affectées à l'utilisateur depuis son dernier affichage de l'accueil (toutes, à sa toute première visite).
      */
-    private function morningAlert(User $user, Collection $alertTasks, Carbon $now): ?array
+    private function morningAlert(?Carbon $seen, Collection $alertTasks, Carbon $now): ?array
     {
-        $seen = $user->dashboard_seen_at;
-        DB::table('users')->where('id', $user->id)->update(['dashboard_seen_at' => now()]);
-
-        if ($seen && $seen->copy()->setTimezone(BusinessDays::TIMEZONE)->toDateString() >= $now->toDateString()) {
-            return null;
-        }
-
         $tasks = $alertTasks
             ->filter(fn (Task $task) => ! $seen || ($task->assigned_at && $task->assigned_at->gt($seen)))
             ->values();
