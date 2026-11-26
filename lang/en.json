@@ -641,5 +641,14 @@
     "Voir et ajouter des membres": "See and add members",
     "Non abonné": "Not subscribed",
     "Actions du fil": "Feed actions",
-    ":name vous a abonné au fil d'actualité « :feed »": ":name subscribed you to the news feed “:feed”"
+    ":name vous a abonné au fil d'actualité « :feed »": ":name subscribed you to the news feed “:feed”",
+    "Chaque matin, les nouvelles actualités de vos fils, puis vos tâches en retard et en cours.": "Every morning, the latest posts from your feeds, then your overdue and in-progress tasks.",
+    "Envoi à": "Sent at",
+    "Votre récap du jour": "Your daily summary",
+    "Votre récap du jour · ⚠️ :count tâche en retard|Votre récap du jour · ⚠️ :count tâches en retard": "Your daily summary · ⚠️ :count overdue task|Your daily summary · ⚠️ :count overdue tasks",
+    "Voici votre récap du jour.": "Here is your daily summary.",
+    "Nouvelles actualités": "New posts",
+    "Tâches en cours": "Tasks in progress",
+    "Vous recevez ce récapitulatif chaque matin à :time.": "You receive this summary every morning at :time.",
+    "Actualité|Actualités": "Post|Posts"
 }

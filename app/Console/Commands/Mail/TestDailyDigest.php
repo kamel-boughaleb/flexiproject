@@ -27,8 +27,9 @@ class TestDailyDigest extends Command
         }
 
         $tasks = SendDailyDigest::tasksFor($user);
-        if ($tasks->isEmpty()) {
-            $this->error("{$user->name} n'a aucune tâche en cours : le récapitulatif ne serait pas envoyé.");
+        $posts = SendDailyDigest::newPostsFor($user);
+        if ($tasks->isEmpty() && $posts->isEmpty()) {
+            $this->error("{$user->name} n'a aucune tâche en cours ni nouvelle actualité : le récapitulatif ne serait pas envoyé.");
 
             return self::FAILURE;
         }
@@ -36,8 +37,8 @@ class TestDailyDigest extends Command
             $this->warn("{$user->name} a désactivé le récapitulatif : il est envoyé quand même pour ce test.");
         }
 
-        $this->line("{$tasks->count()} tâche(s) en cours pour {$user->name}.");
+        $this->line("{$tasks->count()} tâche(s) en cours et {$posts->count()} nouvelle(s) actualité(s) pour {$user->name} (envoi prévu chaque jour à {$user->digestTimeLabel()}).");
 
-        return $this->sendNow($this->recipient($user, $this->option('to')), new DailyDigest($tasks, SendDailyDigest::today()));
+        return $this->sendNow($this->recipient($user, $this->option('to')), new DailyDigest($tasks, SendDailyDigest::today(), $posts));
     }
 }

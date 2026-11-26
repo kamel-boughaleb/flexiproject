@@ -18,7 +18,7 @@
 @else
 <span class="task-date">{{ $due->translatedFormat($due->year === $todayDate->year ? __('D j M') : __('D j M Y')) }}</span>
 @if ($state === 'overdue')
-<span class="task-badge">{{ __(':count j de retard', ['count' => (int) $due->diffInDays($todayDate)]) }}</span>
+<span class="task-badge">⚠️ {{ __(':count j de retard', ['count' => (int) $due->diffInDays($todayDate)]) }}</span>
 @elseif ($state === 'today')
 <span class="task-badge">{{ __('Aujourd’hui') }}</span>
 @endif

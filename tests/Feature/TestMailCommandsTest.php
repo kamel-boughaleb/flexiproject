@@ -52,7 +52,7 @@ class TestMailCommandsTest extends TestCase
 
         $email = $this->lastEmail();
         $this->assertSame('marie@flexilivre.com', $email->getTo()[0]->getAddress());
-        $this->assertSame('Vos tâches du jour (1)', $email->getSubject());
+        $this->assertSame('Votre récap du jour', $email->getSubject());
         $this->assertStringContainsString('Couverture', $email->getHtmlBody());
     }
 

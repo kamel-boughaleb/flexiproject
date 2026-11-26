@@ -45,6 +45,7 @@ class FeedPostController extends Controller
     {
         abort_unless($post->feed_id === $feed->id, 404);
         $post->load(['user:id,name,color,avatar', 'attachments.user:id,name']);
+        FeedPost::markSeen($request->user(), [$post->id]);
 
         return Inertia::render('Feeds/Post', [
             'feed' => [...$feed->only(['id', 'name', 'color']), 'subscribed' => $feed->isSubscribed($request->user())],
