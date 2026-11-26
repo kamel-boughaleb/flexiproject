@@ -8,12 +8,12 @@ use Illuminate\Support\Collection;
 
 /**
  * Notifications affichées en bulle (10 s) dès leur arrivée, grâce au rafraîchissement automatique :
- * mention, tâche affectée, ajout à un projet ou à un fil d'actualité. Seules les notifications
+ * mention, tâche affectée ou supprimée, ajout à un projet ou à un fil d'actualité. Seules les notifications
  * non lues des dernières minutes sont envoyées ; l'interface retient celles déjà montrées.
  */
 class LiveNotifications
 {
-    public const KINDS = ['mention', 'assigned', 'project_member', 'feed_member'];
+    public const KINDS = ['mention', 'assigned', 'project_member', 'feed_member', 'task_deleted'];
 
     private const WINDOW_MINUTES = 10;
 

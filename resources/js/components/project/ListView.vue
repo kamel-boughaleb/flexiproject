@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UnreadBadge from '@/components/UnreadBadge.vue';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -275,12 +276,12 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                                         ><TaskCheck :task-id="task.id" :completed="task.completed" :disabled="!canEdit"
                                     /></span>
                                     <span class="min-w-0">
-                                        <span
-                                            v-live-count="task.comments_count"
-                                            class="block truncate font-semibold"
-                                            :class="{ 'text-ink-soft line-through': task.completed }"
-                                            >{{ task.title }}</span
-                                        >
+                                        <span class="flex min-w-0 items-center gap-1.5">
+                                            <span class="truncate font-semibold" :class="{ 'text-ink-soft line-through': task.completed }">{{
+                                                task.title
+                                            }}</span>
+                                            <UnreadBadge :count="task.unread" />
+                                        </span>
                                         <!-- Mobile : méta sous le nom -->
                                         <span class="flex flex-wrap items-center gap-x-2 text-xs font-medium text-ink-soft md:hidden">
                                             <span

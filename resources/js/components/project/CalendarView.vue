@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UnreadBadge from '@/components/UnreadBadge.vue';
 import SegmentedControl from '@/components/design/SegmentedControl.vue';
 import { dateLocale, t } from '@/lib/i18n';
 import { PRIORITIES, isOverdue, toDate } from '@/lib/labels';
@@ -214,7 +215,8 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                         @click="emit('open', b.t.id)"
                     >
                         <span class="size-2 shrink-0 rounded-full" :class="dot(b.t)" />
-                        <span v-live-count="b.t.comments_count" class="truncate">{{ b.t.title }}</span>
+                        <span class="truncate">{{ b.t.title }}</span>
+                        <UnreadBadge :count="b.t.unread" />
                     </button>
                 </div>
             </div>
@@ -264,12 +266,10 @@ const agenda = computed(() => tasksOn(selectedDay.value));
                         :style="{ borderLeftColor: edge(t) }"
                         @click="emit('open', t.id)"
                     >
-                        <span
-                            v-live-count="t.comments_count"
-                            class="min-w-0 flex-1 truncate text-sm font-bold"
-                            :class="{ 'text-ink-soft line-through': t.completed }"
-                            >{{ t.title }}</span
-                        >
+                        <span class="min-w-0 flex-1 truncate text-sm font-bold" :class="{ 'text-ink-soft line-through': t.completed }">{{
+                            t.title
+                        }}</span>
+                        <UnreadBadge :count="t.unread" />
                         <PriorityBadge :priority="t.priority" />
                     </button>
                 </li>

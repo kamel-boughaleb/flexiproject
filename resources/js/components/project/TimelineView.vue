@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UnreadBadge from '@/components/UnreadBadge.vue';
 import SegmentedControl from '@/components/design/SegmentedControl.vue';
 import { dateLocale } from '@/lib/i18n';
 import { PRIORITIES, isOverdue, toDate } from '@/lib/labels';
@@ -254,12 +255,8 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                                 :class="t.completed ? 'bg-success text-white' : 'border-[1.5px] border-app-muted text-transparent'"
                                 ><Check class="size-3" :stroke-width="3"
                             /></span>
-                            <span
-                                v-live-count="t.comments_count"
-                                class="truncate text-sm font-semibold"
-                                :class="{ 'text-ink-soft line-through': t.completed }"
-                                >{{ t.title }}</span
-                            >
+                            <span class="truncate text-sm font-semibold" :class="{ 'text-ink-soft line-through': t.completed }">{{ t.title }}</span>
+                            <UnreadBadge :count="t.unread" />
                         </button>
                         <div class="relative" :style="{ width: `${SPAN * DAY}px` }">
                             <template v-if="bar(t)">
@@ -278,9 +275,8 @@ const showDay = (d: Date) => scale.value === 'days' || (scale.value === 'weeks' 
                                     @click="!canEdit && emit('open', t.id)"
                                 >
                                     <UserAvatar v-if="t.assignee" :user="t.assignee" size="xs" class="!size-[22px]" />
-                                    <span v-live-count="t.comments_count" class="truncate" :class="{ 'line-through': t.completed }">{{
-                                        t.title
-                                    }}</span>
+                                    <span class="truncate" :class="{ 'line-through': t.completed }">{{ t.title }}</span>
+                                    <UnreadBadge :count="t.unread" />
                                     <span v-if="t.subtasks_count" class="shrink-0 opacity-80"
                                         >· {{ t.subtasks_done_count ?? 0 }}/{{ t.subtasks_count }}</span
                                     >

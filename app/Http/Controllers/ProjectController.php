@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskFollower;
 use App\Models\User;
 use App\Support\Msg;
 use Illuminate\Http\RedirectResponse;
@@ -45,6 +46,10 @@ class ProjectController extends Controller
     {
         Gate::authorize('view', $project);
         abort_unless(in_array($view, self::VIEWS, true), 404);
+        // Ouvrir une tâche efface ses nouveautés (bulle « +N ») pour l'utilisateur.
+        if ($request->filled('task')) {
+            TaskFollower::seen($request->integer('task'), $request->user());
+        }
 
         return Inertia::render('Projects/Show', [
             ...$this->shared($request, $project),
@@ -54,6 +59,7 @@ class ProjectController extends Controller
                 ->whereNull('parent_id')
                 ->with('assignee:id,name,color,avatar')
                 ->withCount(['subtasks', 'subtasks as subtasks_done_count' => fn ($q) => $q->where('completed', true), 'comments', 'attachments'])
+                ->withUnreadFor($request->user())
                 ->with(['coverImage:attachments.id,attachments.task_id,name,mime', 'latestAttachment:attachments.id,attachments.task_id,name,mime'])
                 ->orderBy('position')
                 ->get()
@@ -242,6 +248,7 @@ class ProjectController extends Controller
                 'parent:id,title',
                 'subtasks.assignee:id,name,color,avatar',
                 'comments.user:id,name,color,avatar',
+                'followers:id,name,color,avatar',
                 'attachments.user:id,name',
                 'activities' => fn ($q) => $q->with('user:id,name')->limit(20),
             ])

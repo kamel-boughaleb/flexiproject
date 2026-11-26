@@ -6,18 +6,24 @@ import type { TaskDetail } from '@/types';
 import { computed, ref } from 'vue';
 import UserAvatar from './UserAvatar.vue';
 
-/** Fil d'activité : commentaires et historique fusionnés dans l'ordre chronologique, filtrables. */
+/**
+ * Fil d'activité. « Commentaires » : les commentaires, avec dans l'ordre chronologique les modifications
+ * qui comptent (dates, priorité, responsable, fichier ajouté). « Historique » : tout l'historique.
+ */
 const props = defineProps<{ task: TaskDetail }>();
 
-type Filter = 'comments' | 'all' | 'history';
-// Par défaut, seuls les commentaires : l'historique reste à un clic.
+type Filter = 'comments' | 'history';
 const filter = ref<Filter>('comments');
 
+/** Modifications montrées avec les commentaires (même liste que Activity::NOTABLE_FIELDS côté serveur). */
+const NOTABLE = ['start_date', 'due_date', 'priority', 'assignee_id', 'attachments'];
+
 const items = computed(() => {
-    const comments = props.task.comments.map((c) => ({ kind: 'comment' as const, key: `c${c.id}`, at: c.created_at, comment: c }));
     const events = props.task.activities.map((a) => ({ kind: 'event' as const, key: `a${a.id}`, at: a.created_at, event: a }));
-    const list = filter.value === 'comments' ? comments : filter.value === 'history' ? events : [...comments, ...events];
-    return list.sort((a, b) => a.at.localeCompare(b.at));
+    if (filter.value === 'history') return events.sort((a, b) => a.at.localeCompare(b.at));
+    const comments = props.task.comments.map((c) => ({ kind: 'comment' as const, key: `c${c.id}`, at: c.created_at, comment: c }));
+    const changes = events.filter((e) => e.event.fields?.some((f) => NOTABLE.includes(f)));
+    return [...comments, ...changes].sort((a, b) => a.at.localeCompare(b.at));
 });
 </script>
 
@@ -31,7 +37,6 @@ const items = computed(() => {
                 size="sm"
                 :options="[
                     { value: 'comments', label: $t('Commentaires'), count: task.comments.length },
-                    { value: 'all', label: $t('Tout') },
                     { value: 'history', label: $t('Historique') },
                 ]"
             />

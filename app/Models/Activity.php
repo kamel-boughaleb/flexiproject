@@ -10,13 +10,16 @@ use Illuminate\Support\Str;
 
 class Activity extends Model
 {
-    protected $fillable = ['project_id', 'task_id', 'user_id', 'message', 'params'];
+    protected $fillable = ['project_id', 'task_id', 'user_id', 'message', 'params', 'fields'];
+
+    /** Modifications affichées sous les commentaires d'une tâche (les autres restent dans l'historique). */
+    public const NOTABLE_FIELDS = ['start_date', 'due_date', 'priority', 'assignee_id', 'attachments'];
 
     protected $hidden = ['params'];
 
     protected function casts(): array
     {
-        return ['params' => 'array'];
+        return ['params' => 'array', 'fields' => 'array'];
     }
 
     /**

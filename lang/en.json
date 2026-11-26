@@ -650,5 +650,7 @@
     "Nouvelles actualités": "New posts",
     "Tâches en cours": "Tasks in progress",
     "Vous recevez ce récapitulatif chaque matin à :time.": "You receive this summary every morning at :time.",
-    "Actualité|Actualités": "Post|Posts"
+    "Actualité|Actualités": "Post|Posts",
+    ":count nouveauté non vue|:count nouveautés non vues": ":count unseen update|:count unseen updates",
+    ":name a supprimé la tâche « :task »": ":name deleted the task “:task”"
 }

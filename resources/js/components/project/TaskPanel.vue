@@ -129,11 +129,12 @@ useEventListener('keydown', (e: KeyboardEvent) => {
     else emit('close');
 });
 
-/** Personnes qui suivent la tâche : responsable et auteurs des commentaires. */
+/** Personnes liées à la tâche : responsable, auteurs des commentaires, personnes mentionnées avec « @ ». */
 const participants = computed(() => {
     const people = new Map<number, { id: number; name: string; color: string; avatar?: string | null }>();
     const assignee = props.members.find((m) => m.id === props.task.assignee_id);
     if (assignee) people.set(assignee.id, assignee);
+    (props.task.followers ?? []).forEach((u) => people.set(u.id, u));
     props.task.comments.forEach((c) => people.set(c.user.id, c.user));
     return [...people.values()];
 });
@@ -275,7 +276,6 @@ const iconBtn =
                         <textarea
                             ref="titleInput"
                             v-live="task.title"
-                            v-live-count="task.comments.length"
                             :key="`title-${task.id}`"
                             :value="task.title"
                             :disabled="!canEdit"

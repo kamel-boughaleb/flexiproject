@@ -103,7 +103,7 @@ class DashboardController extends Controller
             ->where('assignee_id', $user->id)
             ->whereNotNull('due_date')
             ->where('due_date', '<=', BusinessDays::dateIn(self::URGENT_DAYS, $now))
-            ->withCount('comments')
+            ->withUnreadFor($user)
             ->orderBy('due_date')
             ->orderBy('id')
             ->get();
@@ -168,8 +168,8 @@ class DashboardController extends Controller
             'urgent' => $due !== null && $due >= $now->toDateString() && $due <= BusinessDays::dateIn(self::URGENT_DAYS, $now),
             'url' => self::taskUrl($task),
             'project' => $task->project->summary(),
-            // Pour signaler à l'écran un nouveau commentaire (« +1 ») ou une modification de la tâche.
-            'comments_count' => $task->comments_count ?? 0,
+            // Nouveautés pas encore vues (bulle « +N ») et date de modification (léger clignotement).
+            'unread' => (int) ($task->unread ?? 0),
             'updated_at' => $task->updated_at?->toIso8601String(),
         ];
     }

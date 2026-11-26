@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Project;
+use App\Models\TaskFollower;
 use App\Support\LiveNotifications;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -49,13 +50,18 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
             ],
             // Barre latérale : projets de l'utilisateur dans son ordre (avec leur statut, filtrable) et notifications non lues.
-            // Nombre de commentaires et dernière modification des tâches : le menu signale l'activité
-            // des collaborateurs sur chaque projet (bulle « +1 », léger clignotement).
+            // Nouveautés pas encore vues sur les tâches du projet (bulle « +N ») et dernière modification
+            // des tâches (léger clignotement) : le menu signale l'activité des collaborateurs.
             'sidebarProjects' => fn () => $user?->sidebarProjects()
-                ->withCount('comments')
+                ->select(['projects.id', 'name', 'color', 'icon', 'image_path', 'start_date', 'completed_at'])
+                ->addSelect(['unread' => TaskFollower::query()
+                    ->join('tasks', 'tasks.id', '=', 'task_user.task_id')
+                    ->whereColumn('tasks.project_id', 'projects.id')
+                    ->where('task_user.user_id', $user->id)
+                    ->selectRaw('coalesce(sum(task_user.unread), 0)')])
                 ->withMax('tasks', 'updated_at')
-                ->get(['projects.id', 'name', 'color', 'icon', 'image_path', 'start_date', 'completed_at'])
-                ->map(fn ($p) => $p->summary(['comments_count', 'tasks_max_updated_at'])),
+                ->get()
+                ->map(fn ($p) => [...$p->summary(['tasks_max_updated_at']), 'unread' => (int) $p->unread]),
             // Tous les fils d'actualité, dans l'ordre de l'utilisateur (glisser-déposer), avec son abonnement.
             'sidebarFeeds' => fn () => $user?->sidebarFeeds()
                 ->withExists(['subscribers as subscribed' => fn ($q) => $q->whereKey($user->id)])

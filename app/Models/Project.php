@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -112,12 +111,6 @@ class Project extends Model
         return $this->hasMany(Task::class);
     }
 
-    /** Commentaires de toutes les tâches du projet. */
-    public function comments(): HasManyThrough
-    {
-        return $this->hasManyThrough(Comment::class, Task::class);
-    }
-
     public function rules(): HasMany
     {
         return $this->hasMany(Rule::class);
@@ -176,14 +169,15 @@ class Project extends Model
     /**
      * @param  string|array  $message  clé de traduction, ou message créé avec Msg::make() (traduit à l'affichage)
      */
-    public function log(string|array $message, ?User $user = null, ?Task $task = null): void
+    /** @param  list<string>|null  $fields  champs concernés (dates, priorité, responsable, fichiers…), voir Activity */
+    public function log(string|array $message, ?User $user = null, ?Task $task = null, ?array $fields = null): void
     {
         [$key, $params] = is_array($message) ? [$message['key'], $message['params']] : [$message, []];
 
         if ($user && $task) {
             $last = $this->activities()->where('task_id', $task->id)->first();
             if ($last && $last->user_id === $user->id && $last->getRawOriginal('message') === $key
-                && $last->params == $params && $last->created_at->gt(now()->subMinutes(10))) {
+                && $last->params == $params && $last->fields == $fields && $last->created_at->gt(now()->subMinutes(10))) {
                 $last->forceFill(['created_at' => now()])->save();
 
                 return;
@@ -195,6 +189,7 @@ class Project extends Model
             'params' => $params,
             'user_id' => $user?->id,
             'task_id' => $task?->id,
+            'fields' => $fields,
         ]);
     }
 }
