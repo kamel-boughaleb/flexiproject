@@ -3,37 +3,37 @@ import DateField from '@/components/design/DateField.vue';
 import InlineSelect from '@/components/design/InlineSelect.vue';
 import PriorityPicker from '@/components/design/PriorityPicker.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { t } from '@/lib/i18n';
 import { isOverdue, sectionColor } from '@/lib/labels';
 import type { Member, Priority, Project, Section, TaskDetail } from '@/types';
 import { router } from '@inertiajs/vue3';
 import { CalendarDays, ChevronDown, Plus, X } from 'lucide-vue-next';
 import { computed } from 'vue';
+import AssigneePicker from './AssigneePicker.vue';
 import UserAvatar from './UserAvatar.vue';
 
 /** Champs de la fiche tâche : « libellé à gauche / valeur cliquable à droite », modifiés en place. */
 const props = defineProps<{ task: TaskDetail; project: Project; members: Member[]; sections: Section[]; canEdit: boolean; stacked?: boolean }>();
 const emit = defineEmits<{ save: [field: string, value: string | number | null] }>();
 
-const assignee = computed(() => props.members.find((m) => m.id === props.task.assignee_id) ?? null);
 const sectionIndex = computed(() => props.sections.findIndex((s) => s.id === props.task.section_id));
 const overdue = computed(() => isOverdue(props.task.due_date, props.task.completed));
 
-const assigneeOptions = computed(() => [{ value: '', label: t('Personne') }, ...props.members.map((m) => ({ value: m.id, label: m.name }))]);
 const sectionOptions = computed(() => props.sections.map((s) => ({ value: s.id, label: s.name })));
 
 const assigneeModel = computed({
-    get: () => props.task.assignee_id ?? '',
-    set: (v: string | number) => emit('save', 'assignee_id', v === '' ? null : Number(v)),
+    get: () => props.task.assignee_id ?? null,
+    set: (v: number | null) => emit('save', 'assignee_id', v),
 });
 const sectionModel = computed({ get: () => props.task.section_id, set: (v: string | number) => emit('save', 'section_id', Number(v)) });
 const startModel = computed({ get: () => props.task.start_date, set: (v: string | null) => emit('save', 'start_date', v) });
 const dueModel = computed({ get: () => props.task.due_date, set: (v: string | null) => emit('save', 'due_date', v) });
 const priorityModel = computed({ get: () => props.task.priority, set: (v: Priority) => emit('save', 'priority', v) });
 
-/** Collaborateurs liés à la tâche (responsable, commentateurs, mentionnés, ajoutés à la main). */
-const followers = computed(() => props.task.followers ?? []);
-const addable = computed(() => props.members.filter((m) => !m.pending && !m.deactivated && !followers.value.some((f) => f.id === m.id)));
+/** Collaborateurs liés à la tâche (commentateurs, mentionnés, ajoutés à la main), hors responsable affiché juste au-dessus. */
+const followers = computed(() => (props.task.followers ?? []).filter((f) => f.id !== props.task.assignee_id));
+const addable = computed(() =>
+    props.members.filter((m) => !m.pending && !m.deactivated && m.id !== props.task.assignee_id && !followers.value.some((f) => f.id === m.id)),
+);
 const opts = { preserveScroll: true, preserveState: true };
 const addFollower = (id: number) => router.post(route('tasks.followers.store', props.task.id), { user_id: id }, opts);
 const removeFollower = (id: number) => router.delete(route('tasks.followers.destroy', [props.task.id, id]), opts);
@@ -46,14 +46,7 @@ const removeFollower = (id: number) => router.delete(route('tasks.followers.dest
     >
         <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">{{ $t('Responsable') }}</dt>
         <dd class="min-h-9 py-0.5">
-            <InlineSelect v-model="assigneeModel" :label="$t('Responsable')" :options="assigneeOptions" :disabled="!canEdit">
-                <span class="flex items-center gap-2 py-0.5 pl-0.5 pr-3">
-                    <UserAvatar :user="assignee" size="sm" />
-                    <span class="truncate text-sm font-bold" :class="{ 'font-semibold text-ink-soft': !assignee }">{{
-                        assignee?.name ?? $t('Personne')
-                    }}</span>
-                </span>
-            </InlineSelect>
+            <AssigneePicker v-model="assigneeModel" :project-id="project.id" :members="members" :disabled="!canEdit" />
         </dd>
 
         <dt class="text-sm font-semibold text-ink-soft" :class="{ 'mt-2': stacked }">{{ $t('Collaborateurs') }}</dt>

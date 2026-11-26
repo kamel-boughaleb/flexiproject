@@ -86,6 +86,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
 
     Route::post('projects/{project}/members', [MemberController::class, 'store'])->name('members.store');
+    Route::get('projects/{project}/member-candidates', [MemberController::class, 'candidates'])->name('members.candidates');
+    Route::post('projects/{project}/members/join', [MemberController::class, 'join'])->name('members.join');
     Route::patch('projects/{project}/members/{user}', [MemberController::class, 'update'])->name('members.update');
     Route::delete('projects/{project}/members/{user}', [MemberController::class, 'destroy'])->name('members.destroy');
 

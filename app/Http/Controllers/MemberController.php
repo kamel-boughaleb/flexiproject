@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Notifications\ProjectNotification;
 use App\Support\Msg;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -41,6 +42,44 @@ class MemberController extends Controller
         }
 
         $project->members()->syncWithoutDetaching([$user->id => ['role' => $data['role']]]);
+        $user->notify(new ProjectNotification(
+            Msg::make(':name vous a ajouté au projet « :project »', ['name' => $request->user()->name, 'project' => $project->name]),
+            $project->id,
+            kind: 'project_member',
+            actorId: $request->user()->id,
+        ));
+        $project->log(Msg::make('a ajouté :name au projet', ['name' => $user->name]), $request->user());
+
+        return back();
+    }
+
+    /** Collègues de l'équipe pas encore membres du projet, proposés par « + Nouveau » dans le choix du responsable. */
+    public function candidates(Project $project): JsonResponse
+    {
+        Gate::authorize('edit', $project);
+
+        return response()->json(User::active()
+            ->whereNotIn('id', $project->members()->select('users.id'))
+            ->orderBy('name')
+            ->get(['id', 'name', 'color', 'avatar'])
+            ->map(fn (User $u) => $u->only(['id', 'name', 'color', 'avatar'])));
+    }
+
+    /**
+     * Ajoute au projet un collègue déjà dans l'équipe, pour pouvoir lui confier une tâche (« + Nouveau » du
+     * choix du responsable). Ouvert à quiconque peut modifier le projet ; inviter une nouvelle personne
+     * reste réservé aux administrateurs (voir store()).
+     */
+    public function join(Request $request, Project $project): RedirectResponse
+    {
+        Gate::authorize('edit', $project);
+        $data = $request->validate(['user_id' => ['required', 'integer', ValidationRule::exists('users', 'id')->whereNull('deactivated_at')]]);
+        $user = User::findOrFail($data['user_id']);
+        if ($project->members()->whereKey($user->id)->exists()) {
+            return back();
+        }
+
+        $project->members()->attach($user->id, ['role' => 'editor']);
         $user->notify(new ProjectNotification(
             Msg::make(':name vous a ajouté au projet « :project »', ['name' => $request->user()->name, 'project' => $project->name]),
             $project->id,

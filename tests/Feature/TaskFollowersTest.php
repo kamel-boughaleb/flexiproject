@@ -123,4 +123,22 @@ class TaskFollowersTest extends TestCase
         $this->actingAs($this->owner)->delete(route('tasks.followers.destroy', [$this->task, $this->alice]));
         $this->assertSame([], $this->task->followers()->pluck('users.id')->all());
     }
+
+    public function test_a_teammate_outside_the_project_can_be_added_from_the_assignee_picker(): void
+    {
+        $newcomer = User::factory()->create(['name' => 'Zoé']);
+        $viewer = User::factory()->create();
+        $this->project->members()->attach($viewer->id, ['role' => 'viewer']);
+
+        $this->actingAs($this->alice)->getJson(route('members.candidates', $this->project))
+            ->assertOk()->assertJsonFragment(['id' => $newcomer->id, 'name' => 'Zoé'])->assertJsonMissing(['id' => $this->bob->id]);
+
+        $this->actingAs($viewer)->post(route('members.join', $this->project), ['user_id' => $newcomer->id])->assertForbidden();
+        $this->actingAs($this->alice)->post(route('members.join', $this->project), ['user_id' => $newcomer->id]);
+        $this->assertSame('editor', $this->project->members()->whereKey($newcomer->id)->first()->pivot->role);
+
+        $this->actingAs($this->alice)->patch(route('tasks.update', $this->task), ['assignee_id' => $newcomer->id]);
+        $this->assertSame($newcomer->id, $this->task->fresh()->assignee_id);
+        $this->assertSame(1, $newcomer->notifications()->where('data->kind', 'project_member')->count());
+    }
 }
