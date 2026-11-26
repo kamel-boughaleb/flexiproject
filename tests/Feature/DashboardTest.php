@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Comment;
 use App\Models\Project;
 use App\Models\Task;
@@ -121,11 +122,14 @@ class DashboardTest extends TestCase
         $this->travelTo(Carbon::parse('2026-11-25 08:00', 'Europe/Paris'));
         $user = User::factory()->create();
 
-        $this->actingAs($user)->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('intro', true));
-        $this->actingAs($user->fresh())->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('intro', false));
+        $inertia = ['X-Inertia' => 'true', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(request())];
+        $this->actingAs($user)->get('/dashboard', $inertia)->assertJsonPath('props.intro', true);
+        $this->actingAs($user->fresh())->get('/dashboard', $inertia)->assertJsonPath('props.intro', false);
+        // Rechargement complet de la page : l'animation est rejouée (essais).
+        $this->actingAs($user->fresh())->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('intro', true));
 
         $this->travelTo(Carbon::parse('2026-11-26 08:00', 'Europe/Paris'));
-        $this->actingAs($user->fresh())->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('intro', true));
+        $this->actingAs($user->fresh())->get('/dashboard', $inertia)->assertJsonPath('props.intro', true);
     }
 
     public function test_live_notifications_for_mentions_assignments_and_new_projects(): void

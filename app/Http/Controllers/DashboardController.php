@@ -48,7 +48,9 @@ class DashboardController extends Controller
             'posts' => $this->latestPosts($user, $now),
             'alertTasks' => $alertTasks->map(fn (Task $task) => $this->taskRow($task, $now)),
             'mentions' => $this->mentions($user, $now),
-            'intro' => $firstToday,
+            // Temporaire, pour les essais : l'animation est rejouée à chaque chargement complet de la page
+            // (F5, ouverture directe), mais pas lors des rafraîchissements automatiques ni de la navigation interne.
+            'intro' => $firstToday || ! $request->header('X-Inertia'),
             'morningAlert' => $firstToday ? $this->morningAlert($seen, $alertTasks, $now) : null,
         ]);
     }
