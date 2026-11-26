@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Console\Commands\SendDailyDigest;
+use App\Models\Feed;
+use App\Models\FeedPost;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -149,7 +152,8 @@ class EmailNotificationTest extends TestCase
 
         Notification::assertSentTo($marie, DailyDigest::class, fn (DailyDigest $n) => $n->total === 4
             && $n->today === '2026-11-02'
-            && $n->tasks->map(fn ($t) => $t->due_date?->toDateString())->all() === ['2026-10-30', '2026-11-02', '2026-11-05', null]
+            && $n->overdue->map(fn ($t) => $t->due_date?->toDateString())->all() === ['2026-10-30']
+            && $n->inProgress->map(fn ($t) => $t->due_date?->toDateString())->all() === ['2026-11-02', '2026-11-05', null]
             && $n->overdueCount() === 1);
         Notification::assertNotSentTo([$silent, $idle, $project->owner], DailyDigest::class);
     }
@@ -165,9 +169,110 @@ class EmailNotificationTest extends TestCase
 
         $this->assertStringContainsString('Bonjour', $html);
         $this->assertStringContainsString(asset('images/email-logo.png'), $html);
-        $this->assertStringContainsString('3 j de retard', $html);
+        $this->assertStringContainsString('⚠️ 3 j de retard', $html);
+        $this->assertStringContainsString('digest-section-warning', $html);
+        $this->assertStringContainsString('1 tâche en retard', $html);
+        $this->assertStringContainsString('Tâches en cours', $html);
+        $this->assertStringContainsString('chaque matin à 8 h', $html);
         $this->assertMatchesRegularExpression('/task-overdue[^>]*>.*?Couverture/s', $html);
         $this->assertLessThan(strpos($html, 'Maquette'), strpos($html, 'Couverture'));
+    }
+
+    public function test_daily_digest_is_sent_at_the_time_chosen_by_each_user_once_a_day(): void
+    {
+        Notification::fake();
+        $project = Project::factory()->create();
+        $early = $this->member($project);
+        $early->forceFill(['digest_time' => '07:30'])->save();
+        $default = $this->member($project);
+        foreach ([$early, $default] as $user) {
+            Task::factory()->in($project)->create(['assignee_id' => $user->id]);
+        }
+
+        Carbon::setTestNow(Carbon::parse('2026-11-02 07:29', 'Europe/Paris'));
+        $this->artisan('notifications:daily-digest');
+        Notification::assertNothingSent();
+
+        Carbon::setTestNow(Carbon::parse('2026-11-02 07:30', 'Europe/Paris'));
+        $this->artisan('notifications:daily-digest');
+        Notification::assertSentToTimes($early, DailyDigest::class, 1);
+        Notification::assertNotSentTo($default, DailyDigest::class);
+
+        Carbon::setTestNow(Carbon::parse('2026-11-02 08:00', 'Europe/Paris'));
+        $this->artisan('notifications:daily-digest');
+        $this->artisan('notifications:daily-digest');
+        Notification::assertSentToTimes($early, DailyDigest::class, 1);
+        Notification::assertSentToTimes($default, DailyDigest::class, 1);
+
+        // Au-delà de 2 h de retard (serveur arrêté), on attend le lendemain.
+        $late = $this->member($project);
+        Task::factory()->in($project)->create(['assignee_id' => $late->id]);
+        Carbon::setTestNow(Carbon::parse('2026-11-02 10:00', 'Europe/Paris'));
+        $this->artisan('notifications:daily-digest');
+        Notification::assertNotSentTo($late, DailyDigest::class);
+
+        Carbon::setTestNow(Carbon::parse('2026-11-03 08:01', 'Europe/Paris'));
+        $this->artisan('notifications:daily-digest');
+        Notification::assertSentToTimes($default, DailyDigest::class, 2);
+        Notification::assertSentToTimes($late, DailyDigest::class, 1);
+    }
+
+    public function test_digest_time_is_set_in_notification_settings(): void
+    {
+        $marie = User::factory()->create();
+        $prefs = ['assigned' => true, 'mentions' => true, 'comments' => true, 'updates' => true, 'daily_digest' => true];
+
+        $this->actingAs($marie)->get('/settings/notifications')
+            ->assertInertia(fn ($page) => $page->where('digestTime', '08:00'));
+
+        $this->actingAs($marie)->patch('/settings/notifications', [...$prefs, 'digest_time' => '07:15'])->assertSessionHasNoErrors();
+        $this->assertSame('07:15', $marie->fresh()->digestTime());
+        $this->assertSame('7 h 15', $marie->fresh()->digestTimeLabel());
+
+        $this->actingAs($marie)->patch('/settings/notifications', [...$prefs, 'digest_time' => '25:00'])->assertSessionHasErrors('digest_time');
+        $this->actingAs($marie)->patch('/settings/notifications', $prefs)->assertSessionHasNoErrors();
+        $this->assertSame('07:15', $marie->fresh()->digestTime());
+    }
+
+    public function test_daily_digest_lists_new_unseen_posts_of_subscribed_feeds(): void
+    {
+        Notification::fake();
+        Carbon::setTestNow(Carbon::parse('2026-11-02 08:00', 'Europe/Paris'));
+        $marie = User::factory()->create();
+        $author = User::factory()->create();
+        $feed = Feed::factory()->create(['name' => 'Production']);
+        $other = Feed::factory()->create();
+        $feed->subscribers()->attach($marie);
+
+        $fresh = FeedPost::factory()->create(['feed_id' => $feed->id, 'user_id' => $author->id, 'title' => 'Nouvelle presse', 'created_at' => now()->subHours(3)]);
+        $seen = FeedPost::factory()->create(['feed_id' => $feed->id, 'user_id' => $author->id, 'created_at' => now()->subHours(5)]);
+        FeedPost::factory()->create(['feed_id' => $feed->id, 'user_id' => $author->id, 'created_at' => now()->subHours(49)]);
+        FeedPost::factory()->create(['feed_id' => $feed->id, 'user_id' => $marie->id]);
+        FeedPost::factory()->create(['feed_id' => $other->id, 'user_id' => $author->id]);
+
+        $this->actingAs($marie)->get("/feeds/{$feed->id}/posts/{$seen->id}")->assertOk();
+
+        // Pas de tâche, mais une nouvelle actualité : le récapitulatif part quand même.
+        $this->artisan('notifications:daily-digest');
+
+        Notification::assertSentTo($marie, DailyDigest::class, function (DailyDigest $n) use ($fresh, $marie) {
+            $html = (string) $n->toMail($marie)->render();
+
+            return $n->posts->pluck('id')->all() === [$fresh->id]
+                && str_contains($html, 'Nouvelles actualités')
+                && str_contains($html, 'Nouvelle presse');
+        });
+    }
+
+    public function test_opening_a_feed_marks_its_posts_as_seen(): void
+    {
+        $marie = User::factory()->create();
+        $post = FeedPost::factory()->create();
+        $post->feed->subscribers()->attach($marie);
+
+        $this->assertCount(1, SendDailyDigest::newPostsFor($marie));
+        $this->actingAs($marie)->get("/feeds/{$post->feed_id}")->assertOk();
+        $this->assertCount(0, SendDailyDigest::newPostsFor($marie));
     }
 
     public function test_task_email_shows_the_logo_task_card_and_settings_link(): void
@@ -183,12 +288,11 @@ class EmailNotificationTest extends TestCase
         $this->assertStringContainsString(route('notifications.settings'), $html);
     }
 
-    public function test_daily_digest_is_scheduled_at_8am_paris_time(): void
+    public function test_daily_digest_is_checked_every_minute(): void
     {
         $event = collect(app(Schedule::class)->events())
             ->first(fn ($e) => str_contains($e->command, 'notifications:daily-digest'));
 
-        $this->assertSame('0 8 * * *', $event->expression);
-        $this->assertSame('Europe/Paris', $event->timezone);
+        $this->assertSame('* * * * *', $event->expression);
     }
 }

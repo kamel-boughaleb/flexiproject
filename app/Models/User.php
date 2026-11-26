@@ -65,6 +65,7 @@ class User extends Authenticatable implements HasLocalePreference
             'deactivated_at' => 'datetime',
             'removed_at' => 'datetime',
             'dashboard_seen_at' => 'datetime',
+            'digest_sent_on' => 'date:Y-m-d',
             'is_admin' => 'boolean',
             'password' => 'hashed',
             'notification_preferences' => 'array',
@@ -83,8 +84,11 @@ class User extends Authenticatable implements HasLocalePreference
         'mentions' => true,      // on me mentionne avec « @ » dans une description ou un commentaire
         'comments' => true,      // commentaire sur une tâche à laquelle je participe
         'updates' => true,       // modification d'une tâche à laquelle je participe
-        'daily_digest' => true,  // récapitulatif de mes tâches chaque matin à 8 h
+        'daily_digest' => true,  // récapitulatif du matin (heure réglable, 8 h par défaut)
     ];
+
+    /** Heure d'envoi du récapitulatif du matin par défaut (heure de Paris). */
+    public const DIGEST_DEFAULT_TIME = '08:00';
 
     protected static function booted(): void
     {
@@ -294,6 +298,20 @@ class User extends Authenticatable implements HasLocalePreference
         $saved = array_intersect_key($this->notification_preferences ?? [], self::NOTIFICATION_DEFAULTS);
 
         return array_map('boolval', $saved + self::NOTIFICATION_DEFAULTS);
+    }
+
+    /** Heure d'envoi du récapitulatif du matin choisie par l'utilisateur (HH:MM, heure de Paris). */
+    public function digestTime(): string
+    {
+        return $this->digest_time ?: self::DIGEST_DEFAULT_TIME;
+    }
+
+    /** Heure d'envoi lisible : « 8 h », « 7 h 30 ». */
+    public function digestTimeLabel(): string
+    {
+        [$hours, $minutes] = array_map('intval', explode(':', $this->digestTime()));
+
+        return $minutes ? sprintf('%d h %02d', $hours, $minutes) : "{$hours} h";
     }
 
     public function wantsEmail(string $type): bool

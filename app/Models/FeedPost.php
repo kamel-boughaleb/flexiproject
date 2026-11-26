@@ -6,7 +6,9 @@ use App\Casts\RichTextCast;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /** Actualité d'un fil : titre, date, texte riche (images, liens…) et pièces jointes. */
@@ -42,6 +44,25 @@ class FeedPost extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** Utilisateurs qui ont déjà vu l'actualité (page de l'actualité ou du fil). */
+    public function readers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'feed_post_reads')->withPivot('seen_at');
+    }
+
+    /**
+     * Note que l'utilisateur a vu ces actualités : elles ne figurent plus dans son récapitulatif du matin.
+     *
+     * @param  iterable<int>  $postIds
+     */
+    public static function markSeen(User $user, iterable $postIds): void
+    {
+        $rows = collect($postIds)->unique()->map(fn ($id) => ['user_id' => $user->id, 'feed_post_id' => $id, 'seen_at' => now()]);
+        if ($rows->isNotEmpty()) {
+            DB::table('feed_post_reads')->insertOrIgnore($rows->values()->all());
+        }
     }
 
     public function attachments(): HasMany

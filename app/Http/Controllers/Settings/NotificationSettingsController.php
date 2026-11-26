@@ -15,13 +15,21 @@ class NotificationSettingsController extends Controller
     {
         return Inertia::render('settings/Notifications', [
             'preferences' => $request->user()->notificationPreferences(),
+            'digestTime' => $request->user()->digestTime(),
         ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
         $rules = array_map(fn () => ['required', 'boolean'], User::NOTIFICATION_DEFAULTS);
-        $request->user()->update(['notification_preferences' => array_map('boolval', $request->validate($rules))]);
+        $data = $request->validate([...$rules, 'digest_time' => ['sometimes', 'required', 'date_format:H:i']]);
+
+        $user = $request->user();
+        $user->notification_preferences = array_map('boolval', array_intersect_key($data, User::NOTIFICATION_DEFAULTS));
+        if (isset($data['digest_time'])) {
+            $user->digest_time = $data['digest_time'] === User::DIGEST_DEFAULT_TIME ? null : $data['digest_time'];
+        }
+        $user->save();
 
         return back();
     }

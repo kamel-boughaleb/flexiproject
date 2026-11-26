@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Feed;
+use App\Models\FeedPost;
 use App\Models\Project;
 use App\Models\User;
 use App\Notifications\ProjectNotification;
@@ -64,7 +65,10 @@ class FeedController extends Controller
         $user = $request->user();
         $posts = $feed->posts()
             ->with(['user:id,name,color,avatar', 'attachments.user:id,name'])
-            ->paginate(20)
+            ->paginate(20);
+        // Les actualités affichées en entier sur la page du fil comptent comme vues.
+        FeedPost::markSeen($user, $posts->getCollection()->pluck('id'));
+        $posts = $posts
             ->through(fn ($post) => [...$post->toArray(), 'can_manage' => $post->setRelation('feed', $feed)->canBeManagedBy($user)]);
 
         return Inertia::render('Feeds/Show', [

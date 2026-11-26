@@ -22,8 +22,8 @@ Artisan::command('users:admin {email} {--name=}', function (string $email) {
     $this->info("{$user->email} est administrateur.");
 })->purpose('Créer ou promouvoir un administrateur de la plateforme');
 
-// Récapitulatif des tâches en cours, chaque matin à 8 h (heure de Paris).
-Schedule::command('notifications:daily-digest')->dailyAt('08:00')->timezone('Europe/Paris');
+// Récapitulatif du matin : vérifié chaque minute, envoyé à l'heure choisie par chacun (8 h par défaut, heure de Paris).
+Schedule::command('notifications:daily-digest')->everyMinute()->withoutOverlapping();
 
 // Envoi des e-mails en file d'attente : une seule ligne cron suffit sur le serveur (voir README).
 Schedule::command('queue:work --stop-when-empty --max-time=50')->everyMinute()->withoutOverlapping();

@@ -2,6 +2,7 @@
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -14,7 +15,7 @@ import { computed } from 'vue';
 type Key = 'assigned' | 'mentions' | 'comments' | 'updates' | 'daily_digest';
 type Preferences = Record<Key, boolean>;
 
-const props = defineProps<{ preferences: Preferences }>();
+const props = defineProps<{ preferences: Preferences; digestTime: string }>();
 
 const breadcrumbItems: BreadcrumbItem[] = [{ title: t('Notifications'), href: '/settings/notifications' }];
 
@@ -42,7 +43,7 @@ const OPTIONS: { key: Key; label: string; description: string }[] = [
     {
         key: 'daily_digest',
         label: t('Récapitulatif quotidien'),
-        description: t('Chaque matin à 8 h, la liste de vos tâches en cours : en retard, du jour et à venir.'),
+        description: t('Chaque matin, les nouvelles actualités de vos fils, puis vos tâches en retard et en cours.'),
     },
 ];
 
@@ -53,12 +54,20 @@ const LEVELS: { label: string; values: Preferences }[] = [
     { label: t('Aucun e-mail'), values: { assigned: false, mentions: false, comments: false, updates: false, daily_digest: false } },
 ];
 
-const form = useForm<Preferences>({ ...props.preferences });
+const form = useForm<Preferences & { digest_time: string }>({ ...props.preferences, digest_time: props.digestTime });
 
 const currentLevel = computed(() => LEVELS.find((l) => OPTIONS.every((o) => l.values[o.key] === form[o.key]))?.label ?? t('Personnalisé'));
 
 function save() {
     form.patch(route('notifications.settings.update'), { preserveScroll: true });
+}
+
+function changeDigestTime(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    if (/^\d{2}:\d{2}$/.test(value) && value !== form.digest_time) {
+        form.digest_time = value;
+        save();
+    }
 }
 
 function toggle(key: Key, value: boolean) {
@@ -116,6 +125,18 @@ function applyLevel(values: Preferences) {
                             <span class="font-medium">{{ option.label }}</span>
                             <span class="text-sm text-muted-foreground">{{ option.description }}</span>
                         </Label>
+                        <div v-if="option.key === 'daily_digest'" class="ml-auto flex shrink-0 items-center gap-2">
+                            <Label for="digest_time" class="text-sm font-normal text-muted-foreground">{{ $t('Envoi à') }}</Label>
+                            <Input
+                                id="digest_time"
+                                type="time"
+                                step="300"
+                                class="w-28"
+                                :model-value="form.digest_time"
+                                :disabled="!form.daily_digest"
+                                @change="changeDigestTime"
+                            />
+                        </div>
                     </li>
                 </ul>
 
@@ -128,6 +149,7 @@ function applyLevel(values: Preferences) {
                 >
                     <p class="text-sm text-neutral-600">{{ $t('Enregistré') }}</p>
                 </TransitionRoot>
+                <p v-if="form.errors.digest_time" class="text-sm text-red-600">{{ form.errors.digest_time }}</p>
             </div>
         </SettingsLayout>
     </AppLayout>

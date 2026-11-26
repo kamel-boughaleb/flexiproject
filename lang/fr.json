@@ -1100,5 +1100,9 @@
     "Zimbabwe": "Zimbabwe",
     "ZIP / Postal Code": "Code postal",
     "Zip / Postal Code": "Code postal",
-    "Åland Islands": "Les îles d'Åland"
+    "Åland Islands": "Les îles d'Åland",
+    ":count pièce jointe|:count pièces jointes": ":count pièce jointe|:count pièces jointes",
+    ":count tâche en retard|:count tâches en retard": ":count tâche en retard|:count tâches en retard",
+    "Actualité|Actualités": "Actualité|Actualités",
+    "Votre récap du jour · ⚠️ :count tâche en retard|Votre récap du jour · ⚠️ :count tâches en retard": "Votre récap du jour · ⚠️ :count tâche en retard|Votre récap du jour · ⚠️ :count tâches en retard"
 }

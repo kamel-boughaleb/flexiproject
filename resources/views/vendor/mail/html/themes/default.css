@@ -459,6 +459,42 @@ img {
     color: #cccdd0;
 }
 
+/* Sections et actualités du récapitulatif */
+
+.digest-section {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    margin: 24px 0 4px;
+    width: 100%;
+}
+
+.digest-section-title {
+    color: #121212;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0 0 4px;
+}
+
+.digest-section-warning .digest-section-title {
+    background-color: #fff5f5;
+    border: 1px solid #ffd4d2;
+    border-radius: 10px;
+    color: #fc0900;
+    padding: 10px 12px;
+}
+
+.post-row {
+    border-left: 3px solid #d10553;
+}
+
+.post-row-excerpt {
+    color: #575757;
+    display: block;
+    font-size: 13px;
+    line-height: 1.45;
+    margin-top: 6px;
+}
+
 /* Résumé chiffré du récapitulatif */
 
 .summary {
