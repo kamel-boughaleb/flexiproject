@@ -113,18 +113,20 @@ onMounted(() => {
     helloBox.value = { left: r.left, top: r.top };
     nextTick(() => {
         const el = helloEl.value!;
+        // Transitions CSS sur des styles en ligne (plutôt que deux animations Web superposées, mal gérées par
+        // certains navigateurs) : le titre reste à sa place une fois arrivé, jusqu'à la fin de l'intro.
         const center = centerTransform(2);
-        el.animate(
-            [
-                { opacity: 0, transform: `${centerTransform(1.6)}` },
-                { opacity: 1, transform: center },
-            ],
-            { duration: 500, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'forwards' },
-        );
+        el.style.transform = centerTransform(1.6);
+        el.style.opacity = '0';
+        void el.offsetWidth;
+        el.style.transition = 'opacity .5s cubic-bezier(.2,.7,.2,1), transform .5s cubic-bezier(.2,.7,.2,1)';
+        el.style.transform = center;
+        el.style.opacity = '1';
         // Durées : « Hello » 1 s, remontée du titre 0,6 s, résumé 4 s.
         later(1000, () => {
             phase.value = 'title';
-            el.animate([{ transform: center }, { transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.6,0,.2,1)', fill: 'forwards' });
+            el.style.transition = 'transform .6s cubic-bezier(.6,0,.2,1)';
+            el.style.transform = 'translate(0, 0) scale(1)';
         });
         later(1600, () => (phase.value = 'recap'));
         later(5600, finishIntro);
@@ -241,7 +243,7 @@ const enter = (i: number) => ({ animationDelay: `${i * 120}ms` });
                 <h1
                     v-if="helloBox"
                     ref="helloEl"
-                    class="pointer-events-none fixed w-fit origin-center whitespace-nowrap text-2xl font-semibold opacity-0"
+                    class="pointer-events-none fixed w-fit origin-center whitespace-nowrap text-2xl font-semibold"
                     :style="{ left: `${helloBox.left}px`, top: `${helloBox.top}px` }"
                 >
                     {{ $t('Hello :name !', { name: firstName }) }}
