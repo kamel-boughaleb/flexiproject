@@ -23,13 +23,17 @@ const props = defineProps<
 
 const TITLES = { board: t('Tableau'), list: t('Liste'), calendar: t('Calendrier'), timeline: t('Planning') };
 
-/** Ouvre la fiche d'une tâche en ne rechargeant que ses données (l'URL reste partageable). */
+/**
+ * Ouvre la fiche d'une tâche en ne rechargeant que ses données (l'URL reste partageable). Ouvrir la tâche
+ * efface ses nouveautés : la liste et le menu de gauche sont rechargés aussi pour retirer sa bulle « +N » partout.
+ */
 function openTask(id: number | null) {
     const url = new URL(window.location.href);
     if (id) url.searchParams.set('task', String(id));
     else url.searchParams.delete('task');
     url.searchParams.delete('full');
-    router.get(url.pathname + url.search, {}, { only: ['selectedTask'], preserveState: true, preserveScroll: true, replace: !id });
+    const only = id ? ['selectedTask', 'tasks', 'sidebarProjects'] : ['selectedTask'];
+    router.get(url.pathname + url.search, {}, { only, preserveState: true, preserveScroll: true, replace: !id });
 }
 
 // Plein écran de la fiche : mémorisé dans l'URL pour que le lien copié rouvre la même vue.

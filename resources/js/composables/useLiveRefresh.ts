@@ -87,6 +87,9 @@ function listen() {
     document.addEventListener('focusout', catchUp);
     // Retour sur l'onglet : on remet l'affichage à jour tout de suite.
     document.addEventListener('visibilitychange', () => !document.hidden && refresh());
+    // Retour arrière : la page est rendue depuis l'historique, avec ses anciennes données (bulles « +N » d'une
+    // tâche ouverte entre-temps, par exemple). On la remet à jour aussitôt.
+    window.addEventListener('popstate', () => setTimeout(refresh, 300));
 }
 
 export function useLiveRefresh() {
