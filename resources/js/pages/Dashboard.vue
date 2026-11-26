@@ -20,7 +20,17 @@ type LatestPost = {
     feed: FeedBadge;
     user: MiniUser | null;
 };
-type TaskRow = { id: number; title: string; due_date: string | null; overdue: boolean; urgent: boolean; url: string; project: ProjectBadge };
+type TaskRow = {
+    id: number;
+    title: string;
+    due_date: string | null;
+    overdue: boolean;
+    urgent: boolean;
+    url: string;
+    project: ProjectBadge;
+    comments_count?: number;
+    updated_at?: string | null;
+};
 type Mention = {
     id: number;
     excerpt: string;
@@ -148,7 +158,7 @@ const enter = (i: number) => ({ animationDelay: `${i * 120}ms` });
                         <li v-for="t in alertTasks" :key="t.id" v-live="t">
                             <Link :href="t.url" class="flex items-center gap-3 py-2 hover:opacity-80">
                                 <AlertTriangle class="size-4 shrink-0 text-brand-active" />
-                                <span class="min-w-0 flex-1 truncate font-semibold">{{ t.title }}</span>
+                                <span v-live-count="t.comments_count" class="min-w-0 flex-1 truncate font-semibold">{{ t.title }}</span>
                                 <span class="hidden min-w-0 items-center gap-1.5 truncate text-xs text-ink-soft sm:flex">
                                     <ProjectAvatar :project="t.project" size="xs" />{{ t.project.name }}
                                 </span>

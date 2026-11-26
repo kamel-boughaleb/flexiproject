@@ -49,8 +49,13 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
             ],
             // Barre latérale : projets de l'utilisateur dans son ordre (avec leur statut, filtrable) et notifications non lues.
-            'sidebarProjects' => fn () => $user?->sidebarProjects()->get(['projects.id', 'name', 'color', 'icon', 'image_path', 'start_date', 'completed_at'])
-                ->map(fn ($p) => $p->summary()),
+            // Nombre de commentaires et dernière modification des tâches : le menu signale l'activité
+            // des collaborateurs sur chaque projet (bulle « +1 », léger clignotement).
+            'sidebarProjects' => fn () => $user?->sidebarProjects()
+                ->withCount('comments')
+                ->withMax('tasks', 'updated_at')
+                ->get(['projects.id', 'name', 'color', 'icon', 'image_path', 'start_date', 'completed_at'])
+                ->map(fn ($p) => $p->summary(['comments_count', 'tasks_max_updated_at'])),
             // Tous les fils d'actualité, dans l'ordre de l'utilisateur (glisser-déposer), avec son abonnement.
             'sidebarFeeds' => fn () => $user?->sidebarFeeds()
                 ->withExists(['subscribers as subscribed' => fn ($q) => $q->whereKey($user->id)])

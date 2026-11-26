@@ -322,7 +322,7 @@ const projectLinks = (id: number) => [
                                 <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
                                     <Link v-live="p" :href="route('projects.show', p.id)">
                                         <ProjectAvatar :project="p" size="xs" />
-                                        <span class="truncate">{{ p.name }}</span>
+                                        <span v-live-count="p.comments_count" class="truncate">{{ p.name }}</span>
                                     </Link>
                                 </SidebarMenuButton>
                                 <SidebarMenuSub v-if="isMobile && path.startsWith(`/projects/${p.id}/`)">

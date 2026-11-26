@@ -162,6 +162,25 @@ class DashboardTest extends TestCase
         $this->actingAs($user)->get('/my-tasks')->assertInertia(fn (Assert $page) => $page->has('liveNotifications', 0));
     }
 
+    public function test_activity_counters_for_live_highlights(): void
+    {
+        $this->wednesday();
+        $user = User::factory()->create();
+        $colleague = User::factory()->create();
+        $project = Project::factory()->create(['owner_id' => $user->id]);
+        $task = Task::factory()->in($project)->create(['assignee_id' => $user->id, 'due_date' => '2026-11-25']);
+        Comment::create(['task_id' => $task->id, 'user_id' => $colleague->id, 'body' => '<p>Un</p>']);
+        Comment::create(['task_id' => $task->id, 'user_id' => $colleague->id, 'body' => '<p>Deux</p>']);
+
+        $this->actingAs($user)->get('/dashboard')->assertInertia(fn (Assert $page) => $page
+            ->where('alertTasks.0.comments_count', 2)
+            ->has('alertTasks.0.updated_at')
+            ->where('sidebarProjects.0.comments_count', 2)
+            ->has('sidebarProjects.0.tasks_max_updated_at'));
+
+        $this->actingAs($user)->get('/my-tasks')->assertInertia(fn (Assert $page) => $page->where('tasks.0.comments_count', 2));
+    }
+
     public function test_assignment_date_is_recorded(): void
     {
         $this->wednesday();

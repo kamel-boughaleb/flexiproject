@@ -275,6 +275,7 @@ const iconBtn =
                         <textarea
                             ref="titleInput"
                             v-live="task.title"
+                            v-live-count="task.comments.length"
                             :key="`title-${task.id}`"
                             :value="task.title"
                             :disabled="!canEdit"
@@ -299,7 +300,7 @@ const iconBtn =
                         @save="save"
                     />
 
-                    <section aria-labelledby="desc-title">
+                    <section v-live="task.description" aria-labelledby="desc-title" class="rounded-lg">
                         <h3 id="desc-title" class="mb-2 text-base font-bold" :class="{ 'sr-only': full }">{{ $t('Description') }}</h3>
                         <RichEditor
                             v-if="canEdit"

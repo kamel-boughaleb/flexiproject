@@ -51,7 +51,7 @@ export interface User {
 
 export type BreadcrumbItemType = BreadcrumbItem;
 
-export type SidebarProject = ProjectBadge;
+export type SidebarProject = ProjectBadge & { comments_count?: number; tasks_max_updated_at?: string | null };
 
 export interface MiniUser {
     id: number;

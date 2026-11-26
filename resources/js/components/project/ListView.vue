@@ -275,9 +275,12 @@ const filterCount = computed(() => [hideDone.value, onlyMine.value, onlyLate.val
                                         ><TaskCheck :task-id="task.id" :completed="task.completed" :disabled="!canEdit"
                                     /></span>
                                     <span class="min-w-0">
-                                        <span class="block truncate font-semibold" :class="{ 'text-ink-soft line-through': task.completed }">{{
-                                            task.title
-                                        }}</span>
+                                        <span
+                                            v-live-count="task.comments_count"
+                                            class="block truncate font-semibold"
+                                            :class="{ 'text-ink-soft line-through': task.completed }"
+                                            >{{ task.title }}</span
+                                        >
                                         <!-- Mobile : méta sous le nom -->
                                         <span class="flex flex-wrap items-center gap-x-2 text-xs font-medium text-ink-soft md:hidden">
                                             <span
