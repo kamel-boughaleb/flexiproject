@@ -110,4 +110,17 @@ class TaskFollowersTest extends TestCase
         }
         $this->assertSame(0, $this->owner->notifications()->count());
     }
+
+    public function test_followers_can_be_added_and_removed_by_hand(): void
+    {
+        $outsider = User::factory()->create();
+
+        $this->actingAs($this->owner)->post(route('tasks.followers.store', $this->task), ['user_id' => $this->alice->id]);
+        $this->actingAs($this->owner)->post(route('tasks.followers.store', $this->task), ['user_id' => $outsider->id])
+            ->assertSessionHasErrors('user_id');
+        $this->assertSame([$this->alice->id], $this->task->followers()->pluck('users.id')->all());
+
+        $this->actingAs($this->owner)->delete(route('tasks.followers.destroy', [$this->task, $this->alice]));
+        $this->assertSame([], $this->task->followers()->pluck('users.id')->all());
+    }
 }
