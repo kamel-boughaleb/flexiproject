@@ -2,8 +2,6 @@
 import UnreadBadge from '@/components/UnreadBadge.vue';
 import ProjectAvatar from '@/components/project/ProjectAvatar.vue';
 import UserAvatar from '@/components/project/UserAvatar.vue';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { t, tc } from '@/lib/i18n';
 import { dateTime, dueLabel } from '@/lib/labels';
@@ -41,22 +39,16 @@ type Mention = {
     project: ProjectBadge;
 };
 
-type MorningAlert = { overdue: number; urgent: number; tasks: TaskRow[] };
 const props = defineProps<{
     posts: LatestPost[];
     alertTasks: TaskRow[];
     mentions: Mention[];
     /** Première ouverture de l'accueil de la journée : animation d'accueil. */
     intro: boolean;
-    morningAlert: MorningAlert | null;
 }>();
 
 const user = usePage<SharedData>().props.auth.user;
 const firstName = user.name.split(' ')[0];
-
-// Les rafraîchissements automatiques renvoient intro = false et morningAlert = null : on garde la première valeur.
-const morning: MorningAlert | null = props.morningAlert;
-const alertOpen = ref(false);
 
 /*
  * Animation du matin :
@@ -101,14 +93,10 @@ function finishIntro() {
     if (phase.value === 'done') return;
     timers.forEach(clearTimeout);
     phase.value = 'done';
-    if (morning) later(900, () => (alertOpen.value = true));
 }
 
 onMounted(() => {
-    if (phase.value === 'done') {
-        if (morning) alertOpen.value = true;
-        return;
-    }
+    if (phase.value === 'done') return;
     const r = titleEl.value!.getBoundingClientRect();
     helloBox.value = { left: r.left, top: r.top };
     nextTick(() => {
@@ -258,58 +246,5 @@ const enter = (i: number) => ({ animationDelay: `${i * 120}ms` });
                 </Transition>
             </div>
         </Transition>
-
-        <!-- Alerte du matin : première ouverture de la journée, tâches en retard ou urgentes affectées depuis la dernière visite. -->
-        <Dialog v-if="morning" v-model:open="alertOpen">
-            <DialogContent class="max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle class="flex items-center gap-2"><AlertTriangle class="size-5 text-brand-active" />{{ $t('Attention') }}</DialogTitle>
-                    <DialogDescription class="text-base text-ink">
-                        <template v-if="morning.overdue && morning.urgent">
-                            {{
-                                $t('Ce matin, vous avez :overdue et :urgent :', {
-                                    overdue: $tc(':count tâche en retard|:count tâches en retard', morning.overdue),
-                                    urgent: $tc(':count tâche urgente|:count tâches urgentes', morning.urgent),
-                                })
-                            }}
-                        </template>
-                        <template v-else-if="morning.overdue">
-                            {{
-                                $t('Ce matin, vous avez :overdue :', {
-                                    overdue: $tc(':count tâche en retard|:count tâches en retard', morning.overdue),
-                                })
-                            }}
-                        </template>
-                        <template v-else>
-                            {{
-                                $t('Ce matin, vous avez :overdue :', {
-                                    overdue: $tc(':count tâche urgente|:count tâches urgentes', morning.urgent),
-                                })
-                            }}
-                        </template>
-                    </DialogDescription>
-                </DialogHeader>
-                <ul class="divide-y divide-app-border">
-                    <li v-for="t in morning.tasks" :key="t.id">
-                        <Link :href="t.url" class="flex items-center gap-3 py-2 hover:opacity-80" @click="alertOpen = false">
-                            <AlertTriangle class="size-4 shrink-0 text-brand-active" />
-                            <span class="min-w-0 flex-1">
-                                <span class="block truncate font-semibold underline-offset-2 hover:underline">{{ t.title }}</span>
-                                <span class="block truncate text-xs text-ink-soft">{{ t.project.name }}</span>
-                            </span>
-                            <span
-                                class="shrink-0 rounded-full px-2 py-0.5 text-xs font-bold"
-                                :class="t.overdue ? 'bg-brand text-white' : 'bg-warning-tint text-warning-text'"
-                            >
-                                {{ t.overdue ? $t('En retard') : $t('Urgent') }} · {{ dueLabel(t.due_date) }}
-                            </span>
-                        </Link>
-                    </li>
-                </ul>
-                <DialogFooter>
-                    <Button @click="alertOpen = false">{{ $t('Compris') }}</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
     </AppLayout>
 </template>

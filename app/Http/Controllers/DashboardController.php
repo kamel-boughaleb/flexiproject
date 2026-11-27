@@ -38,8 +38,8 @@ class DashboardController extends Controller
         $now = BusinessDays::now();
         $alertTasks = $this->alertTasks($user, $now);
 
-        // Dernier affichage de l'accueil : la première ouverture de la journée joue l'animation d'accueil
-        // et affiche l'alerte du matin. Les rafraîchissements automatiques suivants n'y ont plus droit.
+        // Dernier affichage de l'accueil : la première ouverture de la journée joue l'animation d'accueil.
+        // Les rafraîchissements automatiques suivants n'y ont plus droit.
         $seen = $user->dashboard_seen_at;
         DB::table('users')->where('id', $user->id)->update(['dashboard_seen_at' => now()]);
         $firstToday = ! $seen || $seen->copy()->setTimezone(BusinessDays::TIMEZONE)->toDateString() < $now->toDateString();
@@ -51,7 +51,6 @@ class DashboardController extends Controller
             // Temporaire, pour les essais : l'animation est rejouée à chaque chargement complet de la page
             // (F5, ouverture directe), mais pas lors des rafraîchissements automatiques ni de la navigation interne.
             'intro' => $firstToday || ! $request->header('X-Inertia'),
-            'morningAlert' => $firstToday ? $this->morningAlert($seen, $alertTasks, $now) : null,
         ]);
     }
 
@@ -133,27 +132,6 @@ class DashboardController extends Controller
                 'task' => ['id' => $c->task->id, 'title' => $c->task->title, 'url' => self::taskUrl($c->task)],
                 'project' => $c->task->project->summary(),
             ]);
-    }
-
-    /**
-     * Alerte du matin : à la première ouverture de l'accueil de la journée, les tâches en retard ou urgentes
-     * affectées à l'utilisateur depuis son dernier affichage de l'accueil (toutes, à sa toute première visite).
-     */
-    private function morningAlert(?Carbon $seen, Collection $alertTasks, Carbon $now): ?array
-    {
-        $tasks = $alertTasks
-            ->filter(fn (Task $task) => ! $seen || ($task->assigned_at && $task->assigned_at->gt($seen)))
-            ->values();
-        if ($tasks->isEmpty()) {
-            return null;
-        }
-        $rows = $tasks->map(fn (Task $task) => $this->taskRow($task, $now));
-
-        return [
-            'overdue' => $rows->where('overdue', true)->count(),
-            'urgent' => $rows->where('overdue', false)->count(),
-            'tasks' => $rows->values(),
-        ];
     }
 
     private function taskRow(Task $task, Carbon $now): array
