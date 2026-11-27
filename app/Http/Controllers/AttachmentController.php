@@ -6,6 +6,7 @@ use App\Models\Attachment;
 use App\Models\FeedPost;
 use App\Models\Task;
 use App\Models\TaskFollower;
+use App\Support\Images;
 use App\Support\Msg;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
@@ -130,29 +131,11 @@ class AttachmentController extends Controller
 
     private function makeThumbnail(string $source, string $target): void
     {
-        // GD peut être compilé sans JPEG : on renvoie alors l'original plutôt qu'une erreur.
-        if (! function_exists('imagecreatefromstring') || ! function_exists('imagejpeg')) {
-            return;
+        // Si l'image ne peut pas être lue (format non géré, trop grande), l'original est renvoyé.
+        $jpeg = Images::thumbnailJpeg($source);
+        if ($jpeg !== null) {
+            Storage::disk('local')->put($target, $jpeg);
         }
-        $size = @getimagesize($source);
-        // Au-delà de 40 mégapixels, la réduction demanderait trop de mémoire.
-        if (! $size || $size[0] * $size[1] > 40_000_000 || filesize($source) > 30 * 1024 * 1024) {
-            return;
-        }
-        $image = @imagecreatefromstring((string) file_get_contents($source));
-        if (! $image) {
-            return;
-        }
-        $width = min(600, imagesx($image));
-        $height = max(1, (int) round(imagesy($image) * $width / imagesx($image)));
-        $thumb = imagecreatetruecolor($width, $height);
-        // Fond blanc pour les images transparentes (PNG, GIF, WebP).
-        imagefill($thumb, 0, 0, imagecolorallocate($thumb, 255, 255, 255));
-        imagecopyresampled($thumb, $image, 0, 0, 0, 0, $width, $height, imagesx($image), imagesy($image));
-
-        ob_start();
-        imagejpeg($thumb, null, 82);
-        Storage::disk('local')->put($target, (string) ob_get_clean());
     }
 
     public function download(Attachment $attachment): StreamedResponse

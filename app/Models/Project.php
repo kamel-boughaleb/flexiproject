@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Images;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -144,7 +145,7 @@ class Project extends Model
     {
         $this->deleteImageFile();
         $path = 'project-avatars/'.$this->id.'-'.Str::random(8).'.jpg';
-        Storage::disk('local')->put($path, User::squareJpeg($file));
+        Storage::disk('local')->put($path, Images::avatarJpeg($file, 'image'));
         $this->forceFill(['image_path' => $path])->save();
     }
 

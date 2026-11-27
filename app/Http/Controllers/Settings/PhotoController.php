@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Support\Images;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -11,7 +12,7 @@ class PhotoController extends Controller
 {
     public function update(Request $request): RedirectResponse
     {
-        $request->validate(['photo' => ['required', 'image', 'max:5120']]);
+        $request->validate(['photo' => Images::avatarRules(required: true)], ['photo.max' => Images::maxMessage()]);
         $request->user()->setPhoto($request->file('photo'));
 
         return back();

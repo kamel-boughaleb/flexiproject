@@ -136,4 +136,38 @@ class ProjectTest extends TestCase
         $this->actingAs($owner)->patch("/projects/{$project->id}", ['name' => $project->name, 'remove_image' => true])->assertRedirect();
         $this->assertNull($project->fresh()->image_path);
     }
+
+    public function test_large_images_are_accepted_and_shrunk_for_avatars(): void
+    {
+        Storage::fake('local');
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/projects', [
+            'name' => 'Grande image',
+            'image' => UploadedFile::fake()->image('grande.jpg', 2400, 1600)->size(25 * 1024),
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $project = Project::where('name', 'Grande image')->firstOrFail();
+        [$width, $height] = getimagesizefromstring(Storage::disk('local')->get($project->image_path));
+        $this->assertSame([256, 256], [$width, $height]);
+
+        $this->actingAs($user)->post('/projects', [
+            'name' => 'Trop grande',
+            'image' => UploadedFile::fake()->image('enorme.jpg', 100, 100)->size(31 * 1024),
+        ])->assertSessionHasErrors(['image' => 'L’image doit faire moins de 30 Mo.']);
+    }
+
+    public function test_images_in_tasks_are_kept_at_full_size(): void
+    {
+        Storage::fake('local');
+        $project = Project::factory()->create();
+        $file = UploadedFile::fake()->image('plan.png', 2400, 1600)->size(25 * 1024);
+        $original = $file->get();
+
+        $this->actingAs($project->owner)->post("/projects/{$project->id}/images", ['image' => $file])->assertOk();
+
+        $stored = Storage::disk('local')->allFiles('editor-images');
+        $this->assertCount(1, $stored);
+        $this->assertSame($original, Storage::disk('local')->get($stored[0]));
+    }
 }
