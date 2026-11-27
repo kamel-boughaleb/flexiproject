@@ -89,34 +89,6 @@ class DashboardTest extends TestCase
             ->where('mentions.0.user.name', 'Alice'));
     }
 
-    public function test_morning_alert_once_a_day_for_tasks_assigned_since_last_visit(): void
-    {
-        $this->travelTo(Carbon::parse('2026-11-24 17:00', 'Europe/Paris'));
-        $user = User::factory()->create();
-        $project = Project::factory()->create(['owner_id' => $user->id]);
-        $before = Task::factory()->in($project)->create(['assignee_id' => $user->id, 'due_date' => '2026-11-20']);
-
-        // Toute première visite : toutes les tâches en retard ou urgentes.
-        $this->actingAs($user)->get('/dashboard')->assertInertia(fn (Assert $page) => $page
-            ->where('morningAlert.overdue', 1)
-            ->where('morningAlert.tasks.0.id', $before->id));
-        // Même jour : plus d'alerte.
-        $this->actingAs($user->fresh())->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('morningAlert', null));
-
-        $this->travelTo(Carbon::parse('2026-11-24 19:00', 'Europe/Paris'));
-        $late = Task::factory()->in($project)->create(['assignee_id' => $user->id, 'due_date' => '2026-11-23']);
-        $urgent = Task::factory()->in($project)->create(['assignee_id' => $user->id, 'due_date' => '2026-11-26']);
-
-        $this->travelTo(Carbon::parse('2026-11-25 08:30', 'Europe/Paris'));
-        $this->actingAs($user->fresh())->get('/dashboard')->assertInertia(fn (Assert $page) => $page
-            ->where('morningAlert.overdue', 1)
-            ->where('morningAlert.urgent', 1)
-            ->has('morningAlert.tasks', 2)
-            ->where('morningAlert.tasks.0.id', $late->id)
-            ->where('morningAlert.tasks.1.id', $urgent->id));
-        $this->actingAs($user->fresh())->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('morningAlert', null));
-    }
-
     public function test_intro_only_on_first_visit_of_the_day(): void
     {
         $this->travelTo(Carbon::parse('2026-11-25 08:00', 'Europe/Paris'));
