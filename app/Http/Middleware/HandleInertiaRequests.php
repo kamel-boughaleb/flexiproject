@@ -61,12 +61,12 @@ class HandleInertiaRequests extends Middleware
                     ->selectRaw('coalesce(sum(task_user.unread), 0)')])
                 ->withMax('tasks', 'updated_at')
                 ->get()
-                ->map(fn ($p) => [...$p->summary(['tasks_max_updated_at']), 'unread' => (int) $p->unread]),
-            // Tous les fils d'actualité, dans l'ordre de l'utilisateur (glisser-déposer), avec son abonnement.
+                ->map(fn ($p) => [...$p->summary(['tasks_max_updated_at']), 'unread' => (int) $p->unread, 'pinned' => $p->pivot->pinned_at !== null]),
+            // Tous les fils d'actualité, dans l'ordre de l'utilisateur (épinglés puis glisser-déposer), avec son abonnement.
             'sidebarFeeds' => fn () => $user?->sidebarFeeds()
                 ->withExists(['subscribers as subscribed' => fn ($q) => $q->whereKey($user->id)])
-                ->get(['feeds.id', 'name', 'color'])
-                ->map(fn ($feed) => [...$feed->summary(), 'subscribed' => (bool) $feed->subscribed]) ?? [],
+                ->get(['feeds.id', 'name', 'color', 'fsp.pinned_at'])
+                ->map(fn ($feed) => [...$feed->summary(), 'subscribed' => (bool) $feed->subscribed, 'pinned' => $feed->pinned_at !== null]) ?? [],
             // Couleurs proposées à la création d'un projet ou d'un fil (boutons « + » du menu).
             'projectColors' => Project::COLORS,
             // Notifications à afficher en bulle dès leur arrivée (mention, affectation, ajout à un projet ou un fil).

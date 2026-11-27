@@ -107,10 +107,13 @@ class FeedController extends Controller
     {
         $user = $request->user();
         $current = $user->sidebarFeeds()->pluck('feeds.id')->all();
-        $ids = array_map('intval', $request->validate([
+        $data = $request->validate([
             'ids' => ['required', 'array', 'max:'.count($current)],
             'ids.*' => ['integer', 'distinct', Rule::in($current)],
-        ])['ids']);
+            // Fil déplacé à la main : s'il était épinglé, il est désépinglé.
+            'moved' => ['nullable', 'integer', Rule::in($current)],
+        ]);
+        $ids = array_map('intval', $data['ids']);
 
         // Les fils absents de la liste envoyée gardent leur place ; les autres prennent l'ordre reçu.
         $queue = $ids;
@@ -119,11 +122,29 @@ class FeedController extends Controller
             $order[] = in_array($id, $ids, true) ? array_shift($queue) : $id;
         }
 
-        DB::transaction(function () use ($user, $order) {
+        DB::transaction(function () use ($user, $order, $data) {
             foreach ($order as $i => $id) {
                 DB::table('feed_sidebar_positions')->updateOrInsert(['user_id' => $user->id, 'feed_id' => $id], ['position' => $i + 1]);
             }
+            if (isset($data['moved'])) {
+                DB::table('feed_sidebar_positions')->where('user_id', $user->id)->where('feed_id', $data['moved'])->update(['pinned_at' => null]);
+            }
         });
+
+        return back();
+    }
+
+    /** Épingle le fil en haut du menu de gauche de l'utilisateur (clic droit › Épingler). */
+    public function pin(Request $request, Feed $feed): RedirectResponse
+    {
+        DB::table('feed_sidebar_positions')->updateOrInsert(['user_id' => $request->user()->id, 'feed_id' => $feed->id], ['pinned_at' => now()]);
+
+        return back();
+    }
+
+    public function unpin(Request $request, Feed $feed): RedirectResponse
+    {
+        DB::table('feed_sidebar_positions')->where('user_id', $request->user()->id)->where('feed_id', $feed->id)->update(['pinned_at' => null]);
 
         return back();
     }

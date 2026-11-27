@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SidebarPinMenu from '@/components/SidebarPinMenu.vue';
 import UnreadBadge from '@/components/UnreadBadge.vue';
 import FeedFormDialog from '@/components/feed/FeedFormDialog.vue';
 import NewProjectDialog from '@/components/project/NewProjectDialog.vue';
@@ -31,7 +32,7 @@ import {
 import { t } from '@/lib/i18n';
 import { type FeedBadge, type ProjectStatus, type SharedData, type SidebarProject } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Bell, BellOff, CheckSquare, ChevronDown, Ellipsis, ListFilter, Plus, UserPlus } from 'lucide-vue-next';
+import { Bell, BellOff, CheckSquare, ChevronDown, Ellipsis, ListFilter, Pin, PinOff, Plus, UserPlus } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import draggable from 'vuedraggable';
 import AppLogo from './AppLogo.vue';
@@ -85,9 +86,23 @@ watch(
     },
     { immediate: true },
 );
+// Élément en cours de glisser-déposer : déplacé à la main, il est désépinglé.
+const movedProject = ref<number | null>(null);
 function reorder(list: SidebarProject[]) {
-    projects.value = list;
-    router.post(route('projects.reorder'), { ids: list.map((p) => p.id) }, { preserveScroll: true, preserveState: true, only: ['sidebarProjects'] });
+    const moved = movedProject.value;
+    projects.value = list.map((p) => (p.id === moved ? { ...p, pinned: false } : p));
+    router.post(
+        route('projects.reorder'),
+        { ids: list.map((p) => p.id), moved },
+        { preserveScroll: true, preserveState: true, only: ['sidebarProjects'] },
+    );
+}
+
+// Clic droit › Épingler / Désépingler : l'élément épinglé reste en haut de la liste.
+const pinOptions = { preserveScroll: true, preserveState: true, only: ['sidebarProjects', 'sidebarFeeds'] };
+function togglePin(kind: 'projects' | 'feeds', item: SidebarProject | FeedBadge) {
+    if (item.pinned) router.delete(route(`${kind}.unpin`, item.id), pinOptions);
+    else router.post(route(`${kind}.pin`, item.id), {}, pinOptions);
 }
 
 // Tous les fils : même glisser-déposer que les projets, ordre propre à chaque utilisateur.
@@ -105,9 +120,11 @@ function toggleSubscription(feed: FeedBadge) {
     else router.delete(route('feeds.unsubscribe', feed.id), options);
 }
 
+const movedFeed = ref<number | null>(null);
 function reorderFeeds(list: FeedBadge[]) {
-    feeds.value = list;
-    router.post(route('feeds.reorder'), { ids: list.map((f) => f.id) }, { preserveScroll: true, preserveState: true, only: ['sidebarFeeds'] });
+    const moved = movedFeed.value;
+    feeds.value = list.map((f) => (f.id === moved ? { ...f, pinned: false } : f));
+    router.post(route('feeds.reorder'), { ids: list.map((f) => f.id), moved }, { preserveScroll: true, preserveState: true, only: ['sidebarFeeds'] });
 }
 
 // Sections « Fils d'actualité » et « Projets » repliables ; l'état est mémorisé sur cet appareil.
@@ -207,25 +224,31 @@ const projectLinks = (id: number) => [
                         :delay="250"
                         :delay-on-touch-only="true"
                         ghost-class="opacity-40"
+                        @start="(e) => (movedFeed = feeds[e.oldIndex]?.id ?? null)"
                         @update:model-value="reorderFeeds"
                     >
                         <template #item="{ element: f }">
                             <SidebarMenuItem>
-                                <SidebarMenuButton
-                                    as-child
-                                    :is-active="path === `/feeds/${f.id}` || path.startsWith(`/feeds/${f.id}/`)"
-                                    :tooltip="f.name"
-                                >
-                                    <Link v-live="f" :href="route('feeds.show', f.id)">
-                                        <ProjectAvatar :project="f" size="xs" />
-                                        <span class="truncate" :class="f.subscribed ? '' : 'text-sidebar-foreground/60'">{{ f.name }}</span>
-                                        <BellOff
-                                            v-if="!f.subscribed"
-                                            class="ml-auto !size-3.5 shrink-0 text-sidebar-foreground/40"
-                                            :aria-label="$t('Non abonné')"
-                                        />
-                                    </Link>
-                                </SidebarMenuButton>
+                                <SidebarPinMenu :pinned="f.pinned" @toggle="togglePin('feeds', f)">
+                                    <SidebarMenuButton
+                                        as-child
+                                        :is-active="path === `/feeds/${f.id}` || path.startsWith(`/feeds/${f.id}/`)"
+                                        :tooltip="f.name"
+                                    >
+                                        <Link v-live="f" :href="route('feeds.show', f.id)">
+                                            <ProjectAvatar :project="f" size="xs" />
+                                            <span class="truncate" :class="f.subscribed ? '' : 'text-sidebar-foreground/60'">{{ f.name }}</span>
+                                            <span class="ml-auto flex shrink-0 items-center gap-1">
+                                                <Pin v-if="f.pinned" class="!size-3 text-sidebar-foreground/40" :aria-label="$t('Épinglé')" />
+                                                <BellOff
+                                                    v-if="!f.subscribed"
+                                                    class="!size-3.5 text-sidebar-foreground/40"
+                                                    :aria-label="$t('Non abonné')"
+                                                />
+                                            </span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarPinMenu>
                                 <!-- Actions du fil : abonnement et ajout de membres (au survol). -->
                                 <DropdownMenu>
                                     <DropdownMenuTrigger
@@ -239,6 +262,10 @@ const projectLinks = (id: number) => [
                                         <Ellipsis class="size-4" />
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent side="right" align="start" class="w-56 rounded-2xl p-1.5">
+                                        <DropdownMenuItem class="rounded-icon font-semibold" @select="togglePin('feeds', f)">
+                                            <component :is="f.pinned ? PinOff : Pin" class="size-4" />
+                                            {{ f.pinned ? $t('Désépingler') : $t('Épingler') }}
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem class="rounded-icon font-semibold" @select="toggleSubscription(f)">
                                             <component :is="f.subscribed ? BellOff : Bell" class="size-4" />
                                             {{ f.subscribed ? $t('Se désabonner') : $t("S'abonner") }}
@@ -316,17 +343,23 @@ const projectLinks = (id: number) => [
                         :delay="250"
                         :delay-on-touch-only="true"
                         ghost-class="opacity-40"
+                        @start="(e) => (movedProject = projects[e.oldIndex]?.id ?? null)"
                         @update:model-value="reorder"
                     >
                         <template #item="{ element: p }">
                             <SidebarMenuItem>
-                                <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
-                                    <Link v-live="p" :href="route('projects.show', p.id)">
-                                        <ProjectAvatar :project="p" size="xs" />
-                                        <span class="truncate">{{ p.name }}</span>
-                                        <UnreadBadge :count="p.unread" class="ml-auto" />
-                                    </Link>
-                                </SidebarMenuButton>
+                                <SidebarPinMenu :pinned="p.pinned" @toggle="togglePin('projects', p)">
+                                    <SidebarMenuButton as-child :is-active="path.startsWith(`/projects/${p.id}/`)" :tooltip="p.name">
+                                        <Link v-live="p" :href="route('projects.show', p.id)">
+                                            <ProjectAvatar :project="p" size="xs" />
+                                            <span class="truncate">{{ p.name }}</span>
+                                            <span class="ml-auto flex shrink-0 items-center gap-1">
+                                                <Pin v-if="p.pinned" class="!size-3 text-sidebar-foreground/40" :aria-label="$t('Épinglé')" />
+                                                <UnreadBadge :count="p.unread" />
+                                            </span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarPinMenu>
                                 <SidebarMenuSub v-if="isMobile && path.startsWith(`/projects/${p.id}/`)">
                                     <SidebarMenuSubItem v-for="l in projectLinks(p.id)" :key="l.title">
                                         <SidebarMenuSubButton as-child :is-active="isActive(l.href)">

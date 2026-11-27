@@ -122,10 +122,13 @@ class ProjectController extends Controller
     {
         $user = $request->user();
         $current = $user->sidebarProjects()->pluck('projects.id')->all();
-        $ids = array_map('intval', $request->validate([
+        $data = $request->validate([
             'ids' => ['required', 'array', 'max:'.count($current)],
             'ids.*' => ['integer', 'distinct', Rule::in($current)],
-        ])['ids']);
+            // Projet déplacé à la main : s'il était épinglé, il est désépinglé.
+            'moved' => ['nullable', 'integer', Rule::in($current)],
+        ]);
+        $ids = array_map('intval', $data['ids']);
 
         $queue = $ids;
         $order = [];
@@ -133,13 +136,40 @@ class ProjectController extends Controller
             $order[] = in_array($id, $ids, true) ? array_shift($queue) : $id;
         }
 
-        DB::transaction(function () use ($user, $order) {
+        DB::transaction(function () use ($user, $order, $data) {
             foreach ($order as $i => $id) {
                 DB::table('project_user')->where('user_id', $user->id)->where('project_id', $id)->update(['sidebar_position' => $i + 1]);
+            }
+            if (isset($data['moved'])) {
+                DB::table('project_user')->where('user_id', $user->id)->where('project_id', $data['moved'])->update(['pinned_at' => null]);
             }
         });
 
         return back();
+    }
+
+    /** Épingle le projet en haut du menu de gauche de l'utilisateur (clic droit › Épingler). */
+    public function pin(Request $request, Project $project): RedirectResponse
+    {
+        $this->setPinned($request, $project, now());
+
+        return back();
+    }
+
+    public function unpin(Request $request, Project $project): RedirectResponse
+    {
+        $this->setPinned($request, $project, null);
+
+        return back();
+    }
+
+    private function setPinned(Request $request, Project $project, mixed $pinnedAt): void
+    {
+        $updated = DB::table('project_user')
+            ->where('user_id', $request->user()->id)
+            ->where('project_id', $project->id)
+            ->update(['pinned_at' => $pinnedAt]);
+        abort_if($updated === 0 && ! $request->user()->projects()->whereKey($project->id)->exists(), 403);
     }
 
     /** Nouvel ordre des onglets du projet, après un glisser-déposer : le premier devient la vue par défaut. */

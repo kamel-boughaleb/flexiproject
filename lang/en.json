@@ -661,5 +661,8 @@
     "Ajouter au projet et confier la tâche": "Add to the project and assign",
     "Rechercher un collègue": "Search for a colleague",
     "Aucun collègue trouvé.": "No colleague found.",
-    "Toute l'équipe fait déjà partie du projet.": "The whole team is already in the project."
+    "Toute l'équipe fait déjà partie du projet.": "The whole team is already in the project.",
+    "Épingler": "Pin",
+    "Désépingler": "Unpin",
+    "Épinglé": "Pinned"
 }
