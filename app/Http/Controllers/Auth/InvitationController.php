@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\Images;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,8 +40,8 @@ class InvitationController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'photo' => ['nullable', 'image', 'max:5120'],
-        ]);
+            'photo' => Images::avatarRules(),
+        ], ['photo.max' => Images::maxMessage()]);
 
         $user->forceFill([
             'name' => $data['name'],

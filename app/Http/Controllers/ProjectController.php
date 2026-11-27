@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskFollower;
 use App\Models\User;
+use App\Support\Images;
 use App\Support\Msg;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -198,9 +199,9 @@ class ProjectController extends Controller
     private function validated(Request $request): array
     {
         $request->validate([
-            'image' => ['nullable', 'image', 'max:5120'],
+            'image' => Images::avatarRules(),
             'remove_image' => ['nullable', 'boolean'],
-        ]);
+        ], ['image.max' => Images::maxMessage()]);
 
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],

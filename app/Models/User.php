@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\AccountReactivated;
 use App\Notifications\InvitationNotification;
+use App\Support\Images;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
@@ -242,7 +243,7 @@ class User extends Authenticatable implements HasLocalePreference
     {
         $this->deletePhotoFile();
         $path = 'avatars/'.$this->id.'-'.Str::random(8).'.jpg';
-        Storage::disk('local')->put($path, self::squareJpeg($file));
+        Storage::disk('local')->put($path, Images::avatarJpeg($file, 'photo'));
 
         $this->forceFill([
             'photo_path' => $path,
@@ -261,29 +262,6 @@ class User extends Authenticatable implements HasLocalePreference
         if ($this->photo_path) {
             Storage::disk('local')->delete($this->photo_path);
         }
-    }
-
-    /** Recadre l'image au centre et la réduit à 256 px pour garder des avatars légers. */
-    public static function squareJpeg(UploadedFile $file): string
-    {
-        $source = function_exists('imagecreatefromstring') ? @imagecreatefromstring($file->get()) : false;
-        if (! $source) {
-            return $file->get();
-        }
-
-        $side = min(imagesx($source), imagesy($source));
-        $square = imagecreatetruecolor(256, 256);
-        imagefill($square, 0, 0, imagecolorallocate($square, 255, 255, 255));
-        imagecopyresampled(
-            $square, $source, 0, 0,
-            intdiv(imagesx($source) - $side, 2), intdiv(imagesy($source) - $side, 2),
-            256, 256, $side, $side,
-        );
-
-        ob_start();
-        imagejpeg($square, null, 85);
-
-        return ob_get_clean();
     }
 
     /** Rôle de l'utilisateur dans le projet, ou null s'il n'en est pas membre. */

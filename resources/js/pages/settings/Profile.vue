@@ -74,7 +74,7 @@ const removePhoto = () => router.delete(route('photo.destroy'), { preserveScroll
                             </Button>
                             <Button v-if="me.avatar" type="button" variant="ghost" size="sm" @click="removePhoto">{{ $t('Retirer') }}</Button>
                         </div>
-                        <p class="text-xs text-muted-foreground">{{ $t('JPG, PNG ou WebP, 5 Mo maximum.') }}</p>
+                        <p class="text-xs text-muted-foreground">{{ $t('JPG, PNG ou WebP, 30 Mo maximum.') }}</p>
                         <InputError :message="photoForm.errors.photo" />
                     </div>
                     <input ref="photoInput" type="file" accept="image/*" class="hidden" @change="uploadPhoto" />

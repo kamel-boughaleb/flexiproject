@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Feed;
 use App\Models\Project;
+use App\Support\Images;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -50,8 +51,8 @@ class EditorImageController extends Controller
     private function save(Request $request, string $directory): string
     {
         $request->validate(
-            ['image' => ['required', 'file', 'mimes:png,jpg,jpeg,gif,webp', 'max:10240']],
-            ['image.max' => __('L’image doit faire moins de 10 Mo.'), 'image.mimes' => __('Formats acceptés : PNG, JPG, GIF, WebP.')],
+            ['image' => ['required', 'file', 'mimes:png,jpg,jpeg,gif,webp', 'max:'.Images::MAX_UPLOAD_KB]],
+            ['image.max' => Images::maxMessage(), 'image.mimes' => __('Formats acceptés : PNG, JPG, GIF, WebP.')],
         );
 
         $file = $request->file('image');
