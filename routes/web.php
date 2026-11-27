@@ -51,6 +51,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::post('projects/reorder', [ProjectController::class, 'reorder'])->name('projects.reorder');
+    Route::post('projects/{project}/pin', [ProjectController::class, 'pin'])->name('projects.pin');
+    Route::delete('projects/{project}/pin', [ProjectController::class, 'unpin'])->name('projects.unpin');
     Route::get('projects/{project}', fn (Project $project) => redirect($project->defaultUrl()))->name('projects.show');
     Route::post('projects/{project}/tabs', [ProjectController::class, 'reorderTabs'])->name('projects.tabs');
     Route::get('projects/{project}/rules', fn (Project $project) => to_route('rules.index'))->name('projects.rules');
@@ -94,6 +96,8 @@ Route::middleware('auth')->group(function () {
     // Fils d'actualité
     Route::get('feeds', [FeedController::class, 'index'])->name('feeds.index');
     Route::post('feeds/reorder', [FeedController::class, 'reorder'])->name('feeds.reorder');
+    Route::post('feeds/{feed}/pin', [FeedController::class, 'pin'])->name('feeds.pin');
+    Route::delete('feeds/{feed}/pin', [FeedController::class, 'unpin'])->name('feeds.unpin');
     Route::get('feeds/options', [FeedController::class, 'options'])->name('feeds.options');
     Route::post('feeds', [FeedController::class, 'store'])->name('feeds.store');
     Route::get('feeds/{feed}', [FeedController::class, 'show'])->name('feeds.show');

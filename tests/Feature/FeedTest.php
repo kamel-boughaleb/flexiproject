@@ -49,8 +49,8 @@ class FeedTest extends TestCase
             ->assertInertia(fn ($page) => $page->component('Feeds/Index')
                 ->has('feeds', 2)
                 ->where('sidebarFeeds', [
-                    ['id' => $other->id, 'name' => 'Autre', 'color' => '#6366f1', 'subscribed' => false],
-                    ['id' => $feed->id, 'name' => 'Production', 'color' => '#6366f1', 'subscribed' => true],
+                    ['id' => $other->id, 'name' => 'Autre', 'color' => '#6366f1', 'subscribed' => false, 'pinned' => false],
+                    ['id' => $feed->id, 'name' => 'Production', 'color' => '#6366f1', 'subscribed' => true, 'pinned' => false],
                 ]));
     }
 

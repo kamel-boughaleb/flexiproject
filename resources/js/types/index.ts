@@ -51,7 +51,12 @@ export interface User {
 
 export type BreadcrumbItemType = BreadcrumbItem;
 
-export type SidebarProject = ProjectBadge & { unread?: number; tasks_max_updated_at?: string | null };
+export type SidebarProject = ProjectBadge & {
+    unread?: number;
+    tasks_max_updated_at?: string | null;
+    /** Épinglé en haut du menu. */
+    pinned?: boolean;
+};
 
 export interface MiniUser {
     id: number;
@@ -204,6 +209,8 @@ export interface FeedBadge {
     color: string;
     /** Menu de gauche : l'utilisateur est abonné au fil. */
     subscribed?: boolean;
+    /** Menu de gauche : épinglé en haut de la liste. */
+    pinned?: boolean;
 }
 
 export interface Feed extends FeedBadge {

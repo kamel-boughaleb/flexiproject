@@ -106,7 +106,7 @@ class User extends Authenticatable implements HasLocalePreference
 
     public function projects(): BelongsToMany
     {
-        return $this->belongsToMany(Project::class)->withPivot('role', 'sidebar_position')->withTimestamps();
+        return $this->belongsToMany(Project::class)->withPivot('role', 'sidebar_position', 'pinned_at')->withTimestamps();
     }
 
     /** Fils d'actualité auxquels l'utilisateur est abonné. */
@@ -117,7 +117,8 @@ class User extends Authenticatable implements HasLocalePreference
 
     /**
      * Tous les fils d'actualité dans l'ordre du menu de gauche, propre à chaque utilisateur :
-     * d'abord ceux jamais placés (les plus récents en premier), puis l'ordre choisi par glisser-déposer.
+     * d'abord les fils épinglés (le dernier épinglé en haut), puis ceux jamais placés (les plus récents en premier),
+     * puis l'ordre choisi par glisser-déposer.
      *
      * @return Builder<Feed>
      */
@@ -125,6 +126,8 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return Feed::query()
             ->leftJoin('feed_sidebar_positions as fsp', fn ($join) => $join->on('fsp.feed_id', '=', 'feeds.id')->where('fsp.user_id', $this->id))
+            ->orderByRaw('fsp.pinned_at is not null desc')
+            ->orderByDesc('fsp.pinned_at')
             ->orderByRaw('fsp.position is null desc')
             ->orderBy('fsp.position')
             ->orderByDesc('feeds.created_at')
@@ -132,12 +135,14 @@ class User extends Authenticatable implements HasLocalePreference
     }
 
     /**
-     * Projets dans l'ordre du menu de gauche : d'abord ceux jamais placés par l'utilisateur
+     * Projets dans l'ordre du menu de gauche : d'abord les projets épinglés (le dernier épinglé en haut), puis ceux jamais placés par l'utilisateur
      * (les nouveaux, du plus récent au plus ancien), puis l'ordre choisi par glisser-déposer.
      */
     public function sidebarProjects(): BelongsToMany
     {
         return $this->projects()
+            ->orderByRaw('project_user.pinned_at is not null desc')
+            ->orderByDesc('project_user.pinned_at')
             ->orderByRaw('project_user.sidebar_position is null desc')
             ->orderBy('project_user.sidebar_position')
             ->orderByDesc('projects.created_at')
